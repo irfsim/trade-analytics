@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trade Analytics
 
-## Getting Started
+A trade journaling and analytics platform for discretionary breakout traders.
 
-First, run the development server:
+Built for IBKR users following Qullamaggie-style momentum trading.
+
+## Features
+
+- **Auto-import trades** from IBKR Flex XML reports
+- **FIFO trade matching** with support for partials (add, trim, scale)
+- **A+ setup checklist** for trade annotation
+- **Performance analytics** segmented by setup type, grade, market regime
+- **Rule adherence tracking** to identify what's costing you money
+- **Multi-account support** (ISA + Margin)
+
+## Tech Stack
+
+- **Frontend:** Next.js + React + Tailwind CSS
+- **Backend:** Next.js API Routes
+- **Database:** Supabase (PostgreSQL)
+- **Hosting:** Vercel
+- **Screenshots:** Cloudflare R2 (planned)
+- **Email:** Resend (planned)
+
+## Quick Start
+
+See [SETUP.md](./SETUP.md) for full deployment instructions.
 
 ```bash
+# Install dependencies
+npm install
+
+# Copy environment file and fill in your values
+cp .env.example .env.local
+
+# Run locally
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+├── app/                    # Next.js pages and API routes
+│   ├── api/               # REST API endpoints
+│   ├── trades/            # Trade list and detail pages
+│   ├── import/            # Flex XML import page
+│   └── stats/             # Analytics page
+├── components/            # React components
+├── lib/                   # Business logic
+│   ├── flex-parser.ts    # IBKR XML parsing
+│   ├── trade-matcher.ts  # FIFO matching algorithm
+│   ├── analytics.ts      # Performance calculations
+│   └── db/               # Database operations
+└── types/                # TypeScript definitions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+supabase/
+└── schema.sql            # Database schema with RLS policies
+```
 
-## Learn More
+## A+ Checklist
 
-To learn more about Next.js, take a look at the following resources:
+The annotation system implements a full pre-trade checklist:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Market Context (bullish conditions)
+2. Stock Selection (momentum leader, RS>90, ADR>4-5%)
+3. Prior Uptrend (clear strong pole)
+4. Consolidation Structure (orderly, not choppy)
+5. Moving Average Support (near rising 10/20d, MAs stacked)
+6. Volatility Contraction (quantitative check required for A+)
+7. Volume Pattern (contracted, low on tight days)
+8. Pivot & Risk Definition (clear trigger, logical stop)
+9. Context (leading sector, recent catalyst)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Private project.
