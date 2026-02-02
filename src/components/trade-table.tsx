@@ -350,11 +350,17 @@ function SortableHeader({
 
 function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }) {
   if (rating === null) {
-    return <span className="w-2 h-2 bg-red-500 rounded-full inline-block" />;
+    return (
+      <div className="flex items-center">
+        <div className="flex gap-0.5 w-[52px]">
+          <span className="w-2 h-2 bg-red-500 rounded-full" />
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center">
       <div className="flex gap-0.5">
         {Array.from({ length: max }, (_, i) => (
           <div
