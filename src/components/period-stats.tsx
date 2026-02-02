@@ -64,7 +64,7 @@ function CircularProgress({ value, size = 48, strokeWidth = 4, isEmpty = false }
         )}
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className={`text-sm font-semibold ${isEmpty ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
+        <span className={`text-sm font-medium ${isEmpty ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100'}`}>
           {isEmpty ? '—' : value}
         </span>
       </div>
@@ -107,14 +107,14 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
         {/* Total Trades */}
         <div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Trades</p>
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{stats.totalTrades}</p>
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{stats.totalTrades}</p>
         </div>
 
         {/* Winners */}
         <div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Winners</p>
           <p className="text-sm text-zinc-900 dark:text-zinc-100">
-            <span className="font-semibold">{stats.winners}</span>
+            <span className="font-medium">{stats.winners}</span>
             <span className="font-normal"> {stats.totalTrades > 0 ? Math.round((stats.winners / stats.totalTrades) * 100) : 0}%</span>
           </p>
         </div>
@@ -123,7 +123,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
         <div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Losers</p>
           <p className="text-sm text-zinc-900 dark:text-zinc-100">
-            <span className="font-semibold">{stats.losers}</span>
+            <span className="font-medium">{stats.losers}</span>
             <span className="font-normal"> {stats.totalTrades > 0 ? Math.round((stats.losers / stats.totalTrades) * 100) : 0}%</span>
           </p>
         </div>
@@ -131,7 +131,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
         {/* Net P&L */}
         <div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Net P&L</p>
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {formatPnl(stats.netPnl)}
           </p>
         </div>
@@ -142,11 +142,11 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
           <p className="text-sm text-zinc-900 dark:text-zinc-100">
             {stats.avgWin !== null ? (
               <>
-                <span className="font-semibold">+${stats.avgWin.toLocaleString('en-US')}</span>
+                <span className="font-medium">+${stats.avgWin.toLocaleString('en-US')}</span>
                 <span className="font-normal"> {stats.avgWinPct !== null ? `+${stats.avgWinPct}%` : '—'}</span>
               </>
             ) : (
-              <span className="font-semibold">—</span>
+              <span className="font-medium">—</span>
             )}
           </p>
         </div>
@@ -157,11 +157,11 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
           <p className="text-sm text-zinc-900 dark:text-zinc-100">
             {stats.avgLoss !== null ? (
               <>
-                <span className="font-semibold">-${Math.abs(stats.avgLoss).toLocaleString('en-US')}</span>
+                <span className="font-medium">-${Math.abs(stats.avgLoss).toLocaleString('en-US')}</span>
                 <span className="font-normal"> {stats.avgLossPct !== null ? `${stats.avgLossPct}%` : '—'}</span>
               </>
             ) : (
-              <span className="font-semibold">—</span>
+              <span className="font-medium">—</span>
             )}
           </p>
         </div>
@@ -171,8 +171,8 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
       <div className="flex items-start gap-3">
         <CircularProgress value={stats.planAdherence ?? 0} isEmpty={stats.planAdherence === null} />
         <div className="mt-0.5">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Plan adherence</p>
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Compliance</p>
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {stats.planAdherence !== null ? getAdherenceLabel(stats.planAdherence) : 'No data'}
           </p>
         </div>

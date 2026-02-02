@@ -61,6 +61,7 @@ export interface TradeWithRating extends Trade {
   setup_rating: number | null;
   followed_plan: boolean | null;
   setup_type_name: string | null;
+  setup_type_color: string | null;
   account_pct: number | null;
   position_size_pct: number | null;
 }
@@ -79,7 +80,7 @@ export async function getTrades(options?: {
 }): Promise<TradeWithRating[]> {
   let query = supabase.from('trades').select(`
     *,
-    trade_annotations(setup_rating, followed_plan, setup_type_id, setup_types(name))
+    trade_annotations(setup_rating, followed_plan, setup_type_id, setup_types(name, color))
   `);
 
   if (options?.accountId) {
@@ -118,12 +119,13 @@ export async function getTrades(options?: {
     throw new Error(`Failed to fetch trades: ${error.message}`);
   }
 
-  // Flatten the setup_rating, followed_plan, and setup_type_name from the joined annotation
+  // Flatten the setup_rating, followed_plan, setup_type_name, and setup_type_color from the joined annotation
   return (data || []).map(({ trade_annotations, ...trade }) => ({
     ...trade,
     setup_rating: trade_annotations?.setup_rating ?? null,
     followed_plan: trade_annotations?.followed_plan ?? null,
     setup_type_name: trade_annotations?.setup_types?.name ?? null,
+    setup_type_color: trade_annotations?.setup_types?.color ?? null,
   }));
 }
 

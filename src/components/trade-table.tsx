@@ -65,7 +65,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
+          <h3 className="text-base font-medium text-zinc-900">Trades</h3>
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-zinc-400">Open</span>
             <span className="text-sm font-medium text-zinc-900">Closed</span>
@@ -89,7 +89,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
+          <h3 className="text-base font-medium text-zinc-900">Trades</h3>
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-zinc-400">Open</span>
             <span className="text-sm font-medium text-zinc-900">Closed</span>
@@ -114,7 +114,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
     <div className="space-y-4">
       {/* Header row - outside the table card */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
+        <h3 className="text-base font-medium text-zinc-900">Trades</h3>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveTab('open')}
@@ -157,7 +157,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
           <table className="w-full">
             <thead className="trade-thead">
               <tr>
-                <th className="pl-5 pr-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
+                <th className="pl-5 pr-3 py-[13px] text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
                   Symbol
                 </th>
                 <SortableHeader
@@ -207,16 +207,16 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
                   onSort={handleSort}
                   className="text-right"
                 />
-                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap w-14">
+                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 text-left whitespace-nowrap w-14">
                   Days
                 </th>
-                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
+                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
                   Setup
                 </th>
-                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
+                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
                   Quality
                 </th>
-                <th className="pl-3 pr-5 py-4 text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
+                <th className="pl-3 pr-5 py-[13px] text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
                   Plan
                 </th>
               </tr>
@@ -250,7 +250,10 @@ function MobileTradeCard({ trade, onSelect }: { trade: TradeWithRating; onSelect
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
   };
 
   const formatPnl = (pnl: number | null) => {
@@ -321,7 +324,7 @@ function SortableHeader({
 
   return (
     <th
-      className={`px-3 py-4 text-sm font-normal cursor-pointer select-none whitespace-nowrap group ${
+      className={`px-3 py-[13px] text-sm font-normal cursor-pointer select-none whitespace-nowrap group ${
         isActive ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
       } transition-colors ${className}`}
       onClick={() => onSort(field)}
@@ -353,7 +356,7 @@ function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }
     return (
       <div className="flex items-center">
         <div className="flex gap-0.5 w-[52px]">
-          <span className="w-2 h-2 bg-red-500 rounded-full" />
+          <span className="text-sm text-zinc-400">—</span>
         </div>
       </div>
     );
@@ -365,7 +368,7 @@ function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }
         {Array.from({ length: max }, (_, i) => (
           <div
             key={i}
-            className={`w-1 h-3 rounded-sm ${i < rating ? 'bg-[#65C467]' : 'bg-zinc-200 dark:bg-zinc-600'}`}
+            className={`w-[3px] h-3 rounded-sm ${i < rating ? 'bg-[#65C467]' : 'bg-zinc-200 dark:bg-zinc-600'}`}
           />
         ))}
       </div>
@@ -383,6 +386,36 @@ function PlanIndicator({ followedPlan }: { followedPlan: boolean | null }) {
   return <span className="text-zinc-900 dark:text-zinc-100 text-sm">✗</span>;
 }
 
+function SetupTypePill({ name, color }: { name: string; color: string | null }) {
+  // Default color if none specified
+  const baseColor = color || '#6366f1';
+
+  // Convert hex to RGB for creating a light background
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : { r: 99, g: 102, b: 241 };
+  };
+
+  const rgb = hexToRgb(baseColor);
+  const bgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`;
+
+  return (
+    <span
+      className="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full whitespace-nowrap"
+      style={{
+        backgroundColor: bgColor,
+        color: baseColor,
+      }}
+    >
+      {name}
+    </span>
+  );
+}
+
 function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tradeId: number) => void }) {
   const pnl = trade.realized_pnl;
   const isWinner = pnl !== null && pnl > 0;
@@ -395,10 +428,10 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-    });
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear().toString().slice(-2);
+    return `${day}/${month}/${year}`;
   };
 
   const formatPnl = (pnl: number | null) => {
@@ -490,8 +523,12 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
       </td>
 
       {/* Setup Type */}
-      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100">
-        {trade.setup_type_name ?? '—'}
+      <td className="px-3 py-2">
+        {trade.setup_type_name ? (
+          <SetupTypePill name={trade.setup_type_name} color={trade.setup_type_color} />
+        ) : (
+          <span className="text-sm text-zinc-400">—</span>
+        )}
       </td>
 
       {/* Quality */}
