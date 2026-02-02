@@ -21,6 +21,11 @@ function calculateInlineStats(trades: TradeWithRating[]) {
       winners: 0,
       losers: 0,
       avgSetupRating: null,
+      planAdherence: null,
+      avgWin: null,
+      avgWinPct: null,
+      avgLoss: null,
+      avgLossPct: null,
     };
   }
 
@@ -36,6 +41,39 @@ function calculateInlineStats(trades: TradeWithRating[]) {
     ? Math.round((tradesWithRating.reduce((sum, t) => sum + (t.setup_rating || 0), 0) / tradesWithRating.length) * 10) / 10
     : null;
 
+  // Calculate plan adherence (only for trades with plan data)
+  const tradesWithPlanData = closedTrades.filter(t => t.followed_plan !== null);
+  const tradesFollowedPlan = tradesWithPlanData.filter(t => t.followed_plan === true);
+  const planAdherence = tradesWithPlanData.length > 0
+    ? Math.round((tradesFollowedPlan.length / tradesWithPlanData.length) * 100)
+    : null;
+
+  // Calculate average win (dollars and %)
+  const avgWin = winners.length > 0
+    ? Math.round(winners.reduce((sum, t) => sum + (t.realized_pnl || 0), 0) / winners.length)
+    : null;
+  const avgWinPct = winners.length > 0
+    ? Math.round((winners.reduce((sum, t) => {
+        if (t.entry_price && t.exit_price) {
+          return sum + ((t.exit_price - t.entry_price) / t.entry_price) * 100;
+        }
+        return sum;
+      }, 0) / winners.length) * 10) / 10
+    : null;
+
+  // Calculate average loss (dollars and %)
+  const avgLoss = losers.length > 0
+    ? Math.round(losers.reduce((sum, t) => sum + (t.realized_pnl || 0), 0) / losers.length)
+    : null;
+  const avgLossPct = losers.length > 0
+    ? Math.round((losers.reduce((sum, t) => {
+        if (t.entry_price && t.exit_price) {
+          return sum + ((t.exit_price - t.entry_price) / t.entry_price) * 100;
+        }
+        return sum;
+      }, 0) / losers.length) * 10) / 10
+    : null;
+
   return {
     netPnl: Math.round(netPnl * 100) / 100,
     winRate,
@@ -43,6 +81,11 @@ function calculateInlineStats(trades: TradeWithRating[]) {
     winners: winners.length,
     losers: losers.length,
     avgSetupRating,
+    planAdherence,
+    avgWin,
+    avgWinPct,
+    avgLoss,
+    avgLossPct,
   };
 }
 

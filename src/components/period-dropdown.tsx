@@ -1,13 +1,13 @@
 'use client';
 
-import { Root, Container, Trigger, Content, Item } from 'bloom-menu';
+import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
 
-export type Period = 'today' | 'yesterday' | 'week' | 'lastweek' | 'month' | 'lastmonth' | 'year' | 'lastyear' | 'all';
+export type Period = 'today' | 'yesterday' | 'week' | 'lastweek' | 'month' | 'lastmonth' | 'year' | 'lastyear' | 'all' | 'last10' | 'last20' | 'last50';
 
 interface PeriodOption {
   value: Period;
   label: string;
-  group?: 'calendar' | 'rolling';
+  group?: 'calendar' | 'rolling' | 'count';
 }
 
 const PERIOD_OPTIONS: PeriodOption[] = [
@@ -17,14 +17,139 @@ const PERIOD_OPTIONS: PeriodOption[] = [
   { value: 'lastweek', label: 'Last week', group: 'calendar' },
   { value: 'month', label: 'This month', group: 'calendar' },
   { value: 'lastmonth', label: 'Last month', group: 'calendar' },
-  { value: 'year', label: 'This year', group: 'calendar' },
+  { value: 'year', label: 'YTD', group: 'calendar' },
   { value: 'lastyear', label: 'Last year', group: 'calendar' },
   { value: 'all', label: 'All time' },
+  { value: 'last10', label: 'Last 10 trades', group: 'count' },
+  { value: 'last20', label: 'Last 20 trades', group: 'count' },
+  { value: 'last50', label: 'Last 50 trades', group: 'count' },
 ];
 
 interface PeriodDropdownProps {
   value: Period;
   onChange: (period: Period) => void;
+}
+
+// Primary periods shown as pills
+const PRIMARY_PERIODS: Period[] = ['week', 'lastweek', 'month', 'lastmonth', 'year'];
+
+// Secondary periods in the "More" dropdown - time-based
+const MORE_TIME_PERIODS: Period[] = ['today', 'yesterday', 'lastyear', 'all'];
+
+// Secondary periods in the "More" dropdown - trade count based
+const MORE_COUNT_PERIODS: Period[] = ['last10', 'last20', 'last50'];
+
+// All "More" periods combined
+const MORE_PERIODS: Period[] = [...MORE_TIME_PERIODS, ...MORE_COUNT_PERIODS];
+
+export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
+  const isMoreSelected = MORE_PERIODS.includes(value);
+  const selectedMoreOption = PERIOD_OPTIONS.find(o => o.value === value && MORE_PERIODS.includes(o.value));
+
+  // Calculate button width based on selected label
+  const moreButtonWidth = isMoreSelected
+    ? Math.max(80, (selectedMoreOption?.label.length || 4) * 7 + 45)
+    : 80;
+
+  return (
+    <div className="flex items-center gap-2">
+      {PRIMARY_PERIODS.map(period => {
+        const option = PERIOD_OPTIONS.find(o => o.value === period);
+        if (!option) return null;
+
+        const isSelected = value === period;
+        return (
+          <button
+            key={period}
+            onClick={() => onChange(period)}
+            className={`px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer ${
+              isSelected
+                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+
+      {/* More dropdown for additional periods */}
+      <Root direction="bottom" anchor="end">
+        <Container
+          className="bloom-no-shadow bg-white dark:bg-zinc-900"
+          buttonSize={{ width: moreButtonWidth, height: 32 }}
+          menuWidth={160}
+          menuRadius={12}
+          buttonRadius={16}
+        >
+          <Trigger className={`inline-flex items-center gap-1.5 px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer ${
+            isMoreSelected
+              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+              : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+          }`}>
+            {isMoreSelected ? selectedMoreOption?.label : 'More'}
+            <svg
+              className={`w-4 h-4 ${isMoreSelected ? 'text-white dark:text-zinc-900' : 'text-zinc-400'}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </Trigger>
+
+          <Content className="p-1">
+            {/* Time range section */}
+            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400 uppercase tracking-wide">Time range</div>
+            {MORE_TIME_PERIODS.map(period => {
+              const option = PERIOD_OPTIONS.find(o => o.value === period);
+              if (!option) return null;
+
+              return (
+                <Item
+                  key={period}
+                  onSelect={() => onChange(period)}
+                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ${
+                    value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  {option.label}
+                  {value === period && (
+                    <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
+                  )}
+                </Item>
+              );
+            })}
+
+            {/* Divider */}
+            <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 mx-1" />
+
+            {/* Trade samples section */}
+            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400 uppercase tracking-wide">Trade samples</div>
+            {MORE_COUNT_PERIODS.map(period => {
+              const option = PERIOD_OPTIONS.find(o => o.value === period);
+              if (!option) return null;
+
+              return (
+                <Item
+                  key={period}
+                  onSelect={() => onChange(period)}
+                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ${
+                    value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  {option.label}
+                  {value === period && (
+                    <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
+                  )}
+                </Item>
+              );
+            })}
+          </Content>
+        </Container>
+      </Root>
+    </div>
+  );
 }
 
 export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
@@ -53,7 +178,7 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
           </svg>
         </Trigger>
 
-        <Content className="p-1" style={{ marginBottom: '-8px' }}>
+        <Content className="p-1">
           <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Period</div>
 
           {calendarOptions.map(option => (
@@ -91,6 +216,19 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
       </Container>
     </Root>
   );
+}
+
+export function getTradeLimit(period: Period): number | null {
+  switch (period) {
+    case 'last10':
+      return 10;
+    case 'last20':
+      return 20;
+    case 'last50':
+      return 50;
+    default:
+      return null;
+  }
 }
 
 export function getDateRange(period: Period): { from: string | null; to: string | null } {
@@ -145,6 +283,9 @@ export function getDateRange(period: Period): { from: string | null; to: string 
       return { from: formatDate(startOfLastYear), to: formatDate(endOfLastYear) };
     }
 
+    case 'last10':
+    case 'last20':
+    case 'last50':
     case 'all':
     default:
       return { from: null, to: null };

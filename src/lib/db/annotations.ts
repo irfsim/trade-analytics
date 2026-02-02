@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType, MarketRegime } from '@/types/database';
+import type { TradeAnnotation, APlusChecklist, TradeGrade } from '@/types/database';
 import { emptyChecklist } from '@/types/database';
 
 /**
@@ -95,12 +95,10 @@ export async function updateGrade(tradeId: number, grade: TradeGrade): Promise<v
  */
 export async function updateSetupType(
   tradeId: number,
-  setupType: SetupType,
-  otherDescription?: string
+  setupTypeId: number | null
 ): Promise<void> {
   await upsertAnnotation(tradeId, {
-    setup_type: setupType,
-    setup_type_other: setupType === 'OTHER' ? otherDescription : null,
+    setup_type_id: setupTypeId,
   });
 }
 
@@ -226,11 +224,11 @@ export async function getAnnotationsByGrade(
 /**
  * Get annotations by setup type
  */
-export async function getAnnotationsBySetupType(setupType: SetupType): Promise<TradeAnnotation[]> {
+export async function getAnnotationsBySetupType(setupTypeId: number): Promise<TradeAnnotation[]> {
   const { data, error } = await supabase
     .from('trade_annotations')
     .select('*')
-    .eq('setup_type', setupType);
+    .eq('setup_type_id', setupTypeId);
 
   if (error) {
     throw new Error(`Failed to fetch annotations: ${error.message}`);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Root, Container, Trigger, Content, Item } from 'bloom-menu';
+import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
 
 interface Account {
   account_id: string;
@@ -63,7 +63,7 @@ export function AccountDropdown({ value, onChange }: AccountDropdownProps) {
           </svg>
         </Trigger>
 
-        <Content className="p-1" style={{ marginBottom: '-8px' }}>
+        <Content className="p-1">
           <Item
             onSelect={() => onChange(null)}
             className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-zinc-100 rounded-lg cursor-pointer ${

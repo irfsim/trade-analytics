@@ -5,9 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Trades', href: '/trades', icon: ListIcon },
   { name: 'Import', href: '/import', icon: UploadIcon },
-  { name: 'Stats', href: '/stats', icon: ChartIcon },
 ];
 
 export function Sidebar() {

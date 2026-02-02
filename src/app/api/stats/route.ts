@@ -9,8 +9,12 @@ import {
 } from '@/lib/analytics';
 import type { Trade, TradeAnnotation } from '@/types/database';
 
+interface AnnotationWithSetupName extends TradeAnnotation {
+  setup_type_name?: string | null;
+}
+
 interface TradeWithAnnotation extends Trade {
-  annotation?: TradeAnnotation | null;
+  annotation?: AnnotationWithSetupName | null;
 }
 
 export async function GET(request: NextRequest) {
@@ -23,12 +27,12 @@ export async function GET(request: NextRequest) {
     const segmentBy = searchParams.get('segmentBy') as 'setup_type' | 'market_regime' | 'grade' | undefined;
     const planOnly = searchParams.get('planOnly') === 'true';
 
-    // Build query
+    // Build query - include setup_types join for setup type name
     let query = supabase
       .from('trades')
       .select(`
         *,
-        trade_annotations (*)
+        trade_annotations (*, setup_types (name))
       `)
       .eq('status', 'CLOSED');
 
@@ -53,11 +57,20 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform data - handle the joined annotation
-    const allTrades: TradeWithAnnotation[] = (data || []).map((row) => ({
-      ...row,
-      annotation: row.trade_annotations?.[0] || null,
-      trade_annotations: undefined,
-    }));
+    const allTrades: TradeWithAnnotation[] = (data || []).map((row) => {
+      const annotation = row.trade_annotations?.[0];
+      return {
+        ...row,
+        annotation: annotation
+          ? {
+              ...annotation,
+              setup_type_name: annotation.setup_types?.name || null,
+              setup_types: undefined,
+            }
+          : null,
+        trade_annotations: undefined,
+      };
+    });
 
     // Filter by plan compliance if requested
     const trades = planOnly

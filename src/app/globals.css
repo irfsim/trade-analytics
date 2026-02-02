@@ -3,24 +3,48 @@
 :root {
   --background: #fafafa;
   --foreground: #18181b;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.06);
+  --muted: #71717a;
+  --muted-bg: #f4f4f5;
+  --accent: #3b82f6;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --progress-bg: #e4e4e7;
+  --rating-bar: #00C3FF;
+}
+
+.dark {
+  --background: #0D0D0C;
+  --foreground: #E1E4E8;
+  --card-bg: #161616;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --muted: #8b949e;
+  --muted-bg: #1c1c1c;
+  --accent: #79B8FF;
+  --success: #3fb950;
+  --danger: #f85149;
+  --progress-bg: #30363d;
+  --rating-bar: #00C3FF;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-geist);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-geist), system-ui, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Layered shadow for bloom-menu (overrides framer-motion inline styles) */
 .bloom-no-shadow {
   box-shadow:
-    0px 0px 0px 1px rgba(0, 0, 0, 0.06),
+    0px 0px 0px 1px var(--card-border),
     0px 1px 2px -1px rgba(0, 0, 0, 0.06),
     0px 2px 4px 0px rgba(0, 0, 0, 0.04) !important;
   transition: box-shadow 0.15s ease;
@@ -28,22 +52,43 @@ body {
 
 .bloom-no-shadow:hover {
   box-shadow:
-    0px 0px 0px 1px rgba(0, 0, 0, 0.08),
+    0px 0px 0px 1px var(--card-border),
     0px 1px 2px -1px rgba(0, 0, 0, 0.08),
     0px 2px 4px 0px rgba(0, 0, 0, 0.06) !important;
+}
+
+.dark .bloom-no-shadow {
+  box-shadow:
+    0px 0px 0px 1px var(--card-border),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.3),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .bloom-no-shadow:hover {
+  box-shadow:
+    0px 0px 0px 1px rgba(255, 255, 255, 0.12),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.4),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Layered shadow for cards and tables */
 .shadow-card {
   box-shadow:
-    0px 0px 0px 1px rgba(0, 0, 0, 0.06),
+    0px 0px 0px 1px var(--card-border),
     0px 1px 2px -1px rgba(0, 0, 0, 0.06),
     0px 2px 4px 0px rgba(0, 0, 0, 0.04);
 }
 
+.dark .shadow-card {
+  box-shadow:
+    0px 0px 0px 1px var(--card-border),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.3),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
 .shadow-card-interactive {
   box-shadow:
-    0px 0px 0px 1px rgba(0, 0, 0, 0.06),
+    0px 0px 0px 1px var(--card-border),
     0px 1px 2px -1px rgba(0, 0, 0, 0.06),
     0px 2px 4px 0px rgba(0, 0, 0, 0.04);
   transition: box-shadow 0.15s ease;
@@ -51,7 +96,21 @@ body {
 
 .shadow-card-interactive:hover {
   box-shadow:
-    0px 0px 0px 1px rgba(0, 0, 0, 0.08),
+    0px 0px 0px 1px var(--card-border),
     0px 1px 2px -1px rgba(0, 0, 0, 0.08),
     0px 2px 4px 0px rgba(0, 0, 0, 0.06);
+}
+
+.dark .shadow-card-interactive {
+  box-shadow:
+    0px 0px 0px 1px var(--card-border),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.3),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+.dark .shadow-card-interactive:hover {
+  box-shadow:
+    0px 0px 0px 1px rgba(255, 255, 255, 0.12),
+    0px 1px 2px -1px rgba(0, 0, 0, 0.4),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.3);
 }

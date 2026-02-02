@@ -62,7 +62,14 @@ export interface TradeLeg {
   executed_at: string;
 }
 
-export type SetupType = 'EP' | 'FLAG' | 'BASE_BREAKOUT' | 'OTHER';
+// Setup types are now stored in the setup_types table
+export interface SetupType {
+  id: number;
+  name: string;
+  description: string | null;
+  color: string | null;
+  created_at: string;
+}
 export type MarketRegime = 'STRONG_UPTREND' | 'UPTREND_CHOP' | 'SIDEWAYS' | 'DOWNTREND' | 'CORRECTION';
 export type TradeGrade = 'A+' | 'A' | 'B' | 'C' | 'F';
 
@@ -114,8 +121,7 @@ export interface TradeAnnotation {
   should_have_taken: boolean | null;
   followed_plan: boolean | null;
   setup_rating: number | null;
-  setup_type: SetupType | null;
-  setup_type_other: string | null;
+  setup_type_id: number | null;
   market_regime: MarketRegime | null;
   initial_risk_dollars: number | null;
   initial_stop_price: number | null;

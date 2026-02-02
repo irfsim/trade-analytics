@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnnotation, upsertAnnotation, calculateChecklistScore, suggestGrade } from '@/lib/db/annotations';
-import type { APlusChecklist, TradeGrade, SetupType, MarketRegime } from '@/types/database';
+import type { APlusChecklist, TradeGrade, MarketRegime } from '@/types/database';
 
 export async function GET(
   request: NextRequest,
@@ -56,8 +56,9 @@ export async function PUT(
     const annotationData: {
       grade?: TradeGrade;
       should_have_taken?: boolean;
-      setup_type?: SetupType;
-      setup_type_other?: string;
+      setup_rating?: number;
+      followed_plan?: boolean;
+      setup_type_id?: number | null;
       market_regime?: MarketRegime;
       initial_risk_dollars?: number;
       initial_stop_price?: number;
@@ -68,8 +69,9 @@ export async function PUT(
 
     if (body.grade !== undefined) annotationData.grade = body.grade;
     if (body.should_have_taken !== undefined) annotationData.should_have_taken = body.should_have_taken;
-    if (body.setup_type !== undefined) annotationData.setup_type = body.setup_type;
-    if (body.setup_type_other !== undefined) annotationData.setup_type_other = body.setup_type_other;
+    if (body.setup_rating !== undefined) annotationData.setup_rating = body.setup_rating;
+    if (body.followed_plan !== undefined) annotationData.followed_plan = body.followed_plan;
+    if (body.setup_type_id !== undefined) annotationData.setup_type_id = body.setup_type_id;
     if (body.market_regime !== undefined) annotationData.market_regime = body.market_regime;
     if (body.initial_risk_dollars !== undefined) annotationData.initial_risk_dollars = body.initial_risk_dollars;
     if (body.initial_stop_price !== undefined) annotationData.initial_stop_price = body.initial_stop_price;

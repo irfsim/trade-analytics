@@ -82,6 +82,21 @@ CREATE TABLE IF NOT EXISTS trade_legs (
 
 CREATE INDEX IF NOT EXISTS idx_trade_legs_trade ON trade_legs(trade_id);
 
+-- Setup types (global, user-defined trading setups)
+CREATE TABLE IF NOT EXISTS setup_types (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Seed default setup types
+INSERT INTO setup_types (name) VALUES
+    ('Flag'),
+    ('Base Breakout'),
+    ('EP')
+ON CONFLICT (name) DO NOTHING;
+
 -- Trade annotations (A+ checklist and notes)
 CREATE TABLE IF NOT EXISTS trade_annotations (
     trade_id INTEGER PRIMARY KEY REFERENCES trades(id) ON DELETE CASCADE,
@@ -90,8 +105,7 @@ CREATE TABLE IF NOT EXISTS trade_annotations (
     should_have_taken BOOLEAN,
     followed_plan BOOLEAN,
     setup_rating INTEGER CHECK (setup_rating >= 0 AND setup_rating <= 9),
-    setup_type TEXT CHECK (setup_type IN ('EP', 'FLAG', 'BASE_BREAKOUT', 'OTHER')),
-    setup_type_other TEXT,
+    setup_type_id INTEGER REFERENCES setup_types(id) ON DELETE SET NULL,
     market_regime TEXT CHECK (market_regime IN ('STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS', 'DOWNTREND', 'CORRECTION')),
 
     initial_risk_dollars DECIMAL(10, 2),
@@ -212,6 +226,7 @@ ALTER TABLE executions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trades ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trade_legs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trade_annotations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE setup_types ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE weekly_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE monthly_summaries ENABLE ROW LEVEL SECURITY;
@@ -249,6 +264,12 @@ CREATE POLICY "Allow read access" ON trade_annotations FOR SELECT USING (true);
 CREATE POLICY "Allow insert" ON trade_annotations FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow update" ON trade_annotations FOR UPDATE USING (true);
 CREATE POLICY "Allow delete" ON trade_annotations FOR DELETE USING (true);
+
+-- Setup types
+CREATE POLICY "Allow read access" ON setup_types FOR SELECT USING (true);
+CREATE POLICY "Allow insert" ON setup_types FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update" ON setup_types FOR UPDATE USING (true);
+CREATE POLICY "Allow delete" ON setup_types FOR DELETE USING (true);
 
 -- Summaries (read-only for most cases, but allow writes)
 CREATE POLICY "Allow read access" ON daily_summaries FOR SELECT USING (true);

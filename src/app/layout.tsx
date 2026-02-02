@@ -2,11 +2,13 @@
 import type React from "react"
 
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
+import { AgentationProvider } from "@/components/agentation-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
-const inter = Inter({
-  variable: "--font-inter",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
 });
 
@@ -21,15 +23,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-     <body
-  className={`${inter.variable} font-sans antialiased bg-zinc-50 text-zinc-900`}
->
-  <main className="min-h-screen bg-white">
-    {children}
-  </main>
-</body>
-
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geist.variable} font-sans antialiased`}
+        style={{ background: 'var(--background)', color: 'var(--foreground)' }}
+      >
+        <ThemeProvider>
+          <main className="min-h-screen" style={{ background: 'var(--card-bg)' }}>
+            {children}
+          </main>
+        </ThemeProvider>
+        <AgentationProvider />
+      </body>
     </html>
   );
 }

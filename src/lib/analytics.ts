@@ -1,7 +1,11 @@
 import type { Trade, TradeAnnotation, PerformanceMetrics, APlusChecklist } from '@/types/database';
 
+interface AnnotationWithSetupName extends TradeAnnotation {
+  setup_type_name?: string | null;
+}
+
 interface TradeWithAnnotation extends Trade {
-  annotation?: TradeAnnotation | null;
+  annotation?: AnnotationWithSetupName | null;
 }
 
 /**
@@ -192,7 +196,12 @@ export function calculateSegmentedMetrics(
   const segments: Record<string, TradeWithAnnotation[]> = {};
 
   for (const trade of trades) {
-    const value = trade.annotation?.[segmentBy] || 'Unknown';
+    let value: string;
+    if (segmentBy === 'setup_type') {
+      value = trade.annotation?.setup_type_name || 'Unknown';
+    } else {
+      value = trade.annotation?.[segmentBy] || 'Unknown';
+    }
     if (!segments[value]) {
       segments[value] = [];
     }

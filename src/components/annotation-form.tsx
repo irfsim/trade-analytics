@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Root, Container, Trigger, Content, Item } from 'bloom-menu';
-import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType, MarketRegime } from '@/types/database';
+import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
+import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType as SetupTypeInterface, MarketRegime } from '@/types/database';
 import { emptyChecklist } from '@/types/database';
 
 interface BloomSelectProps<T extends string> {
@@ -12,13 +12,73 @@ interface BloomSelectProps<T extends string> {
   placeholder?: string;
 }
 
+function SetupTypeSelect({
+  value,
+  onChange,
+  setupTypes,
+}: {
+  value: number | null;
+  onChange: (value: number | null) => void;
+  setupTypes: SetupTypeInterface[];
+}) {
+  const selectedType = setupTypes.find(t => t.id === value);
+
+  return (
+    <Root direction="bottom" anchor="start">
+      <Container
+        className="bg-white border border-zinc-200 shadow-lg"
+        buttonSize={{ width: 200, height: 40 }}
+        menuWidth={200}
+        menuRadius={8}
+        buttonRadius={8}
+      >
+        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 transition-colors">
+          <span className={selectedType ? 'text-zinc-900' : 'text-zinc-400'}>
+            {selectedType?.name || 'Select...'}
+          </span>
+          <svg
+            className="w-4 h-4 text-zinc-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </Trigger>
+
+        <Content className="p-1 max-h-60 overflow-y-auto">
+          <Item
+            onSelect={() => onChange(null)}
+            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 rounded-lg cursor-pointer ${
+              value === null ? 'text-zinc-900 font-medium' : 'text-zinc-500'
+            }`}
+          >
+            Select...
+          </Item>
+          {setupTypes.map(type => (
+            <Item
+              key={type.id}
+              onSelect={() => onChange(type.id)}
+              className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 rounded-lg cursor-pointer ${
+                value === type.id ? 'text-zinc-900 font-medium' : 'text-zinc-600'
+              }`}
+            >
+              {type.name}
+            </Item>
+          ))}
+        </Content>
+      </Container>
+    </Root>
+  );
+}
+
 function BloomSelect<T extends string>({ value, onChange, options, placeholder = 'Select...' }: BloomSelectProps<T>) {
   const selectedOption = options.find(o => o.value === value);
 
   return (
     <Root direction="bottom" anchor="start">
       <Container
-        className="bg-white border border-zinc-200 shadow-sm"
+        className="bg-white border border-zinc-200 shadow-lg"
         buttonSize={{ width: 200, height: 40 }}
         menuWidth={200}
         menuRadius={8}
@@ -38,7 +98,7 @@ function BloomSelect<T extends string>({ value, onChange, options, placeholder =
           </svg>
         </Trigger>
 
-        <Content className="p-1 max-h-60 overflow-y-auto" style={{ marginBottom: '-8px' }}>
+        <Content className="p-1 max-h-60 overflow-y-auto">
           <Item
             onSelect={() => onChange(null)}
             className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 rounded-lg cursor-pointer ${
@@ -70,12 +130,6 @@ interface AnnotationFormProps {
   entryPrice: number;
 }
 
-const SETUP_TYPES: { value: SetupType; label: string }[] = [
-  { value: 'EP', label: 'Episodic Pivot (EP)' },
-  { value: 'FLAG', label: 'Bull Flag' },
-  { value: 'BASE_BREAKOUT', label: 'Base Breakout' },
-  { value: 'OTHER', label: 'Other' },
-];
 
 const MARKET_REGIMES: { value: MarketRegime; label: string }[] = [
   { value: 'STRONG_UPTREND', label: 'Strong Uptrend' },
@@ -90,14 +144,30 @@ const GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C', 'F'];
 export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: AnnotationFormProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [setupTypes, setSetupTypes] = useState<SetupTypeInterface[]>([]);
+
+  // Fetch setup types
+  useEffect(() => {
+    async function loadSetupTypes() {
+      try {
+        const res = await fetch('/api/setup-types');
+        if (res.ok) {
+          const data = await res.json();
+          setSetupTypes(data.setupTypes || []);
+        }
+      } catch (error) {
+        console.error('Failed to load setup types:', error);
+      }
+    }
+    loadSetupTypes();
+  }, []);
 
   // Form state
   const [grade, setGrade] = useState<TradeGrade | null>(existingAnnotation?.grade || null);
   const [followedPlan, setFollowedPlan] = useState<boolean | null>(
     existingAnnotation?.followed_plan ?? null
   );
-  const [setupType, setSetupType] = useState<SetupType | null>(existingAnnotation?.setup_type || null);
-  const [setupTypeOther, setSetupTypeOther] = useState(existingAnnotation?.setup_type_other || '');
+  const [setupTypeId, setSetupTypeId] = useState<number | null>(existingAnnotation?.setup_type_id || null);
   const [marketRegime, setMarketRegime] = useState<MarketRegime | null>(
     existingAnnotation?.market_regime || null
   );
@@ -131,8 +201,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
           grade,
           setup_rating: setupRating,
           followed_plan: followedPlan,
-          setup_type: setupType,
-          setup_type_other: setupTypeOther,
+          setup_type_id: setupTypeId,
           market_regime: marketRegime,
           initial_risk_dollars: initialRisk ? parseFloat(initialRisk) : null,
           initial_stop_price: stopPrice ? parseFloat(stopPrice) : null,
@@ -244,21 +313,11 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
         {/* Setup Type */}
         <div>
           <label className="block text-sm font-medium text-zinc-600 mb-2">Setup Type</label>
-          <BloomSelect
-            value={setupType}
-            onChange={setSetupType}
-            options={SETUP_TYPES}
-            placeholder="Select..."
+          <SetupTypeSelect
+            value={setupTypeId}
+            onChange={setSetupTypeId}
+            setupTypes={setupTypes}
           />
-          {setupType === 'OTHER' && (
-            <input
-              type="text"
-              value={setupTypeOther}
-              onChange={(e) => setSetupTypeOther(e.target.value)}
-              placeholder="Describe setup..."
-              className="mt-2 w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400"
-            />
-          )}
         </div>
 
         {/* Market Regime */}
