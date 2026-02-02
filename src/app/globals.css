@@ -133,6 +133,15 @@ body {
   table-layout: fixed;
 }
 
+.trade-tbody td {
+  display: table-cell;
+}
+
+.trade-tbody td.text-right,
+.trade-thead th.text-right {
+  text-align: right;
+}
+
 .trade-thead {
   display: block;
 }
@@ -141,4 +150,8 @@ body {
   display: table;
   width: 100%;
   table-layout: fixed;
+}
+
+.trade-thead th {
+  display: table-cell;
 }

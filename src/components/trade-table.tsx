@@ -63,7 +63,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
 
   if (loading) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
           <div className="flex items-center gap-4">
@@ -87,7 +87,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
 
   if (trades.length === 0) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
           <div className="flex items-center gap-4">
@@ -111,7 +111,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Header row - outside the table card */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
@@ -207,7 +207,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
                   onSort={handleSort}
                   className="text-right"
                 />
-                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
+                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap w-14">
                   Days
                 </th>
                 <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
@@ -433,38 +433,48 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
       </td>
 
       {/* Value */}
-      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
-        {trade.entry_price !== null
-          ? `$${(trade.total_shares * trade.entry_price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-          : '—'}
+      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
+        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+          {trade.entry_price !== null
+            ? `$${(trade.total_shares * trade.entry_price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+            : '—'}
+        </span>
       </td>
 
       {/* Size % */}
-      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
-        {trade.position_size_pct !== null
-          ? `${trade.position_size_pct.toFixed(1)}%`
-          : '—'}
+      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
+        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+          {trade.position_size_pct !== null
+            ? `${trade.position_size_pct.toFixed(1)}%`
+            : '—'}
+        </span>
       </td>
 
       {/* % Change */}
-      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
-        {formatPct(pctChange)}
+      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
+        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+          {formatPct(pctChange)}
+        </span>
       </td>
 
       {/* P&L */}
-      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
-        {formatPnl(pnl)}
+      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
+        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+          {formatPnl(pnl)}
+        </span>
       </td>
 
       {/* Acct % */}
-      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
-        {trade.account_pct !== null
-          ? `${trade.account_pct >= 0 ? '+' : ''}${trade.account_pct.toFixed(1)}%`
-          : '—'}
+      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
+        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+          {trade.account_pct !== null
+            ? `${trade.account_pct >= 0 ? '+' : ''}${trade.account_pct.toFixed(1)}%`
+            : '—'}
+        </span>
       </td>
 
       {/* Days */}
-      <td className="px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100">
+      <td className="px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100 w-14">
         {(() => {
           const entry = new Date(trade.entry_datetime);
           const exit = trade.exit_datetime ? new Date(trade.exit_datetime) : new Date();
