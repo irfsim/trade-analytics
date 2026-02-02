@@ -13,7 +13,7 @@ interface TradeTableProps {
 
 export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) {
   const [activeTab, setActiveTab] = useState<TradeTab>('closed');
-  const [sortField, setSortField] = useState<keyof TradeWithRating>('entry_datetime');
+  const [sortField, setSortField] = useState<keyof TradeWithRating>('realized_pnl');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const openTrades = trades.filter(t => t.status === 'OPEN');
@@ -30,33 +30,56 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
   };
 
   const sortedTrades = [...filteredTrades].sort((a, b) => {
-    const aVal = a[sortField];
-    const bVal = b[sortField];
+    let aVal: number | null = null;
+    let bVal: number | null = null;
+
+    // Handle special computed fields
+    if (sortField === 'entry_datetime') {
+      aVal = new Date(a.entry_datetime).getTime();
+      bVal = new Date(b.entry_datetime).getTime();
+    } else if (sortField === 'total_shares') {
+      // Sort by position value (shares * entry price)
+      aVal = a.entry_price !== null ? a.total_shares * a.entry_price : null;
+      bVal = b.entry_price !== null ? b.total_shares * b.entry_price : null;
+    } else if (sortField === 'exit_price') {
+      // Sort by PnL % (percentage change)
+      aVal = a.exit_price && a.entry_price ? ((a.exit_price - a.entry_price) / a.entry_price) * 100 : null;
+      bVal = b.exit_price && b.entry_price ? ((b.exit_price - b.entry_price) / b.entry_price) * 100 : null;
+    } else if (sortField === 'realized_pnl' || sortField === 'account_pct' || sortField === 'position_size_pct') {
+      aVal = a[sortField];
+      bVal = b[sortField];
+    } else {
+      const rawA = a[sortField];
+      const rawB = b[sortField];
+      aVal = typeof rawA === 'number' ? rawA : null;
+      bVal = typeof rawB === 'number' ? rawB : null;
+    }
 
     if (aVal === null || aVal === undefined) return 1;
     if (bVal === null || bVal === undefined) return -1;
 
-    if (typeof aVal === 'string' && typeof bVal === 'string') {
-      return sortDir === 'asc'
-        ? aVal.localeCompare(bVal)
-        : bVal.localeCompare(aVal);
-    }
-
-    if (typeof aVal === 'number' && typeof bVal === 'number') {
-      return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
-    }
-
-    return 0;
+    return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
   });
 
   if (loading) {
     return (
-      <div className="bg-white shadow-card rounded-xl overflow-hidden">
-        <div className="animate-pulse">
-          <div className="h-12 bg-zinc-50" />
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-14 border-t border-zinc-100 bg-white" />
-          ))}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-zinc-400">Open</span>
+            <span className="text-sm font-medium text-zinc-900">Closed</span>
+          </div>
+        </div>
+        <div className="bg-[#FAFAFA] dark:bg-zinc-800 shadow-card rounded-2xl overflow-hidden">
+          <div className="animate-pulse">
+            <div className="h-10 bg-[#FAFAFA] dark:bg-zinc-800" />
+            <div className="bg-white dark:bg-zinc-900">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-10 border-t border-zinc-100 dark:border-zinc-800" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -64,51 +87,60 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
 
   if (trades.length === 0) {
     return (
-      <div className="bg-white shadow-card rounded-xl p-12 text-center">
-        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-zinc-100 flex items-center justify-center">
-          <svg className="w-6 h-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-zinc-400">Open</span>
+            <span className="text-sm font-medium text-zinc-900">Closed</span>
+          </div>
         </div>
-        <p className="text-zinc-900 font-medium mb-1">No trades found</p>
-        <p className="text-zinc-500 text-sm">
-          Import your IBKR Flex report to get started
-        </p>
+        <div className="bg-[#FAFAFA] dark:bg-zinc-800 shadow-card rounded-2xl p-12 text-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+            <svg className="w-6 h-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <p className="text-zinc-900 dark:text-zinc-100 font-medium mb-1">No trades found</p>
+          <p className="text-zinc-500 text-sm">
+            Import your IBKR Flex report to get started
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
+      {/* Header row - outside the table card */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setActiveTab('open')}
+            className={`text-sm font-medium transition-colors cursor-pointer ${
+              activeTab === 'open' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
+            }`}
+          >
+            Open
+          </button>
+          <button
+            onClick={() => setActiveTab('closed')}
+            className={`text-sm font-medium transition-colors cursor-pointer ${
+              activeTab === 'closed' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
+            }`}
+          >
+            Closed
+          </button>
+        </div>
+      </div>
+
       {/* Empty state for filtered view */}
       {sortedTrades.length === 0 ? (
-        <div className="bg-white shadow-card rounded-xl overflow-hidden">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setActiveTab('closed')}
-                className={`text-sm font-medium transition-colors ${
-                  activeTab === 'closed' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
-                }`}
-              >
-                Closed
-              </button>
-              <button
-                onClick={() => setActiveTab('open')}
-                className={`text-sm font-medium transition-colors ${
-                  activeTab === 'open' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
-                }`}
-              >
-                Open
-              </button>
-            </div>
-          </div>
-          <div className="p-12 text-center">
-            <p className="text-zinc-500 text-sm">
-              {activeTab === 'open' ? 'No open positions' : 'No closed trades'}
-            </p>
-          </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl p-12 text-center">
+          <p className="text-zinc-500 text-sm">
+            {activeTab === 'open' ? 'No open positions' : 'No closed trades'}
+          </p>
         </div>
       ) : (
         <>
@@ -120,43 +152,21 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
           </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white shadow-card rounded-xl overflow-hidden">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <h3 className="text-base font-semibold text-zinc-900">Trades</h3>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setActiveTab('closed')}
-              className={`text-sm font-medium transition-colors ${
-                activeTab === 'closed' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
-              }`}
-            >
-              Closed
-            </button>
-            <button
-              onClick={() => setActiveTab('open')}
-              className={`text-sm font-medium transition-colors ${
-                activeTab === 'open' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
-              }`}
-            >
-              Open
-            </button>
-          </div>
-        </div>
+      <div className="hidden md:block bg-[#FAFAFA] dark:bg-zinc-800 rounded-2xl p-1">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead>
-              <tr className="h-9">
+            <thead className="trade-thead">
+              <tr>
+                <th className="pl-5 pr-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
+                  Symbol
+                </th>
                 <SortableHeader
                   label="Date"
                   field="entry_datetime"
                   currentField={sortField}
                   sortDir={sortDir}
                   onSort={handleSort}
-                  className="pl-4"
                 />
-                <th className="px-2 py-2 text-xs font-medium text-zinc-500 text-left whitespace-nowrap">
-                  Symbol
-                </th>
                 <SortableHeader
                   label="Value"
                   field="total_shares"
@@ -165,11 +175,24 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
                   onSort={handleSort}
                   className="text-right"
                 />
-                <th className="px-2 py-2 text-xs font-medium text-zinc-500 text-right whitespace-nowrap">
-                  Size %
-                </th>
                 <SortableHeader
-                  label="%Chg"
+                  label="% of Acct"
+                  field="position_size_pct"
+                  currentField={sortField}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                />
+                <SortableHeader
+                  label="PnL %"
+                  field="exit_price"
+                  currentField={sortField}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  className="text-right"
+                />
+                <SortableHeader
+                  label="PnL $"
                   field="realized_pnl"
                   currentField={sortField}
                   sortDir={sortDir}
@@ -177,25 +200,28 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
                   className="text-right"
                 />
                 <SortableHeader
-                  label="P&L"
-                  field="realized_pnl"
+                  label="Acct %"
+                  field="account_pct"
                   currentField={sortField}
                   sortDir={sortDir}
                   onSort={handleSort}
                   className="text-right"
                 />
-                <th className="px-2 py-2 text-xs font-medium text-zinc-500 text-right whitespace-nowrap">
-                  Acct %
+                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
+                  Days
                 </th>
-                <th className="px-2 py-2 text-xs font-medium text-zinc-500 text-left whitespace-nowrap">
+                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
                   Setup
                 </th>
-                <th className="pl-2 pr-4 py-2 text-xs font-medium text-zinc-500 text-left whitespace-nowrap">
+                <th className="px-3 py-4 text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
+                  Quality
+                </th>
+                <th className="pl-3 pr-5 py-4 text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
                   Plan
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="trade-tbody bg-white dark:bg-zinc-900 [&>tr:last-child]:border-b-0">
               {sortedTrades.map((trade, index) => (
                 <TradeRow
                   key={trade.id}
@@ -295,14 +321,28 @@ function SortableHeader({
 
   return (
     <th
-      className={`px-2 py-2 text-xs font-medium text-zinc-500 cursor-pointer hover:text-zinc-900 transition-colors select-none whitespace-nowrap ${className}`}
+      className={`px-3 py-4 text-sm font-normal cursor-pointer select-none whitespace-nowrap group ${
+        isActive ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+      } transition-colors ${className}`}
       onClick={() => onSort(field)}
     >
       <div className={`flex items-center gap-1 ${className.includes('text-right') ? 'justify-end' : className.includes('text-center') ? 'justify-center' : ''}`}>
+        <svg
+          className={`w-3 h-3 transition-opacity ${
+            isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+          }`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          {isActive && sortDir === 'asc' ? (
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          )}
+        </svg>
         {label}
-        <span className={`text-xs ${isActive ? 'text-zinc-700' : 'text-zinc-300'}`}>
-          {isActive ? (sortDir === 'asc' ? '▲' : '▼') : '▼'}
-        </span>
       </div>
     </th>
   );
@@ -313,22 +353,13 @@ function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }
     return <span className="w-2 h-2 bg-red-500 rounded-full inline-block" />;
   }
 
-  const getBarColor = (rating: number): string => {
-    if (rating >= 8) return 'bg-emerald-500';
-    if (rating >= 6) return 'bg-amber-500';
-    if (rating >= 4) return 'bg-orange-500';
-    return 'bg-red-500';
-  };
-
-  const filledColor = getBarColor(rating);
-
   return (
     <div className="flex items-center gap-1">
       <div className="flex gap-0.5">
         {Array.from({ length: max }, (_, i) => (
           <div
             key={i}
-            className={`w-1 h-3 rounded-sm ${i < rating ? filledColor : 'bg-zinc-200'}`}
+            className={`w-1 h-3 rounded-sm ${i < rating ? 'bg-[#65C467]' : 'bg-zinc-200 dark:bg-zinc-600'}`}
           />
         ))}
       </div>
@@ -341,9 +372,9 @@ function PlanIndicator({ followedPlan }: { followedPlan: boolean | null }) {
     return <span className="text-xs text-zinc-400">—</span>;
   }
   if (followedPlan) {
-    return <span className="text-emerald-600 text-sm">✓</span>;
+    return <span className="text-zinc-900 dark:text-zinc-100 text-sm">✓</span>;
   }
-  return <span className="text-red-600 text-sm">✗</span>;
+  return <span className="text-zinc-900 dark:text-zinc-100 text-sm">✗</span>;
 }
 
 function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tradeId: number) => void }) {
@@ -385,64 +416,75 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
   return (
     <tr
       onClick={() => onSelect?.(trade.id)}
-      className="border-b border-zinc-100 hover:bg-zinc-50 transition-colors cursor-pointer h-9 bg-white"
+      className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer h-10"
     >
-      {/* Date */}
-      <td className="pl-4 pr-2 py-2 whitespace-nowrap">
-        <span className="text-zinc-900 text-sm">
-          {formatDate(trade.entry_datetime)}
-        </span>
-      </td>
-
       {/* Symbol */}
-      <td className="px-2 py-2">
-        <span className="text-zinc-900 font-medium text-sm">
+      <td className="pl-5 pr-3 py-2">
+        <span className="text-zinc-900 dark:text-zinc-100 font-medium text-sm">
           {trade.ticker}
         </span>
       </td>
 
+      {/* Date */}
+      <td className="px-3 py-2 whitespace-nowrap">
+        <span className="text-zinc-900 dark:text-zinc-100 text-sm">
+          {formatDate(trade.entry_datetime)}
+        </span>
+      </td>
+
       {/* Value */}
-      <td className="px-2 py-2 text-right text-sm text-zinc-900">
+      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
         {trade.entry_price !== null
           ? `$${(trade.total_shares * trade.entry_price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
           : '—'}
       </td>
 
       {/* Size % */}
-      <td className="px-2 py-2 text-right text-sm text-zinc-900">
+      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
         {trade.position_size_pct !== null
           ? `${trade.position_size_pct.toFixed(1)}%`
           : '—'}
       </td>
 
       {/* % Change */}
-      <td className="px-2 py-2 text-right text-sm text-zinc-900">
+      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
         {formatPct(pctChange)}
       </td>
 
       {/* P&L */}
-      <td className="px-2 py-2 text-right text-sm text-zinc-900">
+      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
         {formatPnl(pnl)}
       </td>
 
       {/* Acct % */}
-      <td className={`px-2 py-2 text-right text-sm ${
-        trade.account_pct === null ? 'text-zinc-400' :
-        trade.account_pct > 0 ? 'text-emerald-600' :
-        trade.account_pct < 0 ? 'text-red-600' : 'text-zinc-900'
-      }`}>
+      <td className="px-3 py-2 text-right text-sm text-zinc-900 dark:text-zinc-100">
         {trade.account_pct !== null
           ? `${trade.account_pct >= 0 ? '+' : ''}${trade.account_pct.toFixed(1)}%`
           : '—'}
       </td>
 
-      {/* Setup */}
-      <td className="px-2 py-2">
+      {/* Days */}
+      <td className="px-3 py-2 text-left text-sm text-zinc-900 dark:text-zinc-100">
+        {(() => {
+          const entry = new Date(trade.entry_datetime);
+          const exit = trade.exit_datetime ? new Date(trade.exit_datetime) : new Date();
+          const days = Math.ceil((exit.getTime() - entry.getTime()) / (1000 * 60 * 60 * 24));
+          return days;
+        })()}
+      </td>
+
+      {/* Setup Type */}
+      <td className="px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100">
+        {trade.setup_type_name ?? '—'}
+      </td>
+
+      {/* Quality */}
+      <td className="px-3 py-2 flex justify-center">
         <RatingBars rating={trade.setup_rating} />
       </td>
 
       {/* Plan */}
-      <td className="pl-2 pr-4 py-2">
+      <td className="pl-3 pr-5 py-2 text-center">
         <PlanIndicator followedPlan={trade.followed_plan} />
       </td>
     </tr>

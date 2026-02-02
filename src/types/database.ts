@@ -207,6 +207,7 @@ export interface TradeWithDetails extends Trade {
 export interface TradeWithRating extends Trade {
   setup_rating: number | null;
   followed_plan: boolean | null;
+  setup_type_name: string | null;
   account_pct: number | null;
   position_size_pct: number | null;
 }

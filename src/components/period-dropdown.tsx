@@ -100,7 +100,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
 
           <Content className="p-1">
             {/* Time range section */}
-            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400 uppercase tracking-wide">Time range</div>
+            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Time range</div>
             {MORE_TIME_PERIODS.map(period => {
               const option = PERIOD_OPTIONS.find(o => o.value === period);
               if (!option) return null;
@@ -125,7 +125,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
             <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 mx-1" />
 
             {/* Trade samples section */}
-            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400 uppercase tracking-wide">Trade samples</div>
+            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Trade samples</div>
             {MORE_COUNT_PERIODS.map(period => {
               const option = PERIOD_OPTIONS.find(o => o.value === period);
               if (!option) return null;

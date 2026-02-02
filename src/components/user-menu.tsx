@@ -65,7 +65,7 @@ export function UserMenu({ initial = 'U', onOpenSettings, accountId, onAccountCh
 
         <Content className="p-1">
           {/* Account selector */}
-          <div className="px-2 py-1.5 text-xs font-medium text-zinc-400 uppercase tracking-wide">Account</div>
+          <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Account</div>
           <Item
             onSelect={() => onAccountChange(null)}
             className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ${
@@ -99,7 +99,7 @@ export function UserMenu({ initial = 'U', onOpenSettings, accountId, onAccountCh
           <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 mx-1" />
 
           {/* Theme selector */}
-          <div className="px-2 py-1.5 text-xs font-medium text-zinc-400 uppercase tracking-wide">Theme</div>
+          <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Theme</div>
           {themeOptions.map((option) => (
             <Item
               key={option.value}
