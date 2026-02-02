@@ -479,8 +479,10 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
       </td>
 
       {/* Quality */}
-      <td className="px-3 py-2 flex justify-center">
-        <RatingBars rating={trade.setup_rating} />
+      <td className="px-3 py-2 text-center align-middle">
+        <div className="inline-flex">
+          <RatingBars rating={trade.setup_rating} />
+        </div>
       </td>
 
       {/* Plan */}
