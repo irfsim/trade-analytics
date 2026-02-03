@@ -119,7 +119,7 @@ export default function Dashboard() {
 
       {/* Stats - Above trades */}
       <div className="mt-12 mb-12">
-        <div className="bg-[#FAFAFA] dark:bg-zinc-900/50 rounded-2xl p-4">
+        <div className="bg-[#FAFAFA] dark:bg-zinc-800 rounded-2xl p-4">
           <PeriodStats stats={stats} loading={loading} />
         </div>
       </div>

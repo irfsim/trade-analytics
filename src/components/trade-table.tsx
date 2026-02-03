@@ -65,10 +65,10 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-medium text-zinc-900">Trades</h3>
+          <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Trades</h3>
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-zinc-400">Open</span>
-            <span className="text-sm font-medium text-zinc-900">Closed</span>
+            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Closed</span>
           </div>
         </div>
         <div className="bg-[#FAFAFA] dark:bg-zinc-800 shadow-card rounded-2xl overflow-hidden">
@@ -89,10 +89,10 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-medium text-zinc-900">Trades</h3>
+          <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Trades</h3>
           <div className="flex items-center gap-4">
             <span className="text-sm font-medium text-zinc-400">Open</span>
-            <span className="text-sm font-medium text-zinc-900">Closed</span>
+            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Closed</span>
           </div>
         </div>
         <div className="bg-[#FAFAFA] dark:bg-zinc-800 shadow-card rounded-2xl p-12 text-center">
@@ -114,12 +114,12 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
     <div className="space-y-4">
       {/* Header row - outside the table card */}
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-medium text-zinc-900">Trades</h3>
+        <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">Trades</h3>
         <div className="flex items-center gap-4">
           <button
             onClick={() => setActiveTab('open')}
             className={`text-sm font-medium transition-colors cursor-pointer ${
-              activeTab === 'open' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
+              activeTab === 'open' ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
             }`}
           >
             Open
@@ -127,7 +127,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
           <button
             onClick={() => setActiveTab('closed')}
             className={`text-sm font-medium transition-colors cursor-pointer ${
-              activeTab === 'closed' ? 'text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'
+              activeTab === 'closed' ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
             }`}
           >
             Closed
@@ -157,7 +157,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
           <table className="w-full">
             <thead className="trade-thead">
               <tr>
-                <th className="pl-5 pr-3 py-[13px] text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
+                <th className="pl-5 pr-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-left whitespace-nowrap">
                   Symbol
                 </th>
                 <SortableHeader
@@ -207,16 +207,16 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
                   onSort={handleSort}
                   className="text-right"
                 />
-                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 text-left whitespace-nowrap w-14">
+                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-left whitespace-nowrap w-14">
                   Days
                 </th>
-                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 text-left whitespace-nowrap">
+                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-left whitespace-nowrap">
                   Setup
                 </th>
-                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
+                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-center whitespace-nowrap">
                   Quality
                 </th>
-                <th className="pl-3 pr-5 py-[13px] text-sm font-normal text-zinc-500 text-center whitespace-nowrap">
+                <th className="pl-3 pr-5 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-center whitespace-nowrap">
                   Plan
                 </th>
               </tr>
@@ -325,7 +325,7 @@ function SortableHeader({
   return (
     <th
       className={`px-3 py-[13px] text-sm font-normal cursor-pointer select-none whitespace-nowrap group ${
-        isActive ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'
+        isActive ? 'text-zinc-900 dark:text-white' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
       } transition-colors ${className}`}
       onClick={() => onSort(field)}
     >
