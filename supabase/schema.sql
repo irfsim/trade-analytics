@@ -87,6 +87,8 @@ CREATE TABLE IF NOT EXISTS setup_types (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     description TEXT,
+    color TEXT,
+    archived BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

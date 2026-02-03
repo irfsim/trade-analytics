@@ -18,19 +18,27 @@ export async function PUT(request: Request, { params }: RouteParams) {
     }
 
     const body = await request.json();
-    const { name, description, color, checklist_items } = body;
+    const { name, description, color, checklist_items, archived } = body;
 
-    if (!name || typeof name !== 'string' || name.trim() === '') {
+    // If only archiving, don't require name
+    const isArchiveOnly = archived !== undefined && name === undefined;
+
+    if (!isArchiveOnly && (!name || typeof name !== 'string' || name.trim() === '')) {
       return NextResponse.json(
         { error: 'Name is required' },
         { status: 400 }
       );
     }
 
-    const updateData: Record<string, unknown> = {
-      name: name.trim(),
-      description: description?.trim() || null,
-    };
+    const updateData: Record<string, unknown> = {};
+
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
+
+    if (description !== undefined) {
+      updateData.description = description?.trim() || null;
+    }
 
     // Add color if provided
     if (color !== undefined) {
@@ -40,6 +48,11 @@ export async function PUT(request: Request, { params }: RouteParams) {
     // Add checklist_items if provided
     if (checklist_items !== undefined) {
       updateData.checklist_items = checklist_items;
+    }
+
+    // Add archived if provided
+    if (archived !== undefined) {
+      updateData.archived = archived;
     }
 
     const { data, error } = await supabase

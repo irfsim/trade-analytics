@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const { data, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const includeArchived = searchParams.get('includeArchived') === 'true';
+
+    let query = supabase
       .from('setup_types')
       .select('*')
       .order('name', { ascending: true });
+
+    if (!includeArchived) {
+      query = query.eq('archived', false);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       throw new Error(`Failed to fetch setup types: ${error.message}`);

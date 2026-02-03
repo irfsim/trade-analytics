@@ -11,6 +11,7 @@ import { SettingsModal } from '@/components/settings-modal';
 import type { TradeWithRating } from '@/types/database';
 
 const STORAGE_KEY = 'trade-analytics-period';
+const AVATAR_STORAGE_KEY = 'trade-analytics-avatar';
 const VALID_PERIODS = ['today', 'yesterday', 'week', 'lastweek', 'month', 'lastmonth', 'year', 'lastyear', 'all', 'last10', 'last20', 'last50'];
 
 interface TradeStats {
@@ -36,13 +37,29 @@ export default function Dashboard() {
   const [selectedTradeId, setSelectedTradeId] = useState<number | null>(null);
   const [showImport, setShowImport] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
 
-  // Load period preference from localStorage
+  // Load preferences from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY) as Period | null;
-      if (stored && VALID_PERIODS.includes(stored)) {
-        setPeriod(stored);
+      const storedPeriod = localStorage.getItem(STORAGE_KEY) as Period | null;
+      if (storedPeriod && VALID_PERIODS.includes(storedPeriod)) {
+        setPeriod(storedPeriod);
+      }
+      const storedAvatar = localStorage.getItem(AVATAR_STORAGE_KEY);
+      if (storedAvatar) {
+        setAvatar(storedAvatar);
+      }
+    }
+  }, []);
+
+  const handleAvatarChange = useCallback((newAvatar: string | null) => {
+    setAvatar(newAvatar);
+    if (typeof window !== 'undefined') {
+      if (newAvatar) {
+        localStorage.setItem(AVATAR_STORAGE_KEY, newAvatar);
+      } else {
+        localStorage.removeItem(AVATAR_STORAGE_KEY);
       }
     }
   }, []);
@@ -97,6 +114,7 @@ export default function Dashboard() {
         <PeriodPills value={period} onChange={handlePeriodChange} />
         <UserMenu
           initial="I"
+          avatar={avatar}
           onOpenSettings={() => setShowSettings(true)}
           accountId={accountId}
           onAccountChange={setAccountId}
@@ -165,6 +183,8 @@ export default function Dashboard() {
       <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
+        avatar={avatar}
+        onAvatarChange={handleAvatarChange}
       />
     </div>
   );

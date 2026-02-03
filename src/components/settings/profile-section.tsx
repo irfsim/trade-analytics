@@ -1,11 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
-export function ProfileSection() {
+const PRESET_AVATARS = [
+  'https://avatars.outpace.systems/avatars/previews/avatar-5.webp',
+  'https://avatars.outpace.systems/avatars/previews/avatar-6.webp',
+  'https://avatars.outpace.systems/avatars/previews/avatar-8.webp',
+  'https://avatars.outpace.systems/avatars/previews/avatar-36.webp',
+  'https://avatars.outpace.systems/avatars/previews/avatar-45.webp',
+  'https://avatars.outpace.systems/avatars/previews/avatar-47.webp',
+];
+
+const DEFAULT_GRADIENT = 'linear-gradient(135deg, #5BE1F0 0%, #4A9FF5 30%, #6366F1 60%, #A855F7 100%)';
+
+interface ProfileSectionProps {
+  avatar: string | null;
+  onAvatarChange: (avatar: string | null) => void;
+}
+
+export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        onAvatarChange(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -23,18 +52,53 @@ export function ProfileSection() {
 
       {/* Avatar */}
       <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
           Avatar
         </label>
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-            <svg className="w-8 h-8 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Default gradient */}
+          <button
+            onClick={() => onAvatarChange(null)}
+            className={`w-12 h-12 rounded-full flex-shrink-0 transition-all ${
+              avatar === null
+                ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
+                : 'hover:scale-105'
+            }`}
+            style={{ background: DEFAULT_GRADIENT }}
+            title="Default"
+          />
+          {/* Preset avatars */}
+          {PRESET_AVATARS.map((url, index) => (
+            <button
+              key={url}
+              onClick={() => onAvatarChange(url)}
+              className={`w-12 h-12 rounded-full flex-shrink-0 overflow-hidden transition-all ${
+                avatar === url
+                  ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
+                  : 'hover:scale-105'
+              }`}
+              title={`Avatar ${index + 1}`}
+            >
+              <img src={url} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
+          {/* Upload button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-12 h-12 rounded-full flex-shrink-0 border-2 border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
+            title="Upload custom avatar"
+          >
+            <svg className="w-5 h-5 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
             </svg>
-          </div>
-          <button className="px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">
-            Upload
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
         </div>
       </div>
 

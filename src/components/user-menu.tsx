@@ -12,12 +12,13 @@ interface Account {
 
 interface UserMenuProps {
   initial?: string;
+  avatar?: string | null;
   onOpenSettings?: () => void;
   accountId: string | null;
   onAccountChange: (accountId: string | null) => void;
 }
 
-export function UserMenu({ initial = 'U', onOpenSettings, accountId, onAccountChange }: UserMenuProps) {
+export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onAccountChange }: UserMenuProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const { theme, setTheme } = useTheme();
 
@@ -47,12 +48,16 @@ export function UserMenu({ initial = 'U', onOpenSettings, accountId, onAccountCh
         buttonRadius={16}
       >
         <Trigger className="w-8 h-8 rounded-full overflow-hidden">
-          <div
-            className="w-full h-full"
-            style={{
-              background: 'linear-gradient(135deg, #5BE1F0 0%, #4A9FF5 30%, #6366F1 60%, #A855F7 100%)'
-            }}
-          />
+          {avatar ? (
+            <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <div
+              className="w-full h-full"
+              style={{
+                background: 'linear-gradient(135deg, #5BE1F0 0%, #4A9FF5 30%, #6366F1 60%, #A855F7 100%)'
+              }}
+            />
+          )}
         </Trigger>
 
         <Content className="p-1">

@@ -68,6 +68,7 @@ export interface SetupType {
   name: string;
   description: string | null;
   color: string | null;
+  archived: boolean;
   created_at: string;
 }
 export type MarketRegime = 'STRONG_UPTREND' | 'UPTREND_CHOP' | 'SIDEWAYS' | 'DOWNTREND' | 'CORRECTION';
