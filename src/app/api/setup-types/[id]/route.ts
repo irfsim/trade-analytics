@@ -17,8 +17,23 @@ export async function PUT(request: Request, { params }: RouteParams) {
       );
     }
 
+    // Check if this is the default setup
+    const { data: existingSetup } = await supabase
+      .from('setup_types')
+      .select('is_default')
+      .eq('id', setupTypeId)
+      .single();
+
     const body = await request.json();
     const { name, description, color, checklist_items, archived } = body;
+
+    // Prevent archiving the default setup
+    if (existingSetup?.is_default && archived === true) {
+      return NextResponse.json(
+        { error: 'Cannot archive the default setup type' },
+        { status: 400 }
+      );
+    }
 
     // If only archiving, don't require name
     const isArchiveOnly = archived !== undefined && name === undefined;
@@ -97,6 +112,20 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     if (isNaN(setupTypeId)) {
       return NextResponse.json(
         { error: 'Invalid setup type ID' },
+        { status: 400 }
+      );
+    }
+
+    // Check if this is the default setup
+    const { data: existingSetup } = await supabase
+      .from('setup_types')
+      .select('is_default')
+      .eq('id', setupTypeId)
+      .single();
+
+    if (existingSetup?.is_default) {
+      return NextResponse.json(
+        { error: 'Cannot delete the default setup type' },
         { status: 400 }
       );
     }

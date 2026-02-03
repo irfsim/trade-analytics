@@ -89,10 +89,17 @@ CREATE TABLE IF NOT EXISTS setup_types (
     description TEXT,
     color TEXT,
     archived BOOLEAN NOT NULL DEFAULT FALSE,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    checklist_items JSONB NOT NULL DEFAULT '[]'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- Seed default setup types
+-- "No setup / Other" is the default, cannot be deleted
+INSERT INTO setup_types (name, color, is_default) VALUES
+    ('No setup / Other', '#6b7280', TRUE)
+ON CONFLICT (name) DO NOTHING;
+
 INSERT INTO setup_types (name) VALUES
     ('Flag'),
     ('Base Breakout'),

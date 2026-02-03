@@ -10,9 +10,10 @@ interface TradePanelProps {
   tradeIds?: number[];
   onClose: () => void;
   onNavigate?: (tradeId: number) => void;
+  onAnnotationSave?: () => void;
 }
 
-export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate }: TradePanelProps) {
+export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnnotationSave }: TradePanelProps) {
   const [trade, setTrade] = useState<TradeWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +107,7 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate }: Trad
                 tradeId={trade.id}
                 existingAnnotation={trade.annotation}
                 entryPrice={trade.entry_price}
+                onSave={onAnnotationSave}
               />
             </div>
           )}

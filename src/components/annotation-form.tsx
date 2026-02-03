@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
-import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType as SetupTypeInterface, MarketRegime } from '@/types/database';
-import { emptyChecklist } from '@/types/database';
+import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType as SetupTypeInterface, MarketRegime, SetupSpecificChecklist, ChecklistItemDefinition } from '@/types/database';
+import { emptyChecklist, isSetupSpecificChecklist } from '@/types/database';
 
 interface BloomSelectProps<T extends string> {
   value: T | null;
@@ -128,6 +128,7 @@ interface AnnotationFormProps {
   tradeId: number;
   existingAnnotation: TradeAnnotation | null;
   entryPrice: number;
+  onSave?: () => void;
 }
 
 
@@ -141,7 +142,7 @@ const MARKET_REGIMES: { value: MarketRegime; label: string }[] = [
 
 const GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C', 'F'];
 
-export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: AnnotationFormProps) {
+export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave }: AnnotationFormProps) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [setupTypes, setSetupTypes] = useState<SetupTypeInterface[]>([]);
@@ -153,7 +154,11 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
         const res = await fetch('/api/setup-types');
         if (res.ok) {
           const data = await res.json();
-          setSetupTypes(data.setupTypes || []);
+          const types = (data.setupTypes || []).map((s: SetupTypeInterface) => ({
+            ...s,
+            checklist_items: s.checklist_items || [],
+          }));
+          setSetupTypes(types);
         }
       } catch (error) {
         console.error('Failed to load setup types:', error);
@@ -174,9 +179,49 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
   const [initialRisk, setInitialRisk] = useState(existingAnnotation?.initial_risk_dollars?.toString() || '');
   const [stopPrice, setStopPrice] = useState(existingAnnotation?.initial_stop_price?.toString() || '');
   const [notes, setNotes] = useState(existingAnnotation?.notes || '');
-  const [checklist, setChecklist] = useState<APlusChecklist>(
-    (existingAnnotation?.checklist as APlusChecklist) || emptyChecklist
-  );
+
+  // Checklist state - supports both legacy (APlusChecklist) and new (SetupSpecificChecklist) formats
+  const [legacyChecklist, setLegacyChecklist] = useState<APlusChecklist>(() => {
+    const checklist = existingAnnotation?.checklist as unknown;
+    if (checklist && !isSetupSpecificChecklist(checklist as SetupSpecificChecklist)) {
+      return checklist as APlusChecklist;
+    }
+    return emptyChecklist;
+  });
+  const [setupChecklist, setSetupChecklist] = useState<Record<string, boolean>>(() => {
+    const checklist = existingAnnotation?.checklist as unknown;
+    if (checklist && isSetupSpecificChecklist(checklist as SetupSpecificChecklist)) {
+      return (checklist as SetupSpecificChecklist).items;
+    }
+    return {};
+  });
+
+  // Get the selected setup type
+  const selectedSetup = setupTypes.find(s => s.id === setupTypeId);
+  const setupChecklistItems = selectedSetup?.checklist_items || [];
+  const isDefaultSetup = selectedSetup?.is_default || false;
+  const hasChecklistItems = setupChecklistItems.length > 0;
+
+  // Initialize setup checklist when setup changes
+  useEffect(() => {
+    if (setupTypeId && setupChecklistItems.length > 0) {
+      // Check if we have existing data for this setup
+      const existingData = existingAnnotation?.checklist as unknown;
+      if (existingData && isSetupSpecificChecklist(existingData as SetupSpecificChecklist)) {
+        const existingSetupChecklist = existingData as SetupSpecificChecklist;
+        if (existingSetupChecklist.setupTypeId === setupTypeId) {
+          setSetupChecklist(existingSetupChecklist.items);
+          return;
+        }
+      }
+      // Initialize empty checklist for this setup's items
+      const newChecklist: Record<string, boolean> = {};
+      setupChecklistItems.forEach(item => {
+        newChecklist[item.id] = setupChecklist[item.id] || false;
+      });
+      setSetupChecklist(newChecklist);
+    }
+  }, [setupTypeId, setupChecklistItems.length]);
 
   // Calculate risk from stop price
   useEffect(() => {
@@ -194,19 +239,34 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
     setSaved(false);
 
     try {
+      // Determine which checklist format to save
+      let checklistToSave: APlusChecklist | SetupSpecificChecklist;
+      if (setupTypeId && hasChecklistItems) {
+        checklistToSave = {
+          version: 2,
+          setupTypeId,
+          items: setupChecklist,
+        };
+      } else {
+        checklistToSave = legacyChecklist;
+      }
+
+      // Normalize rating to 0-9 scale for backwards compatibility with table display
+      const normalizedRating = Math.round((ratingData.percentage / 100) * 9);
+
       const res = await fetch(`/api/trades/${tradeId}/annotation`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           grade,
-          setup_rating: setupRating,
+          setup_rating: normalizedRating,
           followed_plan: followedPlan,
           setup_type_id: setupTypeId,
           market_regime: marketRegime,
           initial_risk_dollars: initialRisk ? parseFloat(initialRisk) : null,
           initial_stop_price: stopPrice ? parseFloat(stopPrice) : null,
           notes,
-          checklist,
+          checklist: checklistToSave,
         }),
       });
 
@@ -216,6 +276,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
 
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+      onSave?.();
     } catch (error) {
       console.error('Failed to save annotation:', error);
     } finally {
@@ -223,12 +284,12 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
     }
   };
 
-  const updateChecklist = (
+  const updateLegacyChecklist = (
     section: keyof APlusChecklist,
     field: string,
     value: boolean
   ) => {
-    setChecklist((prev) => ({
+    setLegacyChecklist((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
@@ -237,56 +298,98 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
     }));
   };
 
-  // Calculate setup rating: count sections where ALL items are checked
-  const calculateSetupRating = (cl: APlusChecklist): number => {
-    const sections = [
-      cl.marketContext,
-      cl.stockSelection,
-      cl.priorUptrend,
-      cl.consolidation,
-      cl.maSupport,
-      cl.volatilityContraction,
-      cl.volumePattern,
-      cl.pivotAndRisk,
-      cl.context,
-    ];
-    return sections.filter(section =>
-      Object.values(section).every(Boolean)
-    ).length;
+  const updateSetupChecklist = (itemId: string, value: boolean) => {
+    setSetupChecklist(prev => ({
+      ...prev,
+      [itemId]: value,
+    }));
   };
 
-  const setupRating = calculateSetupRating(checklist);
+  // Calculate setup rating based on format
+  const calculateSetupRating = (): { checked: number; total: number; percentage: number } => {
+    if (setupTypeId && hasChecklistItems) {
+      // New format: count checked items out of total
+      const total = setupChecklistItems.length;
+      const checked = Object.values(setupChecklist).filter(Boolean).length;
+      return { checked, total, percentage: total > 0 ? Math.round((checked / total) * 100) : 0 };
+    } else if (!setupTypeId || isDefaultSetup) {
+      // No setup or default setup: no checklist
+      return { checked: 0, total: 0, percentage: 0 };
+    } else {
+      // Legacy format: count completed sections
+      const sections = [
+        legacyChecklist.marketContext,
+        legacyChecklist.stockSelection,
+        legacyChecklist.priorUptrend,
+        legacyChecklist.consolidation,
+        legacyChecklist.maSupport,
+        legacyChecklist.volatilityContraction,
+        legacyChecklist.volumePattern,
+        legacyChecklist.pivotAndRisk,
+        legacyChecklist.context,
+      ];
+      const checked = sections.filter(section => Object.values(section).every(Boolean)).length;
+      return { checked, total: 9, percentage: Math.round((checked / 9) * 100) };
+    }
+  };
 
-  const getRatingColor = (rating: number): string => {
-    if (rating >= 8) return 'text-emerald-600';
-    if (rating >= 6) return 'text-yellow-600';
-    if (rating >= 4) return 'text-orange-600';
+  const ratingData = calculateSetupRating();
+  const setupRating = ratingData.checked;
+
+  const getRatingColor = (percentage: number): string => {
+    if (percentage >= 90) return 'text-emerald-600';
+    if (percentage >= 70) return 'text-yellow-600';
+    if (percentage >= 50) return 'text-orange-600';
     return 'text-red-600';
   };
 
-  const getRatingBg = (rating: number): string => {
-    if (rating >= 8) return 'bg-emerald-50 border-emerald-200';
-    if (rating >= 6) return 'bg-yellow-50 border-yellow-200';
-    if (rating >= 4) return 'bg-orange-50 border-orange-200';
+  const getRatingBg = (percentage: number): string => {
+    if (percentage >= 90) return 'bg-emerald-50 border-emerald-200';
+    if (percentage >= 70) return 'bg-yellow-50 border-yellow-200';
+    if (percentage >= 50) return 'bg-orange-50 border-orange-200';
     return 'bg-red-50 border-red-200';
+  };
+
+  // Get letter grade from percentage
+  const getLetterGrade = (percentage: number): string => {
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 65) return 'B';
+    if (percentage >= 50) return 'C';
+    return 'F';
   };
 
   return (
     <div className="space-y-8">
       {/* Setup Rating - Prominent Display */}
-      <div className={`p-6 rounded-xl border ${getRatingBg(setupRating)}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-zinc-600 uppercase tracking-wide">Setup Rating</p>
-            <p className="text-xs text-zinc-500 mt-1">Based on checklist sections completed</p>
-          </div>
-          <div className="text-right">
-            <p className={`text-5xl font-bold font-mono ${getRatingColor(setupRating)}`}>
-              {setupRating}<span className="text-2xl text-zinc-400">/9</span>
-            </p>
+      {ratingData.total > 0 ? (
+        <div className={`p-6 rounded-xl border ${getRatingBg(ratingData.percentage)}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-zinc-600 uppercase tracking-wide">Setup Quality</p>
+              <p className="text-xs text-zinc-500 mt-1">
+                {hasChecklistItems ? `${ratingData.checked}/${ratingData.total} checklist items` : 'Based on checklist sections'}
+              </p>
+            </div>
+            <div className="text-right flex items-center gap-3">
+              <p className={`text-5xl font-bold font-mono ${getRatingColor(ratingData.percentage)}`}>
+                {ratingData.percentage}<span className="text-2xl text-zinc-400">%</span>
+              </p>
+              <p className={`text-3xl font-bold ${getRatingColor(ratingData.percentage)}`}>
+                {getLetterGrade(ratingData.percentage)}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="p-6 rounded-xl border bg-zinc-50 border-zinc-200">
+          <p className="text-sm text-zinc-500">
+            {!setupTypeId ? 'Select a setup type to see its quality checklist' :
+             isDefaultSetup ? 'This setup has no checklist items' :
+             'This setup has no checklist items configured. Add them in Settings.'}
+          </p>
+        </div>
+      )}
 
       {/* Quick Info */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -360,111 +463,57 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
         </div>
       </div>
 
-      {/* A+ Checklist */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-zinc-900">A+ Setup Checklist</h3>
-          <span className={`text-sm font-medium ${getRatingColor(setupRating)}`}>
-            {setupRating}/9 sections complete
-          </span>
+      {/* A+ Checklist - Dynamic based on setup */}
+      {setupTypeId && hasChecklistItems && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-zinc-900">
+              A+ Checklist for {selectedSetup?.name}
+            </h3>
+            <span className={`text-sm font-medium ${getRatingColor(ratingData.percentage)}`}>
+              {ratingData.checked}/{ratingData.total} items
+            </span>
+          </div>
+
+          <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-lg space-y-3">
+            {setupChecklistItems.map((item) => (
+              <label
+                key={item.id}
+                className="flex items-center gap-3 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={setupChecklist[item.id] || false}
+                  onChange={(e) => updateSetupChecklist(item.id, e.target.checked)}
+                  className="w-4 h-4 rounded border-zinc-300 bg-white text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
+                />
+                <span className="text-sm text-zinc-600 group-hover:text-zinc-900 transition-colors">
+                  {item.label}
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
+      )}
 
-        <div className="space-y-6">
-          <ChecklistSection
-            title="1. Market Context"
-            items={[
-              { key: 'bullishConditions', label: 'Market conditions bullish/favorable for longs' },
-            ]}
-            values={checklist.marketContext}
-            onChange={(field, value) => updateChecklist('marketContext', field, value)}
-          />
-
-          <ChecklistSection
-            title="2. Stock Selection (Leader Criteria)"
-            items={[
-              { key: 'momentumLeader', label: 'Momentum leader' },
-              { key: 'highRS', label: 'High RS (>90)' },
-              { key: 'sufficientVolume', label: 'Sufficient $Volume' },
-              { key: 'sufficientADR', label: 'Sufficient ADR (>4-5%)' },
-            ]}
-            values={checklist.stockSelection}
-            onChange={(field, value) => updateChecklist('stockSelection', field, value)}
-          />
-
-          <ChecklistSection
-            title="3. Prior Uptrend (Pole)"
-            items={[
-              { key: 'clearStrongUptrend', label: 'Clear, strong prior uptrend exists' },
-            ]}
-            values={checklist.priorUptrend}
-            onChange={(field, value) => updateChecklist('priorUptrend', field, value)}
-          />
-
-          <ChecklistSection
-            title="4. Consolidation Structure (Flag)"
-            items={[
-              { key: 'orderlyPattern', label: 'Orderly pattern (flag, tight channel)' },
-              { key: 'notChoppy', label: 'Not excessively wide or choppy' },
-              { key: 'stillInRange', label: 'Stock is still in the range (not extended)' },
-            ]}
-            values={checklist.consolidation}
-            onChange={(field, value) => updateChecklist('consolidation', field, value)}
-          />
-
-          <ChecklistSection
-            title="5. Moving Average Support"
-            items={[
-              { key: 'nearRisingMA', label: 'Consolidating near rising 10d or 20d MA' },
-              { key: 'masStacked', label: 'MAs (10, 20, 50) stacked bullishly' },
-            ]}
-            values={checklist.maSupport}
-            onChange={(field, value) => updateChecklist('maSupport', field, value)}
-          />
-
-          <ChecklistSection
-            title="6. Volatility Contraction"
-            required
-            items={[
-              { key: 'visuallyTighter', label: 'Visual: Last few days noticeably tighter' },
-              { key: 'quantitativeCheck', label: 'Quantitative: ≥2-3 days with range ≤ 2/3 ADR' },
-              { key: 'tightnessNearPivot', label: 'Tightness occurring near MA and pivot' },
-            ]}
-            values={checklist.volatilityContraction}
-            onChange={(field, value) => updateChecklist('volatilityContraction', field, value)}
-          />
-
-          <ChecklistSection
-            title="7. Volume Pattern"
-            items={[
-              { key: 'volumeContracted', label: 'Volume contracted during consolidation' },
-              { key: 'lowVolumeTightDays', label: 'Volume notably low during tightest days' },
-            ]}
-            values={checklist.volumePattern}
-            onChange={(field, value) => updateChecklist('volumePattern', field, value)}
-          />
-
-          <ChecklistSection
-            title="8. Pivot & Risk Definition"
-            items={[
-              { key: 'clearPivot', label: 'Obvious breakout trigger level identified' },
-              { key: 'logicalStop', label: 'Logical stop-loss level identified' },
-              { key: 'acceptableRisk', label: 'Initial risk acceptable per plan' },
-            ]}
-            values={checklist.pivotAndRisk}
-            onChange={(field, value) => updateChecklist('pivotAndRisk', field, value)}
-          />
-
-          <ChecklistSection
-            title="9. Context (Bonus)"
-            items={[
-              { key: 'leadingSector', label: 'In a leading sector/theme' },
-              { key: 'recentCatalyst', label: 'Recent positive EP/catalyst' },
-            ]}
-            values={checklist.context}
-            onChange={(field, value) => updateChecklist('context', field, value)}
-          />
+      {/* Legacy Checklist - shown when setup has no items but not default */}
+      {setupTypeId && !hasChecklistItems && !isDefaultSetup && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <p className="text-sm text-amber-700">
+            This setup has no checklist items configured.{' '}
+            <span className="font-medium">Go to Settings &gt; Setups</span> to add checklist items for this setup.
+          </p>
         </div>
-      </div>
+      )}
+
+      {/* Message when no setup selected */}
+      {!setupTypeId && (
+        <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-lg">
+          <p className="text-sm text-zinc-500">
+            Select a setup type above to see its A+ checklist items.
+          </p>
+        </div>
+      )}
 
       {/* Plan Compliance */}
       <div>
@@ -525,45 +574,3 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice }: Anno
   );
 }
 
-function ChecklistSection({
-  title,
-  items,
-  values,
-  onChange,
-  required,
-}: {
-  title: string;
-  items: { key: string; label: string }[];
-  values: Record<string, boolean>;
-  onChange: (field: string, value: boolean) => void;
-  required?: boolean;
-}) {
-  return (
-    <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-lg">
-      <h4 className="font-medium text-zinc-900 mb-3">
-        {title}
-        {required && (
-          <span className="ml-2 text-xs text-amber-600">(Required for A+)</span>
-        )}
-      </h4>
-      <div className="space-y-2">
-        {items.map((item) => (
-          <label
-            key={item.key}
-            className="flex items-center gap-3 cursor-pointer group"
-          >
-            <input
-              type="checkbox"
-              checked={values[item.key] || false}
-              onChange={(e) => onChange(item.key, e.target.checked)}
-              className="w-4 h-4 rounded border-zinc-300 bg-white text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
-            />
-            <span className="text-sm text-zinc-600 group-hover:text-zinc-900 transition-colors">
-              {item.label}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}

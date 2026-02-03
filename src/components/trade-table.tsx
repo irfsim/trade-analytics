@@ -354,24 +354,58 @@ function SortableHeader({
 function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }) {
   if (rating === null) {
     return (
-      <div className="flex items-center">
-        <div className="flex gap-0.5 w-[52px]">
-          <span className="text-sm text-zinc-400">—</span>
-        </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-sm text-zinc-400">—</span>
       </div>
     );
   }
 
+  // Calculate percentage (assuming max is the total items/sections)
+  const percentage = max > 0 ? Math.round((rating / max) * 100) : 0;
+
+  // Get letter grade from percentage
+  const getLetterGrade = (pct: number): string => {
+    if (pct >= 90) return 'A+';
+    if (pct >= 80) return 'A';
+    if (pct >= 65) return 'B';
+    if (pct >= 50) return 'C';
+    return 'F';
+  };
+
+  // Get color based on percentage
+  const getBarColor = (pct: number): string => {
+    if (pct >= 90) return 'bg-emerald-500';
+    if (pct >= 70) return 'bg-yellow-500';
+    if (pct >= 50) return 'bg-orange-500';
+    return 'bg-red-500';
+  };
+
+  const getGradeColor = (pct: number): string => {
+    if (pct >= 90) return 'text-emerald-600 dark:text-emerald-400';
+    if (pct >= 70) return 'text-yellow-600 dark:text-yellow-400';
+    if (pct >= 50) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
+  };
+
+  const letterGrade = getLetterGrade(percentage);
+  const barColor = getBarColor(percentage);
+  const gradeColor = getGradeColor(percentage);
+  const numBars = 10; // Fixed 10 bars for percentage display
+  const filledBars = Math.round((percentage / 100) * numBars);
+
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-1.5">
       <div className="flex gap-0.5">
-        {Array.from({ length: max }, (_, i) => (
+        {Array.from({ length: numBars }, (_, i) => (
           <div
             key={i}
-            className={`w-[3px] h-3 rounded-sm ${i < rating ? 'bg-[#65C467]' : 'bg-zinc-200 dark:bg-zinc-600'}`}
+            className={`w-[3px] h-3 rounded-sm ${i < filledBars ? barColor : 'bg-zinc-200 dark:bg-zinc-600'}`}
           />
         ))}
       </div>
+      <span className={`text-xs font-semibold min-w-[20px] ${gradeColor}`}>
+        {letterGrade}
+      </span>
     </div>
   );
 }

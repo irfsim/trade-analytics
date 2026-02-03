@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const PRESET_AVATARS = [
   'https://avatars.outpace.systems/avatars/previews/avatar-5.webp',
@@ -22,7 +22,13 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(avatar);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync selected avatar when prop changes (e.g., modal reopens)
+  useEffect(() => {
+    setSelectedAvatar(avatar);
+  }, [avatar]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,7 +36,7 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
       const reader = new FileReader();
       reader.onload = (event) => {
         const dataUrl = event.target?.result as string;
-        onAvatarChange(dataUrl);
+        setSelectedAvatar(dataUrl);
       };
       reader.readAsDataURL(file);
     }
@@ -38,8 +44,12 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
 
   const handleSave = async () => {
     setSaving(true);
+    // Save avatar change
+    if (selectedAvatar !== avatar) {
+      onAvatarChange(selectedAvatar);
+    }
     // TODO: Implement profile save when user auth is added
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 300));
     setSaving(false);
   };
 
@@ -58,9 +68,9 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
         <div className="flex flex-wrap items-center gap-3">
           {/* Default gradient */}
           <button
-            onClick={() => onAvatarChange(null)}
+            onClick={() => setSelectedAvatar(null)}
             className={`w-12 h-12 rounded-full flex-shrink-0 transition-all ${
-              avatar === null
+              selectedAvatar === null
                 ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
                 : 'hover:scale-105'
             }`}
@@ -71,9 +81,9 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
           {PRESET_AVATARS.map((url, index) => (
             <button
               key={url}
-              onClick={() => onAvatarChange(url)}
+              onClick={() => setSelectedAvatar(url)}
               className={`w-12 h-12 rounded-full flex-shrink-0 overflow-hidden transition-all ${
-                avatar === url
+                selectedAvatar === url
                   ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
                   : 'hover:scale-105'
               }`}
@@ -135,7 +145,7 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>

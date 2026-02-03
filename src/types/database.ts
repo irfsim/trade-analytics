@@ -62,6 +62,13 @@ export interface TradeLeg {
   executed_at: string;
 }
 
+// Checklist item definition stored on setup_types
+export interface ChecklistItemDefinition {
+  id: string;        // UUID for stable reference
+  label: string;     // Display text
+  order: number;     // Display order
+}
+
 // Setup types are now stored in the setup_types table
 export interface SetupType {
   id: number;
@@ -69,6 +76,8 @@ export interface SetupType {
   description: string | null;
   color: string | null;
   archived: boolean;
+  is_default: boolean;
+  checklist_items: ChecklistItemDefinition[];
   created_at: string;
 }
 export type MarketRegime = 'STRONG_UPTREND' | 'UPTREND_CHOP' | 'SIDEWAYS' | 'DOWNTREND' | 'CORRECTION';
@@ -114,6 +123,23 @@ export interface APlusChecklist {
     leadingSector: boolean;
     recentCatalyst: boolean;
   };
+}
+
+// New setup-specific checklist format (version 2)
+export interface SetupSpecificChecklist {
+  version: 2;
+  setupTypeId: number;
+  items: Record<string, boolean>;  // itemId -> checked
+}
+
+// Union type for checklist (supports both formats)
+export type TradeChecklist = APlusChecklist | SetupSpecificChecklist;
+
+// Type guard to detect new format
+export function isSetupSpecificChecklist(
+  checklist: TradeChecklist
+): checklist is SetupSpecificChecklist {
+  return 'version' in checklist && checklist.version === 2;
 }
 
 export interface TradeAnnotation {
@@ -234,7 +260,7 @@ export interface PerformanceMetrics {
   maxDrawdownPercent: number;
 }
 
-// Default empty checklist
+// Default empty checklist (legacy format)
 export const emptyChecklist: APlusChecklist = {
   marketContext: { bullishConditions: false },
   stockSelection: {
@@ -255,3 +281,73 @@ export const emptyChecklist: APlusChecklist = {
   pivotAndRisk: { clearPivot: false, logicalStop: false, acceptableRisk: false },
   context: { leadingSector: false, recentCatalyst: false },
 };
+
+// Library of predefined checklist items (grouped by category for display)
+export const CHECKLIST_LIBRARY: { category: string; items: ChecklistItemDefinition[] }[] = [
+  {
+    category: 'Market Context',
+    items: [
+      { id: 'lib-market-bullish', label: 'Market conditions bullish/favorable for longs', order: 0 },
+    ],
+  },
+  {
+    category: 'Stock Selection',
+    items: [
+      { id: 'lib-momentum-leader', label: 'Momentum leader', order: 1 },
+      { id: 'lib-high-rs', label: 'High RS (>90)', order: 2 },
+      { id: 'lib-sufficient-volume', label: 'Sufficient $Volume', order: 3 },
+      { id: 'lib-sufficient-adr', label: 'Sufficient ADR (>4-5%)', order: 4 },
+    ],
+  },
+  {
+    category: 'Prior Uptrend',
+    items: [
+      { id: 'lib-prior-uptrend', label: 'Clear, strong prior uptrend exists', order: 5 },
+    ],
+  },
+  {
+    category: 'Consolidation',
+    items: [
+      { id: 'lib-orderly-pattern', label: 'Orderly pattern (flag, tight channel)', order: 6 },
+      { id: 'lib-not-choppy', label: 'Not excessively wide or choppy', order: 7 },
+      { id: 'lib-in-range', label: 'Stock is still in the range (not extended)', order: 8 },
+    ],
+  },
+  {
+    category: 'MA Support',
+    items: [
+      { id: 'lib-near-ma', label: 'Consolidating near rising 10d or 20d MA', order: 9 },
+      { id: 'lib-mas-stacked', label: 'MAs (10, 20, 50) stacked bullishly', order: 10 },
+    ],
+  },
+  {
+    category: 'Volatility Contraction',
+    items: [
+      { id: 'lib-vc-visual', label: 'Visual: Last few days noticeably tighter', order: 11 },
+      { id: 'lib-vc-quantitative', label: 'Quantitative: ≥2-3 days with range ≤ 2/3 ADR', order: 12 },
+      { id: 'lib-vc-near-pivot', label: 'Tightness occurring near MA and pivot', order: 13 },
+    ],
+  },
+  {
+    category: 'Volume Pattern',
+    items: [
+      { id: 'lib-volume-contracted', label: 'Volume contracted during consolidation', order: 14 },
+      { id: 'lib-low-volume-tight', label: 'Volume notably low during tightest days', order: 15 },
+    ],
+  },
+  {
+    category: 'Pivot & Risk',
+    items: [
+      { id: 'lib-clear-pivot', label: 'Obvious breakout trigger level identified', order: 16 },
+      { id: 'lib-logical-stop', label: 'Logical stop-loss level identified', order: 17 },
+      { id: 'lib-acceptable-risk', label: 'Initial risk acceptable per plan', order: 18 },
+    ],
+  },
+  {
+    category: 'Context / Bonus',
+    items: [
+      { id: 'lib-leading-sector', label: 'In a leading sector/theme', order: 19 },
+      { id: 'lib-recent-catalyst', label: 'Recent positive EP/catalyst', order: 20 },
+    ],
+  },
+];

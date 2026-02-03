@@ -1,6 +1,6 @@
 import { supabase } from '../supabase';
-import type { TradeAnnotation, APlusChecklist, TradeGrade } from '@/types/database';
-import { emptyChecklist } from '@/types/database';
+import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupSpecificChecklist, TradeChecklist, ChecklistItemDefinition } from '@/types/database';
+import { emptyChecklist, isSetupSpecificChecklist } from '@/types/database';
 
 /**
  * Create or update a trade annotation
@@ -148,14 +148,31 @@ export async function removeScreenshot(tradeId: number, screenshotUrl: string): 
 }
 
 /**
- * Calculate checklist score
+ * Calculate checklist score - supports both legacy (APlusChecklist) and new (SetupSpecificChecklist) formats
  */
-export function calculateChecklistScore(checklist: APlusChecklist): {
+export function calculateChecklistScore(
+  checklist: TradeChecklist,
+  setupItems?: ChecklistItemDefinition[]
+): {
   score: number;
   total: number;
   percentage: number;
   volatilityContractionMet: boolean;
 } {
+  // New format: SetupSpecificChecklist
+  if (isSetupSpecificChecklist(checklist)) {
+    const total = setupItems?.length ?? Object.keys(checklist.items).length;
+    const score = Object.values(checklist.items).filter(Boolean).length;
+
+    return {
+      score,
+      total,
+      percentage: total > 0 ? Math.round((score / total) * 100) : 0,
+      volatilityContractionMet: true, // Not applicable for new format
+    };
+  }
+
+  // Legacy format: APlusChecklist
   let score = 0;
   let total = 0;
 
@@ -169,7 +186,7 @@ export function calculateChecklistScore(checklist: APlusChecklist): {
     }
   }
 
-  // Special check for volatility contraction (required for A+)
+  // Special check for volatility contraction (required for A+ in legacy format)
   const vcSection = checklist.volatilityContraction;
   const volatilityContractionMet =
     vcSection.visuallyTighter && vcSection.quantitativeCheck && vcSection.tightnessNearPivot;
@@ -183,11 +200,24 @@ export function calculateChecklistScore(checklist: APlusChecklist): {
 }
 
 /**
- * Auto-suggest grade based on checklist
+ * Auto-suggest grade based on checklist - supports both formats
  */
-export function suggestGrade(checklist: APlusChecklist): TradeGrade {
-  const { percentage, volatilityContractionMet } = calculateChecklistScore(checklist);
+export function suggestGrade(
+  checklist: TradeChecklist,
+  setupItems?: ChecklistItemDefinition[]
+): TradeGrade {
+  const { percentage, volatilityContractionMet } = calculateChecklistScore(checklist, setupItems);
 
+  // New format uses pure percentage thresholds
+  if (isSetupSpecificChecklist(checklist)) {
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 65) return 'B';
+    if (percentage >= 50) return 'C';
+    return 'F';
+  }
+
+  // Legacy format: volatility contraction required for A+
   if (percentage >= 90 && volatilityContractionMet) {
     return 'A+';
   } else if (percentage >= 80) {

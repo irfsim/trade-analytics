@@ -177,6 +177,7 @@ export default function Dashboard() {
         tradeIds={trades.map(t => t.id)}
         onClose={handlePanelClose}
         onNavigate={setSelectedTradeId}
+        onAnnotationSave={loadTrades}
       />
 
       {/* Settings Modal */}
