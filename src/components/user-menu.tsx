@@ -70,10 +70,10 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
             }`}
           >
             All accounts
-            <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-              accountId === null ? 'border-zinc-900 dark:border-zinc-100' : 'border-zinc-300 dark:border-zinc-600'
+            <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+              accountId === null ? 'border-zinc-900 dark:border-zinc-100' : 'border-zinc-200 dark:border-zinc-700'
             }`}>
-              {accountId === null && <span className="w-1.5 h-1.5 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
+              {accountId === null && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
             </span>
           </Item>
           {accounts.map((account) => (
@@ -85,10 +85,10 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
               }`}
             >
               {account.alias}
-              <span className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                accountId === account.account_id ? 'border-zinc-900 dark:border-zinc-100' : 'border-zinc-300 dark:border-zinc-600'
+              <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                accountId === account.account_id ? 'border-zinc-900 dark:border-zinc-100' : 'border-zinc-200 dark:border-zinc-700'
               }`}>
-                {accountId === account.account_id && <span className="w-1.5 h-1.5 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
+                {accountId === account.account_id && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
               </span>
             </Item>
           ))}
@@ -98,11 +98,11 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
           {/* Theme selector - single row with icon buttons */}
           <div className="px-3 h-8 flex items-center justify-between">
             <span className="text-sm text-zinc-700 dark:text-zinc-300">Theme</span>
-            <div className="flex items-center border border-zinc-200 dark:border-zinc-700 rounded-full h-6">
+            <div className="flex items-center border border-zinc-300 dark:border-zinc-600 rounded-full h-6">
               <button
                 onClick={() => setTheme('system')}
-                className={`w-6 h-full flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none ${
-                  theme === 'system' ? 'bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-700' : ''
+                className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none ${
+                  theme === 'system' ? 'bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-600' : ''
                 }`}
               >
                 <svg className={`w-4 h-4 transition-colors ${theme === 'system' ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,8 +111,8 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
               </button>
               <button
                 onClick={() => setTheme('light')}
-                className={`w-6 h-full flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none ${
-                  theme === 'light' ? 'bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-700' : ''
+                className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none ${
+                  theme === 'light' ? 'bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-600' : ''
                 }`}
               >
                 <svg className={`w-4 h-4 transition-colors ${theme === 'light' ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,8 +121,8 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
               </button>
               <button
                 onClick={() => setTheme('dark')}
-                className={`w-6 h-full flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none ${
-                  theme === 'dark' ? 'bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-700' : ''
+                className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors cursor-pointer focus:outline-none ${
+                  theme === 'dark' ? 'bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-600' : ''
                 }`}
               >
                 <svg className={`w-4 h-4 transition-colors ${theme === 'dark' ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">

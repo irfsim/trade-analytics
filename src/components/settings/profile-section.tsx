@@ -65,11 +65,11 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
           Avatar
         </label>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Default gradient */}
           <button
             onClick={() => setSelectedAvatar(null)}
-            className={`w-12 h-12 rounded-full flex-shrink-0 transition-all ${
+            className={`w-8 h-8 rounded-full flex-shrink-0 transition-all ${
               selectedAvatar === null
                 ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
                 : 'hover:scale-105'
@@ -82,7 +82,7 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
             <button
               key={url}
               onClick={() => setSelectedAvatar(url)}
-              className={`w-12 h-12 rounded-full flex-shrink-0 overflow-hidden transition-all ${
+              className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all ${
                 selectedAvatar === url
                   ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
                   : 'hover:scale-105'
@@ -95,10 +95,10 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
           {/* Upload button */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-12 h-12 rounded-full flex-shrink-0 border-2 border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
+            className="w-8 h-8 rounded-full flex-shrink-0 border border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
             title="Upload custom avatar"
           >
-            <svg className="w-5 h-5 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
             </svg>
           </button>
@@ -145,7 +145,7 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors btn-press"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>

@@ -485,7 +485,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
                   type="checkbox"
                   checked={setupChecklist[item.id] || false}
                   onChange={(e) => updateSetupChecklist(item.id, e.target.checked)}
-                  className="w-4 h-4 rounded border-zinc-300 bg-white text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0"
+                  className="w-4 h-4 rounded border-zinc-300 bg-white text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 checkbox-pop"
                 />
                 <span className="text-sm text-zinc-600 group-hover:text-zinc-900 transition-colors">
                   {item.label}
@@ -562,12 +562,12 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-2 bg-zinc-900 text-white font-medium rounded-full hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+          className="px-6 py-2 bg-zinc-900 text-white font-medium rounded-full hover:bg-zinc-800 disabled:opacity-50 transition-colors btn-press"
         >
           {saving ? 'Saving...' : 'Save Annotation'}
         </button>
         {saved && (
-          <span className="text-emerald-600 text-sm">Saved!</span>
+          <span className="text-emerald-600 text-sm animate-fade-in">Saved!</span>
         )}
       </div>
     </div>

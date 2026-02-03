@@ -53,12 +53,12 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange }: Setti
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 dark:bg-black/60"
+        className="absolute inset-0 bg-black/40 dark:bg-black/60 animate-fade-in"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex">
+      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex animate-modal-in">
         {/* Sidebar */}
         <div className="w-44 flex-shrink-0 border-r border-zinc-100 dark:border-zinc-800 px-2 pt-2">
           <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Settings</div>

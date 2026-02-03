@@ -5,7 +5,6 @@ import { TradeTable } from '@/components/trade-table';
 import { TradePanel } from '@/components/trade-panel';
 import { PeriodPills, getDateRange, getTradeLimit, type Period } from '@/components/period-dropdown';
 import { PeriodStats } from '@/components/period-stats';
-import { ImportDropzone } from '@/components/import-dropzone';
 import { UserMenu } from '@/components/user-menu';
 import { SettingsModal } from '@/components/settings-modal';
 import type { TradeWithRating } from '@/types/database';
@@ -35,7 +34,6 @@ export default function Dashboard() {
   const [stats, setStats] = useState<TradeStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTradeId, setSelectedTradeId] = useState<number | null>(null);
-  const [showImport, setShowImport] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
 
@@ -121,20 +119,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Import Section (collapsible) */}
-      {showImport && (
-        <div className="mb-8">
-          <ImportDropzone
-            onImportComplete={(result) => {
-              if (result.success) {
-                loadTrades();
-                setShowImport(false);
-              }
-            }}
-          />
-        </div>
-      )}
-
       {/* Stats - Above trades */}
       <div className="mt-12 mb-12">
         <div className="bg-[#FAFAFA] dark:bg-zinc-800 rounded-2xl p-4">
@@ -150,18 +134,9 @@ export default function Dashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <p className="text-zinc-900 dark:text-zinc-100 font-medium mb-1">
+          <p className="text-zinc-900 dark:text-zinc-100 font-medium">
             No trades for this period
           </p>
-          <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-4">
-            Import your IBKR Flex report to get started
-          </p>
-          <button
-            onClick={() => setShowImport(true)}
-            className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-sm font-medium rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
-          >
-            Import Trades
-          </button>
         </div>
       ) : (
         <TradeTable

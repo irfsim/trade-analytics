@@ -354,7 +354,7 @@ function SortableHeader({
 function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }) {
   if (rating === null) {
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-start">
         <span className="text-sm text-zinc-400">—</span>
       </div>
     );
@@ -372,25 +372,8 @@ function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }
     return 'F';
   };
 
-  // Get color based on percentage
-  const getBarColor = (pct: number): string => {
-    if (pct >= 90) return 'bg-emerald-500';
-    if (pct >= 70) return 'bg-yellow-500';
-    if (pct >= 50) return 'bg-orange-500';
-    return 'bg-red-500';
-  };
-
-  const getGradeColor = (pct: number): string => {
-    if (pct >= 90) return 'text-emerald-600 dark:text-emerald-400';
-    if (pct >= 70) return 'text-yellow-600 dark:text-yellow-400';
-    if (pct >= 50) return 'text-orange-600 dark:text-orange-400';
-    return 'text-red-600 dark:text-red-400';
-  };
-
   const letterGrade = getLetterGrade(percentage);
-  const barColor = getBarColor(percentage);
-  const gradeColor = getGradeColor(percentage);
-  const numBars = 10; // Fixed 10 bars for percentage display
+  const numBars = 6;
   const filledBars = Math.round((percentage / 100) * numBars);
 
   return (
@@ -399,11 +382,11 @@ function RatingBars({ rating, max = 9 }: { rating: number | null; max?: number }
         {Array.from({ length: numBars }, (_, i) => (
           <div
             key={i}
-            className={`w-[3px] h-3 rounded-sm ${i < filledBars ? barColor : 'bg-zinc-200 dark:bg-zinc-600'}`}
+            className={`w-[3px] h-3 rounded-sm ${i < filledBars ? 'bg-green-500' : 'bg-zinc-200 dark:bg-zinc-600'}`}
           />
         ))}
       </div>
-      <span className={`text-xs font-semibold min-w-[20px] ${gradeColor}`}>
+      <span className="text-xs font-normal min-w-[20px] text-zinc-900 dark:text-zinc-100">
         {letterGrade}
       </span>
     </div>
@@ -434,18 +417,41 @@ function SetupTypePill({ name, color }: { name: string; color: string | null }) 
     } : { r: 99, g: 102, b: 241 };
   };
 
+  // Smart abbreviation: multi-word → initials, single word → truncate
+  const getDisplayName = (fullName: string): string => {
+    // Special case for default setup
+    if (fullName === 'No setup / Other') {
+      return 'None';
+    }
+    const words = fullName.trim().split(/\s+/);
+    if (words.length > 1) {
+      // Multi-word: use initials (e.g., "Base Breakout" → "BB")
+      return words.map(w => w[0].toUpperCase()).join('');
+    }
+    // Single word: truncate if > 6 chars
+    if (fullName.length > 6) {
+      return fullName.slice(0, 5) + '…';
+    }
+    return fullName;
+  };
+
   const rgb = hexToRgb(baseColor);
   const bgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`;
+  // Darken the text color for better readability
+  const textColor = `rgb(${Math.round(rgb.r * 0.65)}, ${Math.round(rgb.g * 0.65)}, ${Math.round(rgb.b * 0.65)})`;
+  const displayName = getDisplayName(name);
+  const needsTooltip = displayName !== name;
 
   return (
     <span
-      className="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full whitespace-nowrap"
+      className="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full whitespace-nowrap cursor-default"
       style={{
         backgroundColor: bgColor,
-        color: baseColor,
+        color: textColor,
       }}
+      title={needsTooltip ? name : undefined}
     >
-      {name}
+      {displayName}
     </span>
   );
 }
@@ -566,10 +572,8 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
       </td>
 
       {/* Quality */}
-      <td className="px-3 py-2 text-center align-middle">
-        <div className="inline-flex">
-          <RatingBars rating={trade.setup_rating} />
-        </div>
+      <td className="px-3 py-2 align-middle">
+        <RatingBars rating={trade.setup_rating} />
       </td>
 
       {/* Plan */}
