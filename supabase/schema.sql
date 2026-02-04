@@ -224,6 +224,21 @@ CREATE TABLE IF NOT EXISTS yearly_summaries (
     UNIQUE(account_id, year)
 );
 
+-- Chart data cache (for preserving intraday data)
+CREATE TABLE IF NOT EXISTS chart_cache (
+    id SERIAL PRIMARY KEY,
+    ticker TEXT NOT NULL,
+    interval TEXT NOT NULL CHECK (interval IN ('5m', '1h')),
+    start_date TIMESTAMPTZ NOT NULL,
+    end_date TIMESTAMPTZ NOT NULL,
+    candles JSONB NOT NULL,  -- Array of {time, open, high, low, close, volume}
+    cached_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    UNIQUE(ticker, interval, start_date, end_date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_chart_cache_lookup ON chart_cache(ticker, interval, start_date, end_date);
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -240,6 +255,7 @@ ALTER TABLE daily_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE weekly_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE monthly_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE yearly_summaries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE chart_cache ENABLE ROW LEVEL SECURITY;
 
 -- Allow all operations for authenticated users (service role bypasses RLS)
 -- These policies allow the anon key to read, and service role to write
@@ -300,6 +316,12 @@ CREATE POLICY "Allow read access" ON yearly_summaries FOR SELECT USING (true);
 CREATE POLICY "Allow insert" ON yearly_summaries FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow update" ON yearly_summaries FOR UPDATE USING (true);
 CREATE POLICY "Allow delete" ON yearly_summaries FOR DELETE USING (true);
+
+-- Chart cache
+CREATE POLICY "Allow read access" ON chart_cache FOR SELECT USING (true);
+CREATE POLICY "Allow insert" ON chart_cache FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update" ON chart_cache FOR UPDATE USING (true);
+CREATE POLICY "Allow delete" ON chart_cache FOR DELETE USING (true);
 
 -- ============================================
 -- SEED DATA

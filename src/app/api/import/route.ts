@@ -3,6 +3,7 @@ import { parseFlexXml, toExecutionInserts } from '@/lib/flex-parser';
 import { matchExecutionsToTrades } from '@/lib/trade-matcher';
 import { insertExecutions, getExecutions } from '@/lib/db/executions';
 import { insertTrades } from '@/lib/db/trades';
+import { cacheTradeChartData } from '@/lib/chart-cache';
 
 // Account mapping from environment
 function getAccountMapping(): Record<string, string> {
@@ -54,6 +55,22 @@ export async function POST(request: NextRequest) {
 
       // Insert matched trades
       matchResult = await insertTrades(matched.trades);
+
+      // Cache intraday chart data for closed trades (async, don't block response)
+      const closedTrades = matched.trades.filter((t) => t.status === 'CLOSED');
+      if (closedTrades.length > 0) {
+        // Run caching in background - don't await to avoid blocking import
+        cacheTradeChartData(
+          closedTrades.map((t) => ({
+            ticker: t.ticker,
+            entry_datetime: t.entryDatetime,
+            exit_datetime: t.exitDatetime,
+            status: t.status,
+          }))
+        ).catch((err) => {
+          console.error('[Import] Chart caching failed:', err);
+        });
+      }
     }
 
     return NextResponse.json({

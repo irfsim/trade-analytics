@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { SlidePanel } from './slide-panel';
 import { AnnotationForm } from './annotation-form';
+import { TradeChart } from './trade-chart';
 import type { TradeWithDetails, TradeLeg } from '@/types/database';
 
 interface TradePanelProps {
@@ -92,6 +93,22 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
         <div className="p-6 space-y-6">
           {/* Trade Header */}
           <TradeHeader trade={trade} />
+
+          {/* Price Chart */}
+          <div className="border-t border-zinc-200 pt-6">
+            <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">
+              Price Chart
+            </h3>
+            <TradeChart
+              ticker={trade.ticker}
+              entryDatetime={trade.entry_datetime}
+              exitDatetime={trade.exit_datetime}
+              entryPrice={trade.entry_price}
+              exitPrice={trade.exit_price}
+              legs={trade.legs}
+              direction={trade.direction}
+            />
+          </div>
 
           {/* Stats Grid */}
           <TradeStats trade={trade} />
