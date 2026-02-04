@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ImportDropzone } from '@/components/import-dropzone';
+import { toast } from 'sonner';
 
 export default function ImportPage() {
   const [lastImport, setLastImport] = useState<{
@@ -45,8 +45,11 @@ export default function ImportPage() {
         executions: data.executions.inserted,
         trades: data.trades.matched,
       });
+      toast.success(`Synced ${data.executions.inserted} executions, matched ${data.trades.matched} trades`);
     } catch (err) {
-      setSyncStatus(s => ({ ...s, error: err instanceof Error ? err.message : 'Sync failed' }));
+      const message = err instanceof Error ? err.message : 'Sync failed';
+      setSyncStatus(s => ({ ...s, error: message }));
+      toast.error(message);
     } finally {
       setSyncing(false);
     }
@@ -57,8 +60,8 @@ export default function ImportPage() {
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-white">Import Trades</h1>
-          <p className="text-zinc-500 mt-1">Upload your IBKR Flex XML report</p>
+          <h1 className="text-2xl font-bold text-white">Sync Trades</h1>
+          <p className="text-zinc-500 mt-1">Sync your trades from IBKR Flex Web Service</p>
         </div>
 
         {/* Auto-Sync Section */}
@@ -105,85 +108,11 @@ IBKR_FLEX_QUERY_ID=your_query_id`}
           )}
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex-1 h-px bg-zinc-800" />
-          <span className="text-sm text-zinc-500">or upload manually</span>
-          <div className="flex-1 h-px bg-zinc-800" />
-        </div>
-
-        {/* Import Dropzone */}
-        <ImportDropzone
-          onImportComplete={(result) => {
-            if (result.success) {
-              setLastImport({
-                timestamp: new Date(),
-                executions: result.executions.inserted,
-                trades: result.trades.matched,
-              });
-            }
-          }}
-        />
-
-        {/* Instructions */}
-        <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-lg">
-          <h2 className="font-semibold text-white mb-4">How to export from IBKR</h2>
-          <ol className="space-y-3 text-sm text-zinc-400">
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-xs flex items-center justify-center">1</span>
-              <span>Log in to IBKR Account Management (Client Portal)</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-xs flex items-center justify-center">2</span>
-              <span>Go to <strong className="text-zinc-300">Reports → Flex Queries</strong></span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-xs flex items-center justify-center">3</span>
-              <span>Create a new Activity Flex Query or use an existing one</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-xs flex items-center justify-center">4</span>
-              <span>Include <strong className="text-zinc-300">Trades</strong> section with all fields</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-xs flex items-center justify-center">5</span>
-              <span>Set output format to <strong className="text-zinc-300">XML</strong></span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-xs flex items-center justify-center">6</span>
-              <span>Run the query and download the XML file</span>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-zinc-800 text-zinc-300 text-xs flex items-center justify-center">7</span>
-              <span>Drop the file above to import</span>
-            </li>
-          </ol>
-        </div>
-
-        {/* Required Fields */}
-        <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-lg">
-          <h2 className="font-semibold text-white mb-4">Required Flex Query Fields</h2>
-          <p className="text-sm text-zinc-500 mb-3">
-            Make sure your Flex Query includes these fields in the Trades section:
-          </p>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="text-zinc-400">• Symbol</div>
-            <div className="text-zinc-400">• Date/Time</div>
-            <div className="text-zinc-400">• Buy/Sell</div>
-            <div className="text-zinc-400">• Quantity</div>
-            <div className="text-zinc-400">• Trade Price</div>
-            <div className="text-zinc-400">• IB Commission</div>
-            <div className="text-zinc-400">• Net Cash</div>
-            <div className="text-zinc-400">• IB Exec ID</div>
-            <div className="text-zinc-400">• IB Order ID</div>
-            <div className="text-zinc-400">• Exchange</div>
-          </div>
-        </div>
-
-        {/* Last Import */}
+        {/* Last Sync */}
         {lastImport && (
           <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
             <p className="text-emerald-400 text-sm">
-              Last import: {lastImport.timestamp.toLocaleString()} —{' '}
+              Last sync: {lastImport.timestamp.toLocaleString()} —{' '}
               {lastImport.executions} executions, {lastImport.trades} trades
             </p>
           </div>

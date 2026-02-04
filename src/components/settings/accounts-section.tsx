@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import type { Account } from '@/types/database';
 
 export function AccountsSection() {
@@ -55,9 +56,11 @@ export function AccountsSection() {
         ));
         setEditingId(null);
         setEditAlias('');
+        toast.success('Account alias updated');
       }
     } catch (error) {
       console.error('Failed to save alias:', error);
+      toast.error('Failed to update alias');
     } finally {
       setSaving(false);
     }

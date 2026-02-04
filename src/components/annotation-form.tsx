@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
 import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType as SetupTypeInterface, MarketRegime, SetupSpecificChecklist, ChecklistItemDefinition } from '@/types/database';
 import { emptyChecklist, isSetupSpecificChecklist } from '@/types/database';
@@ -276,9 +277,11 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
+      toast.success('Annotation saved');
       onSave?.();
     } catch (error) {
       console.error('Failed to save annotation:', error);
+      toast.error('Failed to save annotation');
     } finally {
       setSaving(false);
     }
