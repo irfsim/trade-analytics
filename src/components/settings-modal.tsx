@@ -12,6 +12,8 @@ interface SettingsModalProps {
   onClose: () => void;
   avatar: string | null;
   onAvatarChange: (avatar: string | null) => void;
+  displayName: string;
+  onDisplayNameChange: (displayName: string) => void;
 }
 
 const SECTIONS: { id: SettingsSection; label: string; icon: React.ReactNode }[] = [
@@ -44,7 +46,7 @@ const SECTIONS: { id: SettingsSection; label: string; icon: React.ReactNode }[] 
   },
 ];
 
-export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, displayName, onDisplayNameChange }: SettingsModalProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
 
   if (!isOpen) return null;
@@ -94,7 +96,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange }: Setti
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 pt-10">
-            {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} />}
+            {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}
             {activeSection === 'accounts' && <AccountsSection />}
             {activeSection === 'setups' && <SetupsSection />}
           </div>

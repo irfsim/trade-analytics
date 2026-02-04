@@ -11,6 +11,7 @@ import type { TradeWithRating } from '@/types/database';
 
 const STORAGE_KEY = 'trade-analytics-period';
 const AVATAR_STORAGE_KEY = 'trade-analytics-avatar';
+const DISPLAY_NAME_STORAGE_KEY = 'trade-analytics-display-name';
 const VALID_PERIODS = ['today', 'yesterday', 'week', 'lastweek', 'month', 'lastmonth', 'year', 'lastyear', 'all', 'last10', 'last20', 'last50'];
 
 interface TradeStats {
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [selectedTradeId, setSelectedTradeId] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState('');
 
   // Load preferences from localStorage
   useEffect(() => {
@@ -48,6 +50,10 @@ export default function Dashboard() {
       if (storedAvatar) {
         setAvatar(storedAvatar);
       }
+      const storedDisplayName = localStorage.getItem(DISPLAY_NAME_STORAGE_KEY);
+      if (storedDisplayName) {
+        setDisplayName(storedDisplayName);
+      }
     }
   }, []);
 
@@ -58,6 +64,17 @@ export default function Dashboard() {
         localStorage.setItem(AVATAR_STORAGE_KEY, newAvatar);
       } else {
         localStorage.removeItem(AVATAR_STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  const handleDisplayNameChange = useCallback((newDisplayName: string) => {
+    setDisplayName(newDisplayName);
+    if (typeof window !== 'undefined') {
+      if (newDisplayName) {
+        localStorage.setItem(DISPLAY_NAME_STORAGE_KEY, newDisplayName);
+      } else {
+        localStorage.removeItem(DISPLAY_NAME_STORAGE_KEY);
       }
     }
   }, []);
@@ -161,6 +178,8 @@ export default function Dashboard() {
         onClose={() => setShowSettings(false)}
         avatar={avatar}
         onAvatarChange={handleAvatarChange}
+        displayName={displayName}
+        onDisplayNameChange={handleDisplayNameChange}
       />
     </div>
   );
