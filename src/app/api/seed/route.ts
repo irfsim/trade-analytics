@@ -1,77 +1,120 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-// Popular momentum/breakout stocks for realistic dummy data
+// Seeded PRNG for deterministic data generation (Mulberry32)
+function createSeededRandom(seed: number) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// US momentum/breakout stocks
 const TICKERS = [
   'NVDA', 'TSLA', 'AMD', 'META', 'AAPL', 'MSFT', 'GOOGL', 'AMZN',
-  'NFLX', 'CRWD', 'SNOW', 'PLTR', 'COIN', 'SHOP', 'SQ', 'ROKU',
-  'DKNG', 'AFRM', 'UPST', 'SOFI', 'RIVN', 'LCID', 'NIO', 'XPEV',
-  'SMCI', 'ARM', 'PANW', 'ZS', 'NET', 'DDOG', 'MDB', 'CFLT',
+  'NFLX', 'CRWD', 'SNOW', 'PLTR', 'COIN', 'SQ', 'ROKU', 'DKNG',
+  'AFRM', 'UPST', 'SOFI', 'RIVN', 'SMCI', 'ARM', 'PANW', 'ZS',
+  'NET', 'DDOG', 'MDB', 'CFLT', 'ABNB', 'UBER', 'DASH', 'RBLX',
+  'U', 'PATH', 'OKTA', 'CRSP', 'BILL', 'HUBS', 'TTD', 'ENPH',
 ];
 
 const SETUP_TYPES = ['EP', 'FLAG', 'BASE_BREAKOUT'] as const;
 const MARKET_REGIMES = ['STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS'] as const;
-const GRADES = ['A+', 'A', 'B', 'C', 'F'] as const;
 
-function randomElement<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+// Deterministic trade generation with user requirements:
+// - Date range: Jan 1, 2025 to Feb 4, 2026
+// - 500 trades distributed throughout
+// - 25% win rate
+// - Avg loss ~3%, avg win ~9% with outliers
+// - Avg position size ~$9k
+function generateDeterministicTrades() {
+  const SEED = 42;
+  const random = createSeededRandom(SEED);
 
-function randomBetween(min: number, max: number): number {
-  return Math.random() * (max - min) + min;
-}
-
-function randomDate(start: Date, end: Date): Date {
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-}
-
-function generateDummyTrades(count: number, year: number = 2026, distributed: boolean = false) {
   const trades = [];
-  const startDate = new Date(`${year}-01-02`);
-  const endDate = new Date(`${year}-12-28`);
+  const count = 500;
+  const startDate = new Date('2025-01-01T00:00:00Z');
+  const endDate = new Date('2026-02-04T23:59:59Z');
+  const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Helper functions using seeded random
+  const seededElement = <T,>(arr: readonly T[]): T => arr[Math.floor(random() * arr.length)];
+  const seededBetween = (min: number, max: number): number => random() * (max - min) + min;
+  const gaussianRandom = (): number => {
+    // Box-Muller transform for normal distribution
+    const u1 = random();
+    const u2 = random();
+    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  };
 
   for (let i = 0; i < count; i++) {
-    const ticker = randomElement(TICKERS);
+    const ticker = seededElement(TICKERS);
 
-    let entryDate: Date;
-    if (distributed) {
-      // Distribute evenly across weeks of the year
-      const weekNumber = Math.floor((i / count) * 52) + 1;
-      const dayOfWeek = Math.floor(Math.random() * 5) + 1; // Mon-Fri (1-5)
-      entryDate = new Date(`${year}-01-01`);
-      entryDate.setDate(entryDate.getDate() + (weekNumber - 1) * 7 + dayOfWeek);
-      entryDate.setHours(9 + Math.floor(Math.random() * 6), Math.floor(Math.random() * 60));
-    } else {
-      entryDate = randomDate(startDate, endDate);
-    }
+    // Distribute trades evenly across the date range
+    const dayOffset = Math.floor((i / count) * totalDays);
+    const entryDate = new Date(startDate.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+    // Add some hour variation (market hours 9:30-16:00)
+    entryDate.setUTCHours(14 + Math.floor(random() * 5), Math.floor(random() * 60));
 
-    // Random holding period: 0-5 days
-    const holdingDays = Math.floor(Math.random() * 6);
+    // Skip weekends
+    const dayOfWeek = entryDate.getUTCDay();
+    if (dayOfWeek === 0) entryDate.setDate(entryDate.getDate() + 1);
+    if (dayOfWeek === 6) entryDate.setDate(entryDate.getDate() + 2);
+
+    // Holding period: 0-5 days
+    const holdingDays = Math.floor(random() * 6);
     const exitDate = new Date(entryDate);
     exitDate.setDate(exitDate.getDate() + holdingDays);
-    exitDate.setHours(entryDate.getHours() + Math.floor(Math.random() * 6));
+    exitDate.setUTCHours(entryDate.getUTCHours() + Math.floor(random() * 4));
 
-    // Price between $20 and $500
-    const entryPrice = randomBetween(20, 500);
+    // Price between $30 and $400 (realistic for these stocks)
+    const entryPrice = seededBetween(30, 400);
 
-    // Win rate ~45%, with varying magnitude
-    const isWinner = Math.random() < 0.45;
-    const movePercent = isWinner
-      ? randomBetween(0.02, 0.15)  // Winners: 2-15%
-      : randomBetween(-0.08, -0.01); // Losers: 1-8% loss
+    // 25% win rate
+    const isWinner = random() < 0.25;
+
+    let movePercent: number;
+    if (isWinner) {
+      // Winners: avg 9% with outliers (some 15-25% runners)
+      const base = 0.09;
+      const variation = gaussianRandom() * 0.04; // std dev 4%
+      movePercent = base + variation;
+      // 10% chance of outlier winner (15-30%)
+      if (random() < 0.10) {
+        movePercent = seededBetween(0.15, 0.30);
+      }
+      movePercent = Math.max(0.02, movePercent); // min 2% win
+    } else {
+      // Losers: avg 3% loss with some outliers
+      const base = -0.03;
+      const variation = gaussianRandom() * 0.015; // std dev 1.5%
+      movePercent = base + variation;
+      // 5% chance of outlier loss (8-15%)
+      if (random() < 0.05) {
+        movePercent = seededBetween(-0.15, -0.08);
+      }
+      movePercent = Math.min(-0.005, movePercent); // min 0.5% loss
+      movePercent = Math.max(-0.20, movePercent); // max 20% loss
+    }
 
     const exitPrice = entryPrice * (1 + movePercent);
 
-    // Position size: 100-1000 shares
-    const shares = Math.floor(randomBetween(100, 1000) / 50) * 50;
+    // Position size: target ~$9k average
+    // Use log-normal distribution for realistic position sizing
+    const targetPosition = 9000;
+    const positionMultiplier = Math.exp(gaussianRandom() * 0.3); // log-normal with ~30% std dev
+    const positionValue = targetPosition * positionMultiplier;
+    const shares = Math.max(10, Math.round(positionValue / entryPrice / 10) * 10);
 
-    // Commission: ~$1-5
-    const commission = randomBetween(1, 5);
+    // Commission: ~$1-3
+    const commission = seededBetween(1, 3);
 
     const realizedPnl = (exitPrice - entryPrice) * shares - commission;
 
     // Account: 60% margin, 40% ISA
-    const accountId = Math.random() < 0.6 ? 'MARGIN' : 'ISA';
+    const accountId = random() < 0.6 ? 'MARGIN' : 'ISA';
 
     trades.push({
       ticker,
@@ -93,8 +136,8 @@ function generateDummyTrades(count: number, year: number = 2026, distributed: bo
   return trades;
 }
 
-function generateChecklist(isGoodSetup: boolean) {
-  const check = (prob: number) => Math.random() < prob;
+function generateChecklist(isGoodSetup: boolean, random: () => number) {
+  const check = (prob: number) => random() < prob;
   const goodProb = isGoodSetup ? 0.85 : 0.4;
   const reqProb = isGoodSetup ? 0.95 : 0.3;
 
@@ -137,34 +180,73 @@ function generateChecklist(isGoodSetup: boolean) {
   };
 }
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
-    // Get params from query string
-    const url = new URL(request.url);
-    const count = parseInt(url.searchParams.get('count') || '50');
-    const year = parseInt(url.searchParams.get('year') || '2026');
-    const append = url.searchParams.get('append') === 'true';
-    const distributed = url.searchParams.get('distributed') === 'true';
+    // Clear existing data first (use gte to match all records)
+    await supabase.from('trade_annotations').delete().gte('trade_id', 0);
+    await supabase.from('trade_legs').delete().gte('id', 0);
+    await supabase.from('trades').delete().gte('id', 0);
+    await supabase.from('executions').delete().like('execution_id', '%');
 
-    // Clear existing data first (unless appending)
-    if (!append) {
-      await supabase.from('trade_annotations').delete().neq('trade_id', 0);
-      await supabase.from('trade_legs').delete().neq('id', 0);
-      await supabase.from('trades').delete().neq('id', 0);
-      await supabase.from('executions').delete().neq('id', 0);
-    }
+    // Generate deterministic trades (same every time)
+    const dummyTrades = generateDeterministicTrades();
 
-    // Generate dummy trades
-    const dummyTrades = generateDummyTrades(count, year, distributed);
+    // Create a separate seeded random for annotations (also deterministic)
+    const ANNOTATION_SEED = 123;
+    const annotationRandom = createSeededRandom(ANNOTATION_SEED);
+    const seededElement = <T,>(arr: readonly T[]): T => arr[Math.floor(annotationRandom() * arr.length)];
+    const seededBetween = (min: number, max: number): number => annotationRandom() * (max - min) + min;
+
+    // Prepare all data for batch inserts
+    const allExecutions: Array<{
+      execution_id: string;
+      account_id: string;
+      order_id: string;
+      ticker: string;
+      executed_at: string;
+      side: string;
+      quantity: number;
+      price: number;
+      commission: number;
+      net_cash: number;
+      exchange: string;
+    }> = [];
+
+    const allTrades: Array<{
+      account_id: string;
+      ticker: string;
+      direction: string;
+      status: string;
+      entry_datetime: string;
+      exit_datetime: string;
+      entry_price: number;
+      exit_price: number;
+      total_shares: number;
+      remaining_shares: number;
+      realized_pnl: number;
+      total_commission: number;
+    }> = [];
+
+    // Store trade metadata for legs/annotations (indexed by position)
+    const tradeMetadata: Array<{
+      entryExecId: string;
+      exitExecId: string;
+      entryDate: Date;
+      exitDate: Date;
+      entryPrice: number;
+      exitPrice: number;
+      shares: number;
+      isWinner: boolean;
+    }> = [];
 
     let executionCounter = 1;
-    let insertedTrades = 0;
-    let insertedExecutions = 0;
 
+    // Build execution and trade arrays
     for (const trade of dummyTrades) {
-      // Create entry execution
-      const entryExecId = `DUMMY-${Date.now()}-${executionCounter++}`;
-      const { error: entryExecError } = await supabase.from('executions').insert({
+      const entryExecId = `DUMMY-ENTRY-${executionCounter++}`;
+      const exitExecId = `DUMMY-EXIT-${executionCounter++}`;
+
+      allExecutions.push({
         execution_id: entryExecId,
         account_id: trade.accountId,
         order_id: `ORD-${executionCounter}`,
@@ -178,15 +260,7 @@ export async function POST(request: Request) {
         exchange: 'SMART',
       });
 
-      if (entryExecError) {
-        console.error('Entry exec error:', entryExecError);
-        continue;
-      }
-      insertedExecutions++;
-
-      // Create exit execution
-      const exitExecId = `DUMMY-${Date.now()}-${executionCounter++}`;
-      const { error: exitExecError } = await supabase.from('executions').insert({
+      allExecutions.push({
         execution_id: exitExecId,
         account_id: trade.accountId,
         order_id: `ORD-${executionCounter}`,
@@ -200,73 +274,120 @@ export async function POST(request: Request) {
         exchange: 'SMART',
       });
 
-      if (exitExecError) {
-        console.error('Exit exec error:', exitExecError);
-        continue;
+      allTrades.push({
+        account_id: trade.accountId,
+        ticker: trade.ticker,
+        direction: 'LONG',
+        status: 'CLOSED',
+        entry_datetime: trade.entryDate.toISOString(),
+        exit_datetime: trade.exitDate.toISOString(),
+        entry_price: trade.entryPrice,
+        exit_price: trade.exitPrice,
+        total_shares: trade.shares,
+        remaining_shares: 0,
+        realized_pnl: trade.realizedPnl,
+        total_commission: trade.commission,
+      });
+
+      tradeMetadata.push({
+        entryExecId,
+        exitExecId,
+        entryDate: trade.entryDate,
+        exitDate: trade.exitDate,
+        entryPrice: trade.entryPrice,
+        exitPrice: trade.exitPrice,
+        shares: trade.shares,
+        isWinner: trade.isWinner,
+      });
+    }
+
+    // Batch insert executions (in chunks of 100 to avoid payload limits)
+    const CHUNK_SIZE = 100;
+    for (let i = 0; i < allExecutions.length; i += CHUNK_SIZE) {
+      const chunk = allExecutions.slice(i, i + CHUNK_SIZE);
+      const { error } = await supabase.from('executions').insert(chunk);
+      if (error) {
+        console.error('Execution batch error:', error);
+        throw new Error(`Failed to insert executions: ${error.message}`);
       }
-      insertedExecutions++;
+    }
 
-      // Create trade record
-      const { data: tradeData, error: tradeError } = await supabase
-        .from('trades')
-        .insert({
-          account_id: trade.accountId,
-          ticker: trade.ticker,
-          direction: 'LONG',
-          status: 'CLOSED',
-          entry_datetime: trade.entryDate.toISOString(),
-          exit_datetime: trade.exitDate.toISOString(),
-          entry_price: trade.entryPrice,
-          exit_price: trade.exitPrice,
-          total_shares: trade.shares,
-          remaining_shares: 0,
-          realized_pnl: trade.realizedPnl,
-          total_commission: trade.commission,
-        })
-        .select('id')
-        .single();
-
-      if (tradeError) {
-        console.error('Trade error:', tradeError);
-        continue;
+    // Batch insert trades and get back IDs
+    const insertedTradeIds: number[] = [];
+    for (let i = 0; i < allTrades.length; i += CHUNK_SIZE) {
+      const chunk = allTrades.slice(i, i + CHUNK_SIZE);
+      const { data, error } = await supabase.from('trades').insert(chunk).select('id');
+      if (error) {
+        console.error('Trade batch error:', error);
+        throw new Error(`Failed to insert trades: ${error.message}`);
       }
-      insertedTrades++;
+      insertedTradeIds.push(...(data?.map(t => t.id) || []));
+    }
 
-      const tradeId = tradeData.id;
+    // Build legs array using trade IDs
+    const allLegs: Array<{
+      trade_id: number;
+      execution_id: string;
+      leg_type: string;
+      shares: number;
+      price: number;
+      executed_at: string;
+    }> = [];
 
-      // Create trade legs
-      await supabase.from('trade_legs').insert([
-        {
-          trade_id: tradeId,
-          execution_id: entryExecId,
-          leg_type: 'ENTRY',
-          shares: trade.shares,
-          price: trade.entryPrice,
-          executed_at: trade.entryDate.toISOString(),
-        },
-        {
-          trade_id: tradeId,
-          execution_id: exitExecId,
-          leg_type: 'EXIT',
-          shares: trade.shares,
-          price: trade.exitPrice,
-          executed_at: trade.exitDate.toISOString(),
-        },
-      ]);
+    for (let i = 0; i < insertedTradeIds.length; i++) {
+      const tradeId = insertedTradeIds[i];
+      const meta = tradeMetadata[i];
 
-      // Add annotation for ~70% of trades
-      if (Math.random() < 0.7) {
-        const isGoodSetup = trade.isWinner ? Math.random() < 0.7 : Math.random() < 0.3;
+      allLegs.push({
+        trade_id: tradeId,
+        execution_id: meta.entryExecId,
+        leg_type: 'ENTRY',
+        shares: meta.shares,
+        price: meta.entryPrice,
+        executed_at: meta.entryDate.toISOString(),
+      });
+
+      allLegs.push({
+        trade_id: tradeId,
+        execution_id: meta.exitExecId,
+        leg_type: 'EXIT',
+        shares: meta.shares,
+        price: meta.exitPrice,
+        executed_at: meta.exitDate.toISOString(),
+      });
+    }
+
+    // Batch insert legs
+    for (let i = 0; i < allLegs.length; i += CHUNK_SIZE) {
+      const chunk = allLegs.slice(i, i + CHUNK_SIZE);
+      const { error } = await supabase.from('trade_legs').insert(chunk);
+      if (error) {
+        console.error('Legs batch error:', error);
+        throw new Error(`Failed to insert legs: ${error.message}`);
+      }
+    }
+
+    // Build annotations array (for ~70% of trades, deterministic)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const allAnnotations: Array<any> = [];
+
+    for (let i = 0; i < insertedTradeIds.length; i++) {
+      const tradeId = insertedTradeIds[i];
+      const meta = tradeMetadata[i];
+
+      // Add annotation for ~70% of trades (deterministic)
+      if (annotationRandom() < 0.7) {
+        const isGoodSetup = meta.isWinner ? annotationRandom() < 0.7 : annotationRandom() < 0.3;
         const grade = isGoodSetup
-          ? randomElement(['A+', 'A', 'B'] as const)
-          : randomElement(['B', 'C', 'F'] as const);
+          ? seededElement(['A+', 'A', 'B'] as const)
+          : seededElement(['B', 'C', 'F'] as const);
 
-        const riskPercent = randomBetween(0.03, 0.08);
-        const initialRisk = trade.entryPrice * trade.shares * riskPercent;
+        const riskPercent = seededBetween(0.03, 0.08);
+        const initialRisk = meta.entryPrice * meta.shares * riskPercent;
 
-        const followedPlan = isGoodSetup ? Math.random() < 0.8 : Math.random() < 0.5;
-        const generatedChecklist = generateChecklist(isGoodSetup);
-        // Calculate setup rating from checklist
+        const followedPlan = isGoodSetup ? annotationRandom() < 0.8 : annotationRandom() < 0.5;
+        const generatedChecklist = generateChecklist(isGoodSetup, annotationRandom);
+
         const sections = [
           generatedChecklist.marketContext,
           generatedChecklist.stockSelection,
@@ -282,15 +403,15 @@ export async function POST(request: Request) {
           Object.values(section).every(Boolean)
         ).length;
 
-        await supabase.from('trade_annotations').insert({
+        allAnnotations.push({
           trade_id: tradeId,
           grade,
           setup_rating: setupRating,
           followed_plan: followedPlan,
-          setup_type: randomElement(SETUP_TYPES),
-          market_regime: randomElement(MARKET_REGIMES),
+          setup_type: seededElement(SETUP_TYPES),
+          market_regime: seededElement(MARKET_REGIMES),
           initial_risk_dollars: Math.round(initialRisk * 100) / 100,
-          initial_stop_price: Math.round(trade.entryPrice * (1 - riskPercent) * 100) / 100,
+          initial_stop_price: Math.round(meta.entryPrice * (1 - riskPercent) * 100) / 100,
           checklist: generatedChecklist,
           notes: followedPlan
             ? 'Executed according to plan.'
@@ -299,11 +420,22 @@ export async function POST(request: Request) {
       }
     }
 
+    // Batch insert annotations
+    for (let i = 0; i < allAnnotations.length; i += CHUNK_SIZE) {
+      const chunk = allAnnotations.slice(i, i + CHUNK_SIZE);
+      const { error } = await supabase.from('trade_annotations').insert(chunk);
+      if (error) {
+        console.error('Annotations batch error:', error);
+        throw new Error(`Failed to insert annotations: ${error.message}`);
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Seeded ${insertedTrades} trades and ${insertedExecutions} executions`,
-      trades: insertedTrades,
-      executions: insertedExecutions,
+      message: `Seeded ${insertedTradeIds.length} trades and ${allExecutions.length} executions`,
+      trades: insertedTradeIds.length,
+      executions: allExecutions.length,
+      annotations: allAnnotations.length,
     });
   } catch (error) {
     console.error('Seed error:', error);
@@ -317,7 +449,15 @@ export async function POST(request: Request) {
 // Also support GET for easy browser testing
 export async function GET() {
   return NextResponse.json({
-    message: 'POST to this endpoint to seed 100 dummy trades',
+    message: 'POST to this endpoint to seed 500 deterministic demo trades',
     usage: 'curl -X POST http://localhost:3000/api/seed',
+    details: {
+      trades: 500,
+      dateRange: 'Jan 1, 2025 - Feb 4, 2026',
+      winRate: '25%',
+      avgWin: '9%',
+      avgLoss: '3%',
+      avgPositionSize: '$9k',
+    },
   });
 }

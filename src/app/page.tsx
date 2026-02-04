@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [showSettings, setShowSettings] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState('');
+  const [hasCheckedSeed, setHasCheckedSeed] = useState(false);
 
   // Load preferences from localStorage
   useEffect(() => {
@@ -87,8 +88,36 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Auto-seed if database is empty (runs once on mount)
+  useEffect(() => {
+    if (hasCheckedSeed) return;
+
+    const checkAndSeed = async () => {
+      try {
+        // Check if any trades exist at all (no date filter)
+        const res = await fetch('/api/trades?limit=1');
+        const data = await res.json();
+
+        if (!data.trades || data.trades.length === 0) {
+          // Database is empty, seed demo data
+          console.log('No trades found, seeding demo data...');
+          await fetch('/api/seed', { method: 'POST' });
+          console.log('Demo data seeded successfully');
+        }
+      } catch (error) {
+        console.error('Failed to check/seed:', error);
+      } finally {
+        setHasCheckedSeed(true);
+      }
+    };
+
+    checkAndSeed();
+  }, [hasCheckedSeed]);
+
   // Load trades and stats
   const loadTrades = useCallback(async () => {
+    if (!hasCheckedSeed) return; // Wait for seed check to complete
+
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -112,7 +141,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [accountId, period]);
+  }, [accountId, period, hasCheckedSeed]);
 
   useEffect(() => {
     loadTrades();
