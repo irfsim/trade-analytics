@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import type { SetupType, ChecklistItemDefinition } from '@/types/database';
 import { CHECKLIST_LIBRARY } from '@/types/database';
 
@@ -150,9 +151,11 @@ export function SetupsSection() {
         setNewColor(SETUP_COLORS[0].value);
         setNewChecklistItems([]);
         setShowAddForm(false);
+        toast.success(`Setup "${newName.trim()}" created`);
       }
     } catch (error) {
       console.error('Failed to add setup type:', error);
+      toast.error('Failed to create setup');
     } finally {
       setSaving(false);
     }
@@ -197,9 +200,11 @@ export function SetupsSection() {
         setEditName('');
         setEditColor('');
         setEditChecklistItems([]);
+        toast.success(`Setup "${editName.trim()}" updated`);
       }
     } catch (error) {
       console.error('Failed to update setup type:', error);
+      toast.error('Failed to update setup');
     } finally {
       setSaving(false);
     }
@@ -218,10 +223,12 @@ export function SetupsSection() {
         if (setup) {
           setSetupTypes(setupTypes.filter(s => s.id !== id));
           setArchivedSetups([...archivedSetups, { ...setup, archived: true }]);
+          toast.success(`Setup "${setup.name}" archived`);
         }
       }
     } catch (error) {
       console.error('Failed to archive setup type:', error);
+      toast.error('Failed to archive setup');
     }
   };
 
@@ -238,10 +245,12 @@ export function SetupsSection() {
         if (setup) {
           setArchivedSetups(archivedSetups.filter(s => s.id !== id));
           setSetupTypes([...setupTypes, { ...setup, archived: false }]);
+          toast.success(`Setup "${setup.name}" restored`);
         }
       }
     } catch (error) {
       console.error('Failed to restore setup type:', error);
+      toast.error('Failed to restore setup');
     }
   };
 

@@ -16,10 +16,12 @@ const DEFAULT_GRADIENT = 'linear-gradient(135deg, #5BE1F0 0%, #4A9FF5 30%, #6366
 interface ProfileSectionProps {
   avatar: string | null;
   onAvatarChange: (avatar: string | null) => void;
+  displayName: string;
+  onDisplayNameChange: (displayName: string) => void;
 }
 
-export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) {
-  const [displayName, setDisplayName] = useState('');
+export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayNameChange }: ProfileSectionProps) {
+  const [localDisplayName, setLocalDisplayName] = useState(displayName);
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(avatar);
@@ -29,6 +31,11 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
   useEffect(() => {
     setSelectedAvatar(avatar);
   }, [avatar]);
+
+  // Sync local display name when prop changes (e.g., modal reopens)
+  useEffect(() => {
+    setLocalDisplayName(displayName);
+  }, [displayName]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,7 +55,10 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
     if (selectedAvatar !== avatar) {
       onAvatarChange(selectedAvatar);
     }
-    // TODO: Implement profile save when user auth is added
+    // Save display name change
+    if (localDisplayName !== displayName) {
+      onDisplayNameChange(localDisplayName);
+    }
     await new Promise(resolve => setTimeout(resolve, 300));
     setSaving(false);
   };
@@ -119,8 +129,8 @@ export function ProfileSection({ avatar, onAvatarChange }: ProfileSectionProps) 
         </label>
         <input
           type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
+          value={localDisplayName}
+          onChange={(e) => setLocalDisplayName(e.target.value)}
           placeholder="Your name"
           className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
         />

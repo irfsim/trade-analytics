@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { AgentationProvider } from "@/components/agentation-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -33,6 +34,7 @@ export default function RootLayout({
             {children}
           </main>
         </ThemeProvider>
+        <Toaster position="top-right" richColors />
         <AgentationProvider />
       </body>
     </html>
