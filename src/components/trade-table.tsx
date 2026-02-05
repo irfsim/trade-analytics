@@ -554,44 +554,40 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* Value */}
-      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
-        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
+        <div className="flex justify-end">
           {trade.entry_price !== null
             ? `$${(trade.total_shares * trade.entry_price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
             : '—'}
-        </span>
+        </div>
       </td>
 
       {/* Size % */}
-      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
-        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
+        <div className="flex justify-end">
           {trade.position_size_pct !== null
             ? `${trade.position_size_pct.toFixed(1)}%`
             : '—'}
-        </span>
+        </div>
       </td>
 
       {/* % Change */}
-      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
-        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
-          {formatPct(pctChange)}
-        </span>
+      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
+        <div className="flex justify-end">{formatPct(pctChange)}</div>
       </td>
 
       {/* P&L */}
-      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
-        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
-          {formatPnl(pnl)}
-        </span>
+      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
+        <div className="flex justify-end">{formatPnl(pnl)}</div>
       </td>
 
-      {/* Acct % */}
-      <td className="px-3 py-2 text-sm text-right tabular-nums whitespace-nowrap">
-        <span className="block w-full text-right text-zinc-900 dark:text-zinc-100">
+      {/* Impact */}
+      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
+        <div className="flex justify-end">
           {trade.account_pct !== null
             ? `${trade.account_pct >= 0 ? '+' : ''}${trade.account_pct.toFixed(1)}%`
             : '—'}
-        </span>
+        </div>
       </td>
 
       {/* Days */}
