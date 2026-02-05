@@ -211,13 +211,13 @@ export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId 
                   onSort={handleSort}
                   className="text-right"
                 />
-                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-center whitespace-nowrap w-14">
+                <th className="px-1 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-center whitespace-nowrap">
                   Days
                 </th>
                 <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-left whitespace-nowrap">
                   Setup
                 </th>
-                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-left whitespace-nowrap">
+                <th className="pl-3 pr-1 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-left whitespace-nowrap">
                   Quality
                 </th>
                 <th className="pl-3 pr-5 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-center whitespace-nowrap">
@@ -554,44 +554,38 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* Value */}
-      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
-        <div className="flex justify-end">
-          {trade.entry_price !== null
-            ? `$${(trade.total_shares * trade.entry_price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-            : '—'}
-        </div>
+      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+        {trade.entry_price !== null
+          ? `$${(trade.total_shares * trade.entry_price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+          : '—'}
       </td>
 
       {/* Size % */}
-      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
-        <div className="flex justify-end">
-          {trade.position_size_pct !== null
-            ? `${trade.position_size_pct.toFixed(1)}%`
-            : '—'}
-        </div>
+      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+        {trade.position_size_pct !== null
+          ? `${trade.position_size_pct.toFixed(1)}%`
+          : '—'}
       </td>
 
       {/* % Change */}
-      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
-        <div className="flex justify-end">{formatPct(pctChange)}</div>
+      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+        {formatPct(pctChange)}
       </td>
 
       {/* P&L */}
-      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
-        <div className="flex justify-end">{formatPnl(pnl)}</div>
+      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+        {formatPnl(pnl)}
       </td>
 
       {/* Impact */}
-      <td className="px-3 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100">
-        <div className="flex justify-end">
-          {trade.account_pct !== null
-            ? `${trade.account_pct >= 0 ? '+' : ''}${trade.account_pct.toFixed(1)}%`
-            : '—'}
-        </div>
+      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+        {trade.account_pct !== null
+          ? `${trade.account_pct >= 0 ? '+' : ''}${trade.account_pct.toFixed(1)}%`
+          : '—'}
       </td>
 
       {/* Days */}
-      <td className="px-3 py-2 text-center text-sm text-zinc-900 dark:text-zinc-100 w-14">
+      <td className="px-1 py-2 text-center text-sm text-zinc-900 dark:text-zinc-100">
         {(() => {
           const entry = new Date(trade.entry_datetime);
           const exit = trade.exit_datetime ? new Date(trade.exit_datetime) : new Date();
@@ -610,7 +604,7 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* Quality */}
-      <td className="px-3 py-2 align-middle">
+      <td className="pl-3 pr-1 py-2 align-middle">
         <RatingBars rating={trade.setup_rating} />
       </td>
 
