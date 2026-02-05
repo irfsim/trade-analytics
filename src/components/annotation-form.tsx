@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
-import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType as SetupTypeInterface, MarketRegime, SetupSpecificChecklist, ChecklistItemDefinition } from '@/types/database';
+import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType as SetupTypeInterface, SetupSpecificChecklist, ChecklistItemDefinition } from '@/types/database';
 import { emptyChecklist, isSetupSpecificChecklist } from '@/types/database';
 
 interface BloomSelectProps<T extends string> {
@@ -27,14 +27,14 @@ function SetupTypeSelect({
   return (
     <Root direction="bottom" anchor="start">
       <Container
-        className="bg-white border border-zinc-200 shadow-lg"
+        className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-lg"
         buttonSize={{ width: 200, height: 40 }}
         menuWidth={200}
         menuRadius={8}
         buttonRadius={8}
       >
-        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 transition-colors">
-          <span className={selectedType ? 'text-zinc-900' : 'text-zinc-400'}>
+        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+          <span className={selectedType ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
             {selectedType?.name || 'Select...'}
           </span>
           <svg
@@ -50,8 +50,8 @@ function SetupTypeSelect({
         <Content className="p-1 max-h-60 overflow-y-auto">
           <Item
             onSelect={() => onChange(null)}
-            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 rounded-lg cursor-pointer ${
-              value === null ? 'text-zinc-900 font-medium' : 'text-zinc-500'
+            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+              value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
             Select...
@@ -60,8 +60,8 @@ function SetupTypeSelect({
             <Item
               key={type.id}
               onSelect={() => onChange(type.id)}
-              className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 rounded-lg cursor-pointer ${
-                value === type.id ? 'text-zinc-900 font-medium' : 'text-zinc-600'
+              className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+                value === type.id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
               }`}
             >
               {type.name}
@@ -79,14 +79,14 @@ function BloomSelect<T extends string>({ value, onChange, options, placeholder =
   return (
     <Root direction="bottom" anchor="start">
       <Container
-        className="bg-white border border-zinc-200 shadow-lg"
+        className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-lg"
         buttonSize={{ width: 200, height: 40 }}
         menuWidth={200}
         menuRadius={8}
         buttonRadius={8}
       >
-        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 transition-colors">
-          <span className={selectedOption ? 'text-zinc-900' : 'text-zinc-400'}>
+        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+          <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
             {selectedOption?.label || placeholder}
           </span>
           <svg
@@ -102,8 +102,8 @@ function BloomSelect<T extends string>({ value, onChange, options, placeholder =
         <Content className="p-1 max-h-60 overflow-y-auto">
           <Item
             onSelect={() => onChange(null)}
-            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 rounded-lg cursor-pointer ${
-              value === null ? 'text-zinc-900 font-medium' : 'text-zinc-500'
+            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+              value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
             {placeholder}
@@ -112,8 +112,8 @@ function BloomSelect<T extends string>({ value, onChange, options, placeholder =
             <Item
               key={option.value}
               onSelect={() => onChange(option.value)}
-              className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 rounded-lg cursor-pointer ${
-                value === option.value ? 'text-zinc-900 font-medium' : 'text-zinc-600'
+              className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+                value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
               }`}
             >
               {option.label}
@@ -131,15 +131,6 @@ interface AnnotationFormProps {
   entryPrice: number;
   onSave?: () => void;
 }
-
-
-const MARKET_REGIMES: { value: MarketRegime; label: string }[] = [
-  { value: 'STRONG_UPTREND', label: 'Strong Uptrend' },
-  { value: 'UPTREND_CHOP', label: 'Uptrend with Chop' },
-  { value: 'SIDEWAYS', label: 'Sideways/Range' },
-  { value: 'DOWNTREND', label: 'Downtrend' },
-  { value: 'CORRECTION', label: 'Correction/Crash' },
-];
 
 const GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C', 'F'];
 
@@ -174,9 +165,6 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
     existingAnnotation?.followed_plan ?? null
   );
   const [setupTypeId, setSetupTypeId] = useState<number | null>(existingAnnotation?.setup_type_id || null);
-  const [marketRegime, setMarketRegime] = useState<MarketRegime | null>(
-    existingAnnotation?.market_regime || null
-  );
   const [initialRisk, setInitialRisk] = useState(existingAnnotation?.initial_risk_dollars?.toString() || '');
   const [stopPrice, setStopPrice] = useState(existingAnnotation?.initial_stop_price?.toString() || '');
   const [notes, setNotes] = useState(existingAnnotation?.notes || '');
@@ -263,7 +251,6 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
           setup_rating: normalizedRating,
           followed_plan: followedPlan,
           setup_type_id: setupTypeId,
-          market_regime: marketRegime,
           initial_risk_dollars: initialRisk ? parseFloat(initialRisk) : null,
           initial_stop_price: stopPrice ? parseFloat(stopPrice) : null,
           notes,
@@ -340,17 +327,17 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
   const setupRating = ratingData.checked;
 
   const getRatingColor = (percentage: number): string => {
-    if (percentage >= 90) return 'text-emerald-600';
-    if (percentage >= 70) return 'text-yellow-600';
-    if (percentage >= 50) return 'text-orange-600';
-    return 'text-red-600';
+    if (percentage >= 90) return 'text-emerald-600 dark:text-emerald-400';
+    if (percentage >= 70) return 'text-yellow-600 dark:text-yellow-400';
+    if (percentage >= 50) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const getRatingBg = (percentage: number): string => {
-    if (percentage >= 90) return 'bg-emerald-50 border-emerald-200';
-    if (percentage >= 70) return 'bg-yellow-50 border-yellow-200';
-    if (percentage >= 50) return 'bg-orange-50 border-orange-200';
-    return 'bg-red-50 border-red-200';
+    if (percentage >= 90) return 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800';
+    if (percentage >= 70) return 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800';
+    if (percentage >= 50) return 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800';
+    return 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800';
   };
 
   // Get letter grade from percentage
@@ -369,8 +356,8 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         <div className={`p-6 rounded-xl border ${getRatingBg(ratingData.percentage)}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-600 uppercase tracking-wide">Setup Quality</p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Setup Quality</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 {hasChecklistItems ? `${ratingData.checked}/${ratingData.total} checklist items` : 'Based on checklist sections'}
               </p>
             </div>
@@ -385,8 +372,8 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
           </div>
         </div>
       ) : (
-        <div className="p-6 rounded-xl border bg-zinc-50 border-zinc-200">
-          <p className="text-sm text-zinc-500">
+        <div className="p-6 rounded-xl border bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {!setupTypeId ? 'Select a setup type to see its quality checklist' :
              isDefaultSetup ? 'This setup has no checklist items' :
              'This setup has no checklist items configured. Add them in Settings.'}
@@ -395,10 +382,10 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       )}
 
       {/* Quick Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Grade */}
         <div>
-          <label className="block text-sm font-medium text-zinc-600 mb-2">Trade Grade</label>
+          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Trade Grade</label>
           <div className="flex gap-2">
             {GRADES.map((g) => (
               <button
@@ -406,8 +393,8 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
                 onClick={() => setGrade(g)}
                 className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                   grade === g
-                    ? 'bg-zinc-900 text-white'
-                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                    ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                 }`}
               >
                 {g}
@@ -418,22 +405,11 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
         {/* Setup Type */}
         <div>
-          <label className="block text-sm font-medium text-zinc-600 mb-2">Setup Type</label>
+          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Setup Type</label>
           <SetupTypeSelect
             value={setupTypeId}
             onChange={setSetupTypeId}
             setupTypes={setupTypes}
-          />
-        </div>
-
-        {/* Market Regime */}
-        <div>
-          <label className="block text-sm font-medium text-zinc-600 mb-2">Market Regime</label>
-          <BloomSelect
-            value={marketRegime}
-            onChange={setMarketRegime}
-            options={MARKET_REGIMES}
-            placeholder="Select..."
           />
         </div>
       </div>
@@ -441,28 +417,28 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       {/* Risk Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-600 mb-2">Initial Risk ($)</label>
+          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Initial Risk ($)</label>
           <input
             type="number"
             step="0.01"
             value={initialRisk}
             onChange={(e) => setInitialRisk(e.target.value)}
             placeholder="500.00"
-            className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
           />
-          <p className="text-xs text-zinc-500 mt-1">$ amount you risked on this trade</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">$ amount you risked on this trade</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-600 mb-2">Stop Price ($)</label>
+          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Stop Price ($)</label>
           <input
             type="number"
             step="0.01"
             value={stopPrice}
             onChange={(e) => setStopPrice(e.target.value)}
             placeholder={`${(entryPrice * 0.95).toFixed(2)}`}
-            className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
           />
-          <p className="text-xs text-zinc-500 mt-1">Where was your stop?</p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Where was your stop?</p>
         </div>
       </div>
 
@@ -470,7 +446,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       {setupTypeId && hasChecklistItems && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-zinc-900">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               A+ Checklist for {selectedSetup?.name}
             </h3>
             <span className={`text-sm font-medium ${getRatingColor(ratingData.percentage)}`}>
@@ -478,7 +454,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
             </span>
           </div>
 
-          <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-lg space-y-3">
+          <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg space-y-3">
             {setupChecklistItems.map((item) => (
               <label
                 key={item.id}
@@ -488,9 +464,9 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
                   type="checkbox"
                   checked={setupChecklist[item.id] || false}
                   onChange={(e) => updateSetupChecklist(item.id, e.target.checked)}
-                  className="w-4 h-4 rounded border-zinc-300 bg-white text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 checkbox-pop"
+                  className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0 checkbox-pop"
                 />
-                <span className="text-sm text-zinc-600 group-hover:text-zinc-900 transition-colors">
+                <span className="text-sm text-zinc-600 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100 transition-colors">
                   {item.label}
                 </span>
               </label>
@@ -501,8 +477,8 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
       {/* Legacy Checklist - shown when setup has no items but not default */}
       {setupTypeId && !hasChecklistItems && !isDefaultSetup && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-sm text-amber-700">
+        <div className="p-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <p className="text-sm text-amber-700 dark:text-amber-400">
             This setup has no checklist items configured.{' '}
             <span className="font-medium">Go to Settings &gt; Setups</span> to add checklist items for this setup.
           </p>
@@ -511,8 +487,8 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
       {/* Message when no setup selected */}
       {!setupTypeId && (
-        <div className="p-4 bg-zinc-50 border border-zinc-200 rounded-lg">
-          <p className="text-sm text-zinc-500">
+        <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Select a setup type above to see its A+ checklist items.
           </p>
         </div>
@@ -520,17 +496,17 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
       {/* Plan Compliance */}
       <div>
-        <label className="block text-sm font-medium text-zinc-600 mb-2">
+        <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
           Did you follow your plan?
         </label>
-        <p className="text-xs text-zinc-500 mb-3">Entry, sizing, stop, exit executed correctly?</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">Entry, sizing, stop, exit executed correctly?</p>
         <div className="flex gap-3">
           <button
             onClick={() => setFollowedPlan(true)}
             className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
               followedPlan === true
-                ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
-                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
             Yes
@@ -539,8 +515,8 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
             onClick={() => setFollowedPlan(false)}
             className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
               followedPlan === false
-                ? 'bg-red-100 text-red-700 border border-red-300'
-                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
             No
@@ -550,13 +526,13 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
       {/* Notes */}
       <div>
-        <label className="block text-sm font-medium text-zinc-600 mb-2">Notes</label>
+        <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Notes</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
           placeholder="What did you learn from this trade? What would you do differently?"
-          className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 resize-none"
+          className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500 resize-none"
         />
       </div>
 
@@ -565,12 +541,12 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-2 bg-zinc-900 text-white font-medium rounded-full hover:bg-zinc-800 disabled:opacity-50 transition-colors btn-press"
+          className="px-6 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors btn-press"
         >
           {saving ? 'Saving...' : 'Save Annotation'}
         </button>
         {saved && (
-          <span className="text-emerald-600 text-sm animate-fade-in">Saved!</span>
+          <span className="text-emerald-600 dark:text-emerald-400 text-sm animate-fade-in">Saved!</span>
         )}
       </div>
     </div>

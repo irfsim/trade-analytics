@@ -74,10 +74,10 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
     >
       {loading && (
         <div className="p-6 space-y-4 animate-pulse">
-          <div className="h-8 w-32 bg-zinc-100 rounded" />
+          <div className="h-8 w-32 bg-zinc-100 dark:bg-zinc-800 rounded" />
           <div className="grid grid-cols-2 gap-4">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-16 bg-zinc-100 rounded-lg" />
+              <div key={i} className="h-16 bg-zinc-100 dark:bg-zinc-800 rounded-lg" />
             ))}
           </div>
         </div>
@@ -95,8 +95,8 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
           <TradeHeader trade={trade} />
 
           {/* Price Chart */}
-          <div className="border-t border-zinc-200 pt-6">
-            <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">
+          <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
+            <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
               Price Chart
             </h3>
             <TradeChart
@@ -118,8 +118,8 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
 
           {/* Annotation Form */}
           {trade.status === 'CLOSED' && (
-            <div className="border-t border-zinc-200 pt-6">
-              <h3 className="text-base font-semibold text-zinc-900 mb-4">Trade Review</h3>
+            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Trade Review</h3>
               <AnnotationForm
                 tradeId={trade.id}
                 existingAnnotation={trade.annotation}
@@ -136,7 +136,7 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
 
 function TradeHeader({ trade }: { trade: TradeWithDetails }) {
   const pnl = trade.realized_pnl;
-  const pnlColor = pnl === null ? 'text-zinc-500' : pnl > 0 ? 'text-emerald-600' : pnl < 0 ? 'text-red-600' : 'text-zinc-500';
+  const pnlColor = pnl === null ? 'text-zinc-500' : pnl > 0 ? 'text-emerald-600 dark:text-emerald-400' : pnl < 0 ? 'text-red-600 dark:text-red-400' : 'text-zinc-500';
 
   const formatPnl = (pnl: number | null) => {
     if (pnl === null) return '—';
@@ -155,18 +155,18 @@ function TradeHeader({ trade }: { trade: TradeWithDetails }) {
     <div className="flex items-start justify-between">
       <div>
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold text-zinc-900">{trade.ticker}</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{trade.ticker}</h2>
           <span className={`
             inline-flex px-2.5 py-1 text-xs font-bold rounded-md uppercase
             ${trade.direction === 'LONG'
-              ? 'bg-emerald-100 text-emerald-700'
-              : 'bg-red-100 text-red-700'
+              ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400'
+              : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400'
             }
           `}>
             {trade.direction}
           </span>
         </div>
-        <p className="text-zinc-500 mt-1">{trade.account_id} Account</p>
+        <p className="text-zinc-500 dark:text-zinc-400 mt-1">{trade.account_id} Account</p>
       </div>
 
       <div className="text-right">
@@ -174,7 +174,7 @@ function TradeHeader({ trade }: { trade: TradeWithDetails }) {
           {formatPnl(pnl)}
         </p>
         {pctChange !== null && (
-          <p className={`text-sm font-mono ${pctChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+          <p className={`text-sm font-mono ${pctChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
             {pctChange >= 0 ? '+' : ''}{pctChange.toFixed(2)}%
           </p>
         )}
@@ -236,10 +236,10 @@ function TradeStats({ trade }: { trade: TradeWithDetails }) {
 
 function StatCard({ label, value, sublabel }: { label: string; value: string; sublabel?: string }) {
   return (
-    <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
-      <p className="text-xs text-zinc-500 uppercase tracking-wide">{label}</p>
-      <p className="text-base font-semibold text-zinc-900 mt-0.5">{value}</p>
-      {sublabel && <p className="text-xs text-zinc-500 mt-0.5">{sublabel}</p>}
+    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+      <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{label}</p>
+      <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">{value}</p>
+      {sublabel && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{sublabel}</p>}
     </div>
   );
 }
@@ -258,32 +258,32 @@ function TradeLegsList({ legs }: { legs: TradeLeg[] }) {
   };
 
   const legTypeColors: Record<string, string> = {
-    ENTRY: 'text-emerald-700 bg-emerald-100',
-    ADD: 'text-blue-700 bg-blue-100',
-    TRIM: 'text-amber-700 bg-amber-100',
-    EXIT: 'text-red-700 bg-red-100',
+    ENTRY: 'text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/50',
+    ADD: 'text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50',
+    TRIM: 'text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50',
+    EXIT: 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/50',
   };
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-3">
+      <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
         Executions
       </h3>
       <div className="space-y-2">
         {legs.map((leg) => (
           <div
             key={leg.id}
-            className="flex items-center justify-between p-3 bg-zinc-50 border border-zinc-200 rounded-lg"
+            className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
           >
             <div className="flex items-center gap-3">
               <span className={`px-2 py-0.5 text-xs font-bold rounded ${legTypeColors[leg.leg_type]}`}>
                 {leg.leg_type}
               </span>
-              <span className="text-sm text-zinc-700">
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">
                 {leg.shares.toLocaleString()} @ ${leg.price.toFixed(2)}
               </span>
             </div>
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
               {formatDateTime(leg.executed_at)}
             </span>
           </div>

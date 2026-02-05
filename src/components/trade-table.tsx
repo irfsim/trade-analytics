@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { TradeWithRating } from '@/types/database';
+import type { TradeWithRating, MarketRegime } from '@/types/database';
 
 type TradeTab = 'open' | 'closed';
 
@@ -167,6 +167,9 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
                   sortDir={sortDir}
                   onSort={handleSort}
                 />
+                <th className="px-3 py-[13px] text-sm font-normal text-zinc-500 dark:text-zinc-400 text-center whitespace-nowrap w-12">
+                  Mkt
+                </th>
                 <SortableHeader
                   label="Value"
                   field="total_shares"
@@ -272,7 +275,10 @@ function MobileTradeCard({ trade, onSelect }: { trade: TradeWithRating; onSelect
       className="bg-white shadow-card-interactive rounded-xl p-4 cursor-pointer hover:bg-zinc-50 transition-colors"
     >
       <div className="flex items-start justify-between mb-3">
-        <span className="text-lg font-semibold text-zinc-900">{trade.ticker}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-semibold text-zinc-900">{trade.ticker}</span>
+          <MarketConditionDot condition={trade.market_condition} />
+        </div>
         <span className="text-sm text-zinc-500">{formatDate(trade.entry_datetime)}</span>
       </div>
 
@@ -403,6 +409,35 @@ function PlanIndicator({ followedPlan }: { followedPlan: boolean | null }) {
   return <span className="text-zinc-900 dark:text-zinc-100 text-sm">✗</span>;
 }
 
+function MarketConditionDot({ condition }: { condition: MarketRegime | null }) {
+  if (!condition) {
+    return <span className="text-zinc-400">—</span>;
+  }
+
+  const colors: Record<MarketRegime, string> = {
+    STRONG_UPTREND: 'bg-emerald-500',
+    UPTREND_CHOP: 'bg-yellow-500',
+    SIDEWAYS: 'bg-yellow-500',
+    DOWNTREND: 'bg-red-500',
+    CORRECTION: 'bg-red-500',
+  };
+
+  const labels: Record<MarketRegime, string> = {
+    STRONG_UPTREND: 'Strong Uptrend',
+    UPTREND_CHOP: 'Uptrend + Chop',
+    SIDEWAYS: 'Sideways',
+    DOWNTREND: 'Downtrend',
+    CORRECTION: 'Correction',
+  };
+
+  return (
+    <span
+      className={`inline-block w-2.5 h-2.5 rounded-full ${colors[condition]} cursor-default`}
+      title={labels[condition]}
+    />
+  );
+}
+
 function SetupTypePill({ name, color }: { name: string; color: string | null }) {
   // Default color if none specified
   const baseColor = color || '#6366f1';
@@ -509,6 +544,11 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
         <span className="text-zinc-900 dark:text-zinc-100 text-sm">
           {formatDate(trade.entry_datetime)}
         </span>
+      </td>
+
+      {/* Market */}
+      <td className="px-3 py-2 text-center">
+        <MarketConditionDot condition={trade.market_condition} />
       </td>
 
       {/* Value */}

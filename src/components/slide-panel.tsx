@@ -57,14 +57,14 @@ export function SlidePanel({
       {/* Panel */}
       <div
         className={`
-          fixed top-0 right-0 h-full w-full max-w-2xl bg-white border-l border-zinc-200 z-50
+          fixed top-0 right-0 h-full w-full max-w-2xl bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-700 z-50
           transform transition-transform duration-300 ease-out
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
           flex flex-col
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 bg-zinc-50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800">
           <div className="flex items-center gap-3">
             {/* Prev/Next Navigation */}
             {(onPrev || onNext) && (
@@ -72,7 +72,7 @@ export function SlidePanel({
                 <button
                   onClick={onPrev}
                   disabled={!hasPrev}
-                  className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Previous trade (←)"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -82,7 +82,7 @@ export function SlidePanel({
                 <button
                   onClick={onNext}
                   disabled={!hasNext}
-                  className="p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   title="Next trade (→)"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -91,11 +91,11 @@ export function SlidePanel({
                 </button>
               </div>
             )}
-            <h2 className="text-lg font-semibold text-zinc-900">{title || 'Details'}</h2>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{title || 'Details'}</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-200 rounded-lg transition-colors"
+            className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -104,7 +104,7 @@ export function SlidePanel({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto bg-white">
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-zinc-900">
           {children}
         </div>
       </div>

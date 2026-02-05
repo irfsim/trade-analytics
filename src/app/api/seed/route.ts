@@ -21,7 +21,7 @@ const TICKERS = [
 ];
 
 const SETUP_TYPES = ['EP', 'FLAG', 'BASE_BREAKOUT'] as const;
-const MARKET_REGIMES = ['STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS'] as const;
+const MARKET_CONDITIONS = ['STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS', 'DOWNTREND', 'CORRECTION'] as const;
 
 // Deterministic trade generation with user requirements:
 // - Date range: Jan 1, 2025 to Feb 4, 2026
@@ -225,6 +225,7 @@ export async function POST() {
       remaining_shares: number;
       realized_pnl: number;
       total_commission: number;
+      market_condition: string;
     }> = [];
 
     // Store trade metadata for legs/annotations (indexed by position)
@@ -274,6 +275,15 @@ export async function POST() {
         exchange: 'SMART',
       });
 
+      // Market condition - weighted distribution: 50% uptrends, 30% choppy, 20% bearish
+      const marketRoll = annotationRandom();
+      let marketCondition: string;
+      if (marketRoll < 0.30) marketCondition = 'STRONG_UPTREND';
+      else if (marketRoll < 0.50) marketCondition = 'UPTREND_CHOP';
+      else if (marketRoll < 0.70) marketCondition = 'SIDEWAYS';
+      else if (marketRoll < 0.85) marketCondition = 'DOWNTREND';
+      else marketCondition = 'CORRECTION';
+
       allTrades.push({
         account_id: trade.accountId,
         ticker: trade.ticker,
@@ -287,6 +297,7 @@ export async function POST() {
         remaining_shares: 0,
         realized_pnl: trade.realizedPnl,
         total_commission: trade.commission,
+        market_condition: marketCondition,
       });
 
       tradeMetadata.push({
@@ -409,7 +420,6 @@ export async function POST() {
           setup_rating: setupRating,
           followed_plan: followedPlan,
           setup_type: seededElement(SETUP_TYPES),
-          market_regime: seededElement(MARKET_REGIMES),
           initial_risk_dollars: Math.round(initialRisk * 100) / 100,
           initial_stop_price: Math.round(meta.entryPrice * (1 - riskPercent) * 100) / 100,
           checklist: generatedChecklist,

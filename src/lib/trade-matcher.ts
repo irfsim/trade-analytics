@@ -1,4 +1,4 @@
-import type { Execution, Trade, TradeLeg } from '@/types/database';
+import type { Execution, Trade, TradeLeg, MarketRegime } from '@/types/database';
 
 /**
  * Entry lot for FIFO matching
@@ -57,6 +57,7 @@ export interface MatchedTrade {
   realizedPnl: number | null;
   totalCommission: number;
   legs: TradeLegInput[];
+  marketCondition?: MarketRegime | null; // Auto-detected from QQQ at entry time
 }
 
 /**
@@ -377,6 +378,7 @@ export function toTradeInsert(
     remaining_shares: trade.remainingShares,
     realized_pnl: trade.realizedPnl,
     total_commission: trade.totalCommission,
+    market_condition: trade.marketCondition || null,
   };
 }
 
