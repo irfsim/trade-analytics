@@ -9,9 +9,10 @@ interface TradeTableProps {
   trades: TradeWithRating[];
   loading?: boolean;
   onSelectTrade?: (tradeId: number) => void;
+  highlightedTradeId?: number | null;
 }
 
-export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) {
+export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId }: TradeTableProps) {
   const [activeTab, setActiveTab] = useState<TradeTab>('closed');
   const [sortField, setSortField] = useState<keyof TradeWithRating>('realized_pnl');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -147,7 +148,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
           {/* Mobile Card View */}
           <div className="md:hidden space-y-3">
             {sortedTrades.map((trade) => (
-              <MobileTradeCard key={trade.id} trade={trade} onSelect={onSelectTrade} />
+              <MobileTradeCard key={trade.id} trade={trade} onSelect={onSelectTrade} isHighlighted={trade.id === highlightedTradeId} />
             ))}
           </div>
 
@@ -225,11 +226,12 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
               </tr>
             </thead>
             <tbody className="trade-tbody bg-white dark:bg-zinc-900 [&>tr:last-child]:border-b-0">
-              {sortedTrades.map((trade, index) => (
+              {sortedTrades.map((trade) => (
                 <TradeRow
                   key={trade.id}
                   trade={trade}
                   onSelect={onSelectTrade}
+                  isHighlighted={trade.id === highlightedTradeId}
                 />
               ))}
             </tbody>
@@ -242,7 +244,7 @@ export function TradeTable({ trades, loading, onSelectTrade }: TradeTableProps) 
   );
 }
 
-function MobileTradeCard({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tradeId: number) => void }) {
+function MobileTradeCard({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; onSelect?: (tradeId: number) => void; isHighlighted?: boolean }) {
   const pnl = trade.realized_pnl;
   const isWinner = pnl !== null && pnl > 0;
   const isLoser = pnl !== null && pnl < 0;
@@ -272,7 +274,7 @@ function MobileTradeCard({ trade, onSelect }: { trade: TradeWithRating; onSelect
   return (
     <div
       onClick={() => onSelect?.(trade.id)}
-      className="bg-white shadow-card-interactive rounded-xl p-4 cursor-pointer hover:bg-zinc-50 transition-colors"
+      className={`bg-white shadow-card-interactive rounded-xl p-4 cursor-pointer hover:bg-zinc-50 transition-colors ${isHighlighted ? 'animate-highlight-fade' : ''}`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -491,7 +493,7 @@ function SetupTypePill({ name, color }: { name: string; color: string | null }) 
   );
 }
 
-function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tradeId: number) => void }) {
+function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; onSelect?: (tradeId: number) => void; isHighlighted?: boolean }) {
   const pnl = trade.realized_pnl;
   const isWinner = pnl !== null && pnl > 0;
   const isLoser = pnl !== null && pnl < 0;
@@ -530,7 +532,7 @@ function TradeRow({ trade, onSelect }: { trade: TradeWithRating; onSelect?: (tra
   return (
     <tr
       onClick={() => onSelect?.(trade.id)}
-      className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer h-10"
+      className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer h-10 ${isHighlighted ? 'animate-highlight-fade' : ''}`}
     >
       {/* Symbol */}
       <td className="pl-5 pr-3 py-2">
