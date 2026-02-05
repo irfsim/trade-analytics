@@ -39,6 +39,7 @@ export default function Dashboard() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [hasCheckedSeed, setHasCheckedSeed] = useState(false);
+  const [highlightedTradeId, setHighlightedTradeId] = useState<number | null>(null);
 
   // Load preferences from localStorage
   useEffect(() => {
@@ -115,10 +116,12 @@ export default function Dashboard() {
   }, [hasCheckedSeed]);
 
   // Load trades and stats
-  const loadTrades = useCallback(async () => {
+  const loadTrades = useCallback(async (options?: { silent?: boolean }) => {
     if (!hasCheckedSeed) return; // Wait for seed check to complete
 
-    setLoading(true);
+    if (!options?.silent) {
+      setLoading(true);
+    }
     try {
       const params = new URLSearchParams();
       if (accountId) params.set('accountId', accountId);
@@ -139,7 +142,9 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Failed to load trades:', error);
     } finally {
-      setLoading(false);
+      if (!options?.silent) {
+        setLoading(false);
+      }
     }
   }, [accountId, period, hasCheckedSeed]);
 
@@ -150,6 +155,33 @@ export default function Dashboard() {
   const handlePanelClose = () => {
     setSelectedTradeId(null);
   };
+
+  const handleAnnotationSave = useCallback(() => {
+    // Store the trade ID before closing
+    const savedTradeId = selectedTradeId;
+
+    // Close the panel
+    setSelectedTradeId(null);
+
+    // Highlight the saved trade
+    if (savedTradeId) {
+      setHighlightedTradeId(savedTradeId);
+    }
+
+    // Reload trades silently to get updated data (no loading flash)
+    loadTrades({ silent: true });
+  }, [selectedTradeId, loadTrades]);
+
+  // Clear highlight after animation completes (with proper cleanup)
+  useEffect(() => {
+    if (highlightedTradeId === null) return;
+
+    const timer = setTimeout(() => {
+      setHighlightedTradeId(null);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [highlightedTradeId]);
 
   return (
     <div className="pt-6 pb-24 max-w-[816px] mx-auto">
@@ -189,6 +221,7 @@ export default function Dashboard() {
           trades={trades}
           loading={loading}
           onSelectTrade={setSelectedTradeId}
+          highlightedTradeId={highlightedTradeId}
         />
       )}
 
@@ -198,7 +231,7 @@ export default function Dashboard() {
         tradeIds={trades.map(t => t.id)}
         onClose={handlePanelClose}
         onNavigate={setSelectedTradeId}
-        onAnnotationSave={loadTrades}
+        onAnnotationSave={handleAnnotationSave}
       />
 
       {/* Settings Modal */}

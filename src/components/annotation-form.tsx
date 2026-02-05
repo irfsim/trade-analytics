@@ -141,7 +141,6 @@ const MARKET_REGIMES: { value: MarketRegime; label: string }[] = [
   { value: 'CORRECTION', label: 'Correction/Crash' },
 ];
 
-const GRADES: TradeGrade[] = ['A+', 'A', 'B', 'C', 'F'];
 
 export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave }: AnnotationFormProps) {
   const [saving, setSaving] = useState(false);
@@ -169,7 +168,6 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
   }, []);
 
   // Form state
-  const [grade, setGrade] = useState<TradeGrade | null>(existingAnnotation?.grade || null);
   const [followedPlan, setFollowedPlan] = useState<boolean | null>(
     existingAnnotation?.followed_plan ?? null
   );
@@ -255,11 +253,14 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       // Normalize rating to 0-9 scale for backwards compatibility with table display
       const normalizedRating = Math.round((ratingData.percentage / 100) * 9);
 
+      // Auto-compute grade from checklist percentage
+      const computedGrade = ratingData.total > 0 ? getLetterGrade(ratingData.percentage) as TradeGrade : null;
+
       const res = await fetch(`/api/trades/${tradeId}/annotation`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          grade,
+          grade: computedGrade,
           setup_rating: normalizedRating,
           followed_plan: followedPlan,
           setup_type_id: setupTypeId,
@@ -395,27 +396,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       )}
 
       {/* Quick Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Grade */}
-        <div>
-          <label className="block text-sm font-medium text-zinc-600 mb-2">Trade Grade</label>
-          <div className="flex gap-2">
-            {GRADES.map((g) => (
-              <button
-                key={g}
-                onClick={() => setGrade(g)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-                  grade === g
-                    ? 'bg-zinc-900 text-white'
-                    : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                }`}
-              >
-                {g}
-              </button>
-            ))}
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Setup Type */}
         <div>
           <label className="block text-sm font-medium text-zinc-600 mb-2">Setup Type</label>

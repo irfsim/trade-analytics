@@ -85,7 +85,7 @@ export function TradeChart({
               setLoading(true);
               setError(false);
             }}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
               interval === value
                 ? 'bg-zinc-900 text-white'
                 : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
