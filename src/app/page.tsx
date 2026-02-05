@@ -166,16 +166,22 @@ export default function Dashboard() {
     // Highlight the saved trade
     if (savedTradeId) {
       setHighlightedTradeId(savedTradeId);
-
-      // Clear highlight after animation completes
-      setTimeout(() => {
-        setHighlightedTradeId(null);
-      }, 1500);
     }
 
     // Reload trades silently to get updated data (no loading flash)
     loadTrades({ silent: true });
   }, [selectedTradeId, loadTrades]);
+
+  // Clear highlight after animation completes (with proper cleanup)
+  useEffect(() => {
+    if (highlightedTradeId === null) return;
+
+    const timer = setTimeout(() => {
+      setHighlightedTradeId(null);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [highlightedTradeId]);
 
   return (
     <div className="pt-6 pb-24 max-w-[816px] mx-auto">
