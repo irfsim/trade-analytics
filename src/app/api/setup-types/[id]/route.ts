@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -7,6 +7,7 @@ interface RouteParams {
 
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
+    const supabase = await createClient();
     const { id } = await params;
     const setupTypeId = parseInt(id, 10);
 
@@ -106,6 +107,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
 export async function DELETE(request: Request, { params }: RouteParams) {
   try {
+    const supabase = await createClient();
     const { id } = await params;
     const setupTypeId = parseInt(id, 10);
 

@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { createClient } from '../supabase/server';
 import type { Execution } from '@/types/database';
 import type { ParsedExecution } from '../flex-parser';
 
@@ -8,6 +8,7 @@ import type { ParsedExecution } from '../flex-parser';
 export async function insertExecutions(
   executions: Omit<Execution, 'id' | 'imported_at'>[]
 ): Promise<{ inserted: number; skipped: number; errors: string[] }> {
+  const supabase = await createClient();
   const errors: string[] = [];
   let inserted = 0;
   let skipped = 0;
@@ -43,6 +44,7 @@ export async function getExecutions(
     offset?: number;
   }
 ): Promise<Execution[]> {
+  const supabase = await createClient();
   let query = supabase.from('executions').select('*');
 
   if (accountId) {
@@ -84,6 +86,7 @@ export async function getExecutions(
  * Get executions not yet matched to trades
  */
 export async function getUnmatchedExecutions(accountId?: string): Promise<Execution[]> {
+  const supabase = await createClient();
   // Get all executions that don't have a corresponding trade_leg
   let query = supabase
     .from('executions')
@@ -113,6 +116,7 @@ export async function getUnmatchedExecutions(accountId?: string): Promise<Execut
  * Get execution by ID
  */
 export async function getExecution(executionId: string): Promise<Execution | null> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('executions')
     .select('*')
@@ -133,6 +137,7 @@ export async function getExecution(executionId: string): Promise<Execution | nul
  * Check if an execution already exists
  */
 export async function executionExists(executionId: string): Promise<boolean> {
+  const supabase = await createClient();
   const { count, error } = await supabase
     .from('executions')
     .select('*', { count: 'exact', head: true })
@@ -149,6 +154,7 @@ export async function executionExists(executionId: string): Promise<boolean> {
  * Get distinct tickers from executions
  */
 export async function getDistinctTickers(accountId?: string): Promise<string[]> {
+  const supabase = await createClient();
   let query = supabase.from('executions').select('ticker');
 
   if (accountId) {

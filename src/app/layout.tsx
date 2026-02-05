@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { AgentationProvider } from "@/components/agentation-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/lib/auth/context";
 import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({
@@ -29,11 +30,13 @@ export default function RootLayout({
         className={`${geist.variable} font-sans antialiased`}
         style={{ background: 'var(--background)', color: 'var(--foreground)' }}
       >
-        <ThemeProvider>
-          <main className="min-h-screen" style={{ background: 'var(--card-bg)' }}>
-            {children}
-          </main>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <main className="min-h-screen" style={{ background: 'var(--card-bg)' }}>
+              {children}
+            </main>
+          </ThemeProvider>
+        </AuthProvider>
         <Toaster position="top-right" richColors />
         <AgentationProvider />
       </body>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import {
   calculatePerformanceMetrics,
   buildEquityCurve,
@@ -19,6 +19,7 @@ interface TradeWithAnnotation extends Trade {
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = await createClient();
     const searchParams = request.nextUrl.searchParams;
 
     const accountId = searchParams.get('accountId') || undefined;

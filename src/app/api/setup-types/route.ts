@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
   try {
+    const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const includeArchived = searchParams.get('includeArchived') === 'true';
 
@@ -33,6 +34,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
     const body = await request.json();
     const { name, description, color, checklist_items } = body;
 

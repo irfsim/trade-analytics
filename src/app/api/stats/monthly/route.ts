@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export interface MonthlyStats {
@@ -24,6 +24,7 @@ export interface MonthlyStats {
 }
 
 export async function GET(request: Request) {
+  const supabase = await createClient();
   const { searchParams } = new URL(request.url);
   const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString());
   const accountId = searchParams.get('accountId');
