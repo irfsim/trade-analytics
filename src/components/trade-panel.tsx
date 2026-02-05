@@ -236,10 +236,10 @@ function TradeStats({ trade }: { trade: TradeWithDetails }) {
 
 function StatCard({ label, value, sublabel }: { label: string; value: string; sublabel?: string }) {
   return (
-    <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg">
-      <p className="text-xs text-zinc-500 uppercase tracking-wide">{label}</p>
-      <p className="text-base font-semibold text-zinc-900 mt-0.5">{value}</p>
-      {sublabel && <p className="text-xs text-zinc-500 mt-0.5">{sublabel}</p>}
+    <div className="px-2.5 py-2 bg-zinc-50 border border-zinc-200 rounded-lg">
+      <p className="text-[10px] text-zinc-500 uppercase tracking-wide">{label}</p>
+      <p className="text-sm font-semibold text-zinc-900">{value}</p>
+      {sublabel && <p className="text-[10px] text-zinc-400">{sublabel}</p>}
     </div>
   );
 }

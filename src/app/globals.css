@@ -236,3 +236,37 @@ body {
     animation: none;
   }
 }
+
+/* Highlight fade animation for saved trades */
+@keyframes highlightFade {
+  0% {
+    background-color: rgba(34, 197, 94, 0.25);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.animate-highlight-fade {
+  animation: highlightFade 1.5s ease-out forwards;
+}
+
+.dark .animate-highlight-fade {
+  animation-name: highlightFadeDark;
+}
+
+@keyframes highlightFadeDark {
+  0% {
+    background-color: rgba(34, 197, 94, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-highlight-fade {
+    animation: none;
+    background-color: rgba(34, 197, 94, 0.15);
+  }
+}
