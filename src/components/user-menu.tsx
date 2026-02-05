@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
 import { useTheme } from './theme-provider';
+import { useAuth } from '@/lib/auth/context';
 
 interface Account {
   account_id: string;
@@ -21,6 +23,14 @@ interface UserMenuProps {
 export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onAccountChange }: UserMenuProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const { theme, setTheme } = useTheme();
+  const { signOut } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+    router.refresh();
+  };
 
   useEffect(() => {
     async function loadAccounts() {
@@ -144,7 +154,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
           </Item>
 
           <Item
-            onSelect={() => {}}
+            onSelect={handleSignOut}
             className="w-full px-3 h-8 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg flex items-center justify-between cursor-pointer"
           >
             Sign out

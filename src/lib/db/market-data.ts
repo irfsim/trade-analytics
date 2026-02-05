@@ -2,7 +2,7 @@
  * Database layer for QQQ market data cache
  */
 
-import { createServerClient } from '../supabase';
+import { createClient } from '../supabase/server';
 import type { MarketCondition, QQQDayData } from '../market-condition';
 
 export interface QQQMarketDataRow {
@@ -29,7 +29,7 @@ export async function getCachedMarketConditions(
     return new Map();
   }
 
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('qqq_market_data')
@@ -59,7 +59,7 @@ export async function findUncachedDates(dates: string[]): Promise<string[]> {
     return [];
   }
 
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('qqq_market_data')
@@ -82,7 +82,7 @@ export async function cacheMarketData(
   dataMap: Map<string, QQQDayData>,
   conditions: Map<string, MarketCondition>
 ): Promise<{ inserted: number; errors: string[] }> {
-  const supabase = createServerClient();
+  const supabase = await createClient();
   const errors: string[] = [];
   let inserted = 0;
 
@@ -128,7 +128,7 @@ export async function getCachedMarketDataRange(
   startDate: string,
   endDate: string
 ): Promise<QQQMarketDataRow[]> {
-  const supabase = createServerClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from('qqq_market_data')

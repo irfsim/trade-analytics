@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/lib/auth/context';
+import { toast } from 'sonner';
 
 const PRESET_AVATARS = [
   'https://avatars.outpace.systems/avatars/previews/avatar-5.webp',
@@ -21,11 +23,23 @@ interface ProfileSectionProps {
 }
 
 export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayNameChange }: ProfileSectionProps) {
+  const { user, profile, refreshProfile } = useAuth();
   const [localDisplayName, setLocalDisplayName] = useState(displayName);
-  const [email, setEmail] = useState('');
+  const [flexQueryToken, setFlexQueryToken] = useState('');
+  const [flexQueryId, setFlexQueryId] = useState('');
   const [saving, setSaving] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(avatar);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load profile data
+  useEffect(() => {
+    if (profile) {
+      setLocalDisplayName(profile.display_name || '');
+      setSelectedAvatar(profile.avatar_url);
+      setFlexQueryToken(profile.flex_query_token || '');
+      setFlexQueryId(profile.flex_query_id || '');
+    }
+  }, [profile]);
 
   // Sync selected avatar when prop changes (e.g., modal reopens)
   useEffect(() => {
@@ -51,16 +65,42 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
 
   const handleSave = async () => {
     setSaving(true);
-    // Save avatar change
-    if (selectedAvatar !== avatar) {
-      onAvatarChange(selectedAvatar);
+
+    try {
+      // Save to database
+      const res = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          display_name: localDisplayName || null,
+          avatar_url: selectedAvatar,
+          flex_query_token: flexQueryToken || null,
+          flex_query_id: flexQueryId || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to save profile');
+      }
+
+      // Update local state via callbacks (for compatibility with parent components)
+      if (selectedAvatar !== avatar) {
+        onAvatarChange(selectedAvatar);
+      }
+      if (localDisplayName !== displayName) {
+        onDisplayNameChange(localDisplayName);
+      }
+
+      // Refresh profile in auth context
+      await refreshProfile();
+
+      toast.success('Profile saved');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to save profile');
+    } finally {
+      setSaving(false);
     }
-    // Save display name change
-    if (localDisplayName !== displayName) {
-      onDisplayNameChange(localDisplayName);
-    }
-    await new Promise(resolve => setTimeout(resolve, 300));
-    setSaving(false);
   };
 
   return (
@@ -99,6 +139,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
               }`}
               title={`Avatar ${index + 1}`}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
@@ -136,18 +177,54 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
         />
       </div>
 
-      {/* Email */}
+      {/* Email (read-only from auth) */}
       <div>
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
           Email
         </label>
         <input
           type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+          value={user?.email || ''}
+          disabled
+          className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400"
         />
+        <p className="mt-1 text-xs text-zinc-500">Email cannot be changed</p>
+      </div>
+
+      {/* IBKR Integration Section */}
+      <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
+        <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">IBKR Integration</h4>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Connect your Interactive Brokers account for auto-sync</p>
+
+        <div className="space-y-4">
+          {/* Flex Query Token */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              Flex Query Token
+            </label>
+            <input
+              type="password"
+              value={flexQueryToken}
+              onChange={(e) => setFlexQueryToken(e.target.value)}
+              placeholder="Enter your Flex Query token"
+              className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+            />
+          </div>
+
+          {/* Flex Query ID */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+              Flex Query ID
+            </label>
+            <input
+              type="text"
+              value={flexQueryId}
+              onChange={(e) => setFlexQueryId(e.target.value)}
+              placeholder="Enter your Flex Query ID"
+              className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Save Button */}

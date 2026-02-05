@@ -1,10 +1,11 @@
-import { supabase } from '../supabase';
+import { createClient } from '../supabase/server';
 import type { CashFlow } from '@/types/database';
 
 /**
  * Get all cash flows, optionally filtered by account
  */
 export async function getCashFlows(accountId?: string): Promise<CashFlow[]> {
+  const supabase = await createClient();
   let query = supabase
     .from('cash_flows')
     .select('*')
@@ -30,6 +31,7 @@ export async function getCashFlowsBefore(
   accountId: string,
   beforeDate: string
 ): Promise<CashFlow[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('cash_flows')
     .select('*')
@@ -54,6 +56,7 @@ export async function insertCashFlow(cashFlow: {
   flow_date: string;
   notes?: string;
 }): Promise<CashFlow> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('cash_flows')
     .insert(cashFlow)
@@ -74,6 +77,7 @@ export async function updateCashFlow(
   id: number,
   updates: Partial<Omit<CashFlow, 'id' | 'created_at'>>
 ): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase
     .from('cash_flows')
     .update(updates)
@@ -88,6 +92,7 @@ export async function updateCashFlow(
  * Delete a cash flow
  */
 export async function deleteCashFlow(id: number): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase.from('cash_flows').delete().eq('id', id);
 
   if (error) {

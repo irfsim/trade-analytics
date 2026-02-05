@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { createClient } from '../supabase/server';
 import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupSpecificChecklist, TradeChecklist, ChecklistItemDefinition } from '@/types/database';
 import { emptyChecklist, isSetupSpecificChecklist } from '@/types/database';
 
@@ -9,6 +9,7 @@ export async function upsertAnnotation(
   tradeId: number,
   annotation: Partial<Omit<TradeAnnotation, 'trade_id' | 'created_at' | 'updated_at'>>
 ): Promise<void> {
+  const supabase = await createClient();
   const data = {
     trade_id: tradeId,
     ...annotation,
@@ -29,6 +30,7 @@ export async function upsertAnnotation(
  * Get annotation for a trade
  */
 export async function getAnnotation(tradeId: number): Promise<TradeAnnotation | null> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('trade_annotations')
     .select('*')
@@ -238,6 +240,7 @@ export async function getAnnotationsByGrade(
   grade: TradeGrade,
   accountId?: string
 ): Promise<TradeAnnotation[]> {
+  const supabase = await createClient();
   let query = supabase.from('trade_annotations').select('*').eq('grade', grade);
 
   // Would need a join for account filtering - skip for now
@@ -255,6 +258,7 @@ export async function getAnnotationsByGrade(
  * Get annotations by setup type
  */
 export async function getAnnotationsBySetupType(setupTypeId: number): Promise<TradeAnnotation[]> {
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('trade_annotations')
     .select('*')

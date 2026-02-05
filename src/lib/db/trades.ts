@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { createClient } from '../supabase/server';
 import type { Trade, TradeLeg, TradeAnnotation, TradeWithDetails, Account, CashFlow } from '@/types/database';
 import type { MatchedTrade } from '../trade-matcher';
 import { toTradeInsert, toTradeLegInserts } from '../trade-matcher';
@@ -7,6 +7,7 @@ import { toTradeInsert, toTradeLegInserts } from '../trade-matcher';
  * Insert a matched trade with its legs
  */
 export async function insertTrade(matchedTrade: MatchedTrade): Promise<number> {
+  const supabase = await createClient();
   const tradeData = toTradeInsert(matchedTrade);
 
   // Insert the trade
@@ -78,6 +79,7 @@ export async function getTrades(options?: {
   limit?: number;
   offset?: number;
 }): Promise<TradeWithRating[]> {
+  const supabase = await createClient();
   let query = supabase.from('trades').select(`
     *,
     trade_annotations(setup_rating, followed_plan, setup_type_id, setup_types(name, color))
@@ -133,6 +135,7 @@ export async function getTrades(options?: {
  * Get a single trade with legs and annotation
  */
 export async function getTradeWithDetails(tradeId: number): Promise<TradeWithDetails | null> {
+  const supabase = await createClient();
   const { data: trade, error: tradeError } = await supabase
     .from('trades')
     .select('*')
@@ -146,7 +149,7 @@ export async function getTradeWithDetails(tradeId: number): Promise<TradeWithDet
     throw new Error(`Failed to fetch trade: ${tradeError.message}`);
   }
 
-  // Get legs
+  // Get legs (reuse same client)
   const { data: legs, error: legsError } = await supabase
     .from('trade_legs')
     .select('*')
@@ -188,6 +191,7 @@ export async function updateTrade(
   tradeId: number,
   updates: Partial<Omit<Trade, 'id' | 'created_at'>>
 ): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase
     .from('trades')
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -202,6 +206,7 @@ export async function updateTrade(
  * Delete a trade and its legs (for re-matching)
  */
 export async function deleteTrade(tradeId: number): Promise<void> {
+  const supabase = await createClient();
   // Legs will be deleted via CASCADE
   const { error } = await supabase.from('trades').delete().eq('id', tradeId);
 
@@ -214,6 +219,7 @@ export async function deleteTrade(tradeId: number): Promise<void> {
  * Delete all trades for re-matching
  */
 export async function deleteAllTrades(): Promise<void> {
+  const supabase = await createClient();
   const { error } = await supabase.from('trades').delete().neq('id', 0);
 
   if (error) {
@@ -228,6 +234,7 @@ export async function getTradesNeedingAnnotation(
   accountId?: string,
   limit: number = 50
 ): Promise<Trade[]> {
+  const supabase = await createClient();
   let query = supabase
     .from('trades')
     .select(`
@@ -259,6 +266,7 @@ export async function getTradesNeedingAnnotation(
 export async function getAllClosedTradesForBalance(accountId?: string): Promise<
   { id: number; account_id: string; exit_datetime: string; realized_pnl: number }[]
 > {
+  const supabase = await createClient();
   let query = supabase
     .from('trades')
     .select('id, account_id, exit_datetime, realized_pnl')
@@ -286,6 +294,7 @@ export async function getAllClosedTradesForBalance(accountId?: string): Promise<
 export async function getAccountsWithBalances(accountId?: string): Promise<
   { account_id: string; starting_balance: number }[]
 > {
+  const supabase = await createClient();
   let query = supabase.from('accounts').select('account_id, starting_balance');
 
   if (accountId) {
@@ -305,6 +314,7 @@ export async function getAccountsWithBalances(accountId?: string): Promise<
  * Get cash flows for balance calculation
  */
 export async function getCashFlowsForBalance(accountId?: string): Promise<CashFlow[]> {
+  const supabase = await createClient();
   let query = supabase
     .from('cash_flows')
     .select('*')
@@ -409,6 +419,7 @@ export async function getTradeStats(accountId?: string): Promise<{
   closed: number;
   needsAnnotation: number;
 }> {
+  const supabase = await createClient();
   let baseQuery = supabase.from('trades').select('*', { count: 'exact', head: true });
 
   if (accountId) {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 
 // Seeded PRNG for deterministic data generation (Mulberry32)
 function createSeededRandom(seed: number) {
@@ -182,6 +182,7 @@ function generateChecklist(isGoodSetup: boolean, random: () => number) {
 
 export async function POST() {
   try {
+    const supabase = await createClient();
     // Clear existing data first (use gte to match all records)
     await supabase.from('trade_annotations').delete().gte('trade_id', 0);
     await supabase.from('trade_legs').delete().gte('id', 0);
