@@ -4,6 +4,7 @@ import { matchExecutionsToTrades } from '@/lib/trade-matcher';
 import { insertExecutions, getExecutions } from '@/lib/db/executions';
 import { insertTrades } from '@/lib/db/trades';
 import { cacheTradeChartData } from '@/lib/chart-cache';
+import { getMarketConditionsForDates, dateKeyFromDatetime, type MarketCondition } from '@/lib/market-condition';
 
 // Account mapping from environment
 function getAccountMapping(): Record<string, string> {
@@ -53,6 +54,31 @@ export async function POST(request: NextRequest) {
       const allExecutions = await getExecutions();
       const matched = matchExecutionsToTrades(allExecutions);
 
+      // Get unique entry dates for market condition lookup
+      const entryDates = [
+        ...new Set(
+          matched.trades.map((t) => dateKeyFromDatetime(t.entryDatetime.toISOString()))
+        ),
+      ];
+
+      // Fetch market conditions for entry dates
+      let marketConditions: Map<string, MarketCondition> = new Map();
+      try {
+        marketConditions = await getMarketConditionsForDates(entryDates);
+        console.log(`[Import] Fetched market conditions for ${marketConditions.size} dates`);
+      } catch (err) {
+        console.error('[Import] Failed to fetch market conditions:', err);
+      }
+
+      // Attach market conditions to trades
+      for (const trade of matched.trades) {
+        const dateKey = dateKeyFromDatetime(trade.entryDatetime.toISOString());
+        const condition = marketConditions.get(dateKey);
+        if (condition) {
+          trade.marketCondition = condition;
+        }
+      }
+
       // Insert matched trades
       matchResult = await insertTrades(matched.trades);
 
@@ -63,8 +89,8 @@ export async function POST(request: NextRequest) {
         cacheTradeChartData(
           closedTrades.map((t) => ({
             ticker: t.ticker,
-            entry_datetime: t.entryDatetime,
-            exit_datetime: t.exitDatetime,
+            entry_datetime: t.entryDatetime.toISOString(),
+            exit_datetime: t.exitDatetime?.toISOString() || null,
             status: t.status,
           }))
         ).catch((err) => {

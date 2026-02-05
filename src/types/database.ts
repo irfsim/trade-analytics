@@ -48,6 +48,7 @@ export interface Trade {
   remaining_shares: number;
   realized_pnl: number | null;
   total_commission: number;
+  market_condition: MarketRegime | null;
   created_at: string;
   updated_at: string;
 }
@@ -238,6 +239,7 @@ export interface TradeWithRating extends Trade {
   setup_type_color: string | null;
   account_pct: number | null;
   position_size_pct: number | null;
+  // market_condition is inherited from Trade
 }
 
 // Computed metrics

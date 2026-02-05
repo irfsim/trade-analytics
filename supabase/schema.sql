@@ -57,6 +57,8 @@ CREATE TABLE IF NOT EXISTS trades (
     realized_pnl DECIMAL(14, 4),
     total_commission DECIMAL(10, 4) NOT NULL DEFAULT 0,
 
+    market_condition TEXT CHECK (market_condition IN ('STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS', 'DOWNTREND', 'CORRECTION')),
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -239,6 +241,20 @@ CREATE TABLE IF NOT EXISTS chart_cache (
 
 CREATE INDEX IF NOT EXISTS idx_chart_cache_lookup ON chart_cache(ticker, interval, start_date, end_date);
 
+-- QQQ market data cache (for market condition detection)
+CREATE TABLE IF NOT EXISTS qqq_market_data (
+    date DATE PRIMARY KEY,
+    close DECIMAL(12, 4) NOT NULL,
+    high_20d DECIMAL(12, 4),
+    ma_10 DECIMAL(12, 4),
+    ma_20 DECIMAL(12, 4),
+    ma_50 DECIMAL(12, 4),
+    ma_10_5d_ago DECIMAL(12, 4),
+    ma_20_5d_ago DECIMAL(12, 4),
+    market_condition TEXT CHECK (market_condition IN ('STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS', 'DOWNTREND', 'CORRECTION')),
+    cached_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- ============================================
 -- ROW LEVEL SECURITY
 -- ============================================
@@ -256,6 +272,7 @@ ALTER TABLE weekly_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE monthly_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE yearly_summaries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chart_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE qqq_market_data ENABLE ROW LEVEL SECURITY;
 
 -- Allow all operations for authenticated users (service role bypasses RLS)
 -- These policies allow the anon key to read, and service role to write
@@ -322,6 +339,12 @@ CREATE POLICY "Allow read access" ON chart_cache FOR SELECT USING (true);
 CREATE POLICY "Allow insert" ON chart_cache FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow update" ON chart_cache FOR UPDATE USING (true);
 CREATE POLICY "Allow delete" ON chart_cache FOR DELETE USING (true);
+
+-- QQQ market data
+CREATE POLICY "Allow read access" ON qqq_market_data FOR SELECT USING (true);
+CREATE POLICY "Allow insert" ON qqq_market_data FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow update" ON qqq_market_data FOR UPDATE USING (true);
+CREATE POLICY "Allow delete" ON qqq_market_data FOR DELETE USING (true);
 
 -- ============================================
 -- SEED DATA
