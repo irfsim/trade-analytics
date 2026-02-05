@@ -14,7 +14,7 @@ interface TradeTableProps {
 
 export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId }: TradeTableProps) {
   const [activeTab, setActiveTab] = useState<TradeTab>('closed');
-  const [sortField, setSortField] = useState<keyof TradeWithRating>('realized_pnl');
+  const [sortField, setSortField] = useState<keyof TradeWithRating>('entry_datetime');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   const openTrades = trades.filter(t => t.status === 'OPEN');
@@ -180,7 +180,7 @@ export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId 
                   className="text-right"
                 />
                 <SortableHeader
-                  label="% of Acct"
+                  label="Size"
                   field="position_size_pct"
                   currentField={sortField}
                   sortDir={sortDir}
@@ -204,7 +204,7 @@ export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId 
                   className="text-right"
                 />
                 <SortableHeader
-                  label="Acct %"
+                  label="Impact"
                   field="account_pct"
                   currentField={sortField}
                   sortDir={sortDir}
@@ -339,7 +339,7 @@ function SortableHeader({
     >
       <div className={`flex items-center gap-1 ${className.includes('text-right') ? 'justify-end' : className.includes('text-center') ? 'justify-center' : ''}`}>
         <svg
-          className={`w-3 h-3 transition-opacity ${
+          className={`w-3 h-3 flex-shrink-0 transition-opacity ${
             isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
           }`}
           fill="none"
@@ -549,7 +549,7 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* Market */}
-      <td className="px-3 py-2 text-center">
+      <td className="px-3 py-2 text-center w-12">
         <MarketConditionDot condition={trade.market_condition} />
       </td>
 
