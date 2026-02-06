@@ -85,11 +85,6 @@ export function AccountsSection() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-1">Trading Accounts</h3>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Manage your linked IBKR accounts</p>
-      </div>
-
       {accounts.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">No accounts linked yet.</p>

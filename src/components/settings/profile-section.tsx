@@ -23,13 +23,17 @@ interface ProfileSectionProps {
 }
 
 export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayNameChange }: ProfileSectionProps) {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, signOut } = useAuth();
   const [localDisplayName, setLocalDisplayName] = useState(displayName);
   const [flexQueryToken, setFlexQueryToken] = useState('');
   const [flexQueryId, setFlexQueryId] = useState('');
   const [saving, setSaving] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(avatar);
+  const [customAvatars, setCustomAvatars] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteState, setDeleteState] = useState<'idle' | 'confirming' | 'deleting'>('idle');
+  const [confirmText, setConfirmText] = useState('');
+  const [deletionCounts, setDeletionCounts] = useState<{ accounts: number; trades: number; executions: number } | null>(null);
 
   // Load profile data
   useEffect(() => {
@@ -57,10 +61,13 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
       const reader = new FileReader();
       reader.onload = (event) => {
         const dataUrl = event.target?.result as string;
+        setCustomAvatars((prev) => [...prev, dataUrl]);
         setSelectedAvatar(dataUrl);
       };
       reader.readAsDataURL(file);
     }
+    // Reset so the same file can be re-selected
+    e.target.value = '';
   };
 
   const handleSave = async () => {
@@ -103,13 +110,36 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
     }
   };
 
+  const handleStartDelete = async () => {
+    setDeleteState('confirming');
+    try {
+      const res = await fetch('/api/account');
+      if (res.ok) {
+        setDeletionCounts(await res.json());
+      }
+    } catch {
+      // Counts are optional, continue without them
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteState('deleting');
+    try {
+      const res = await fetch('/api/account', { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete account');
+      }
+      await signOut();
+      window.location.href = '/login';
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to delete account');
+      setDeleteState('confirming');
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100 mb-1">Profile</h3>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Manage your account details</p>
-      </div>
-
       {/* Avatar */}
       <div>
         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
@@ -119,7 +149,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
           {/* Default gradient */}
           <button
             onClick={() => setSelectedAvatar(null)}
-            className={`w-8 h-8 rounded-full flex-shrink-0 transition-all ${
+            className={`w-8 h-8 rounded-full flex-shrink-0 transition-all cursor-pointer ${
               selectedAvatar === null
                 ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
                 : 'hover:scale-105'
@@ -132,7 +162,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
             <button
               key={url}
               onClick={() => setSelectedAvatar(url)}
-              className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all ${
+              className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
                 selectedAvatar === url
                   ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
                   : 'hover:scale-105'
@@ -143,10 +173,26 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
               <img src={url} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover" />
             </button>
           ))}
+          {/* Custom uploaded avatars */}
+          {customAvatars.map((dataUrl, index) => (
+            <button
+              key={`custom-${index}`}
+              onClick={() => setSelectedAvatar(dataUrl)}
+              className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
+                selectedAvatar === dataUrl
+                  ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
+                  : 'hover:scale-105'
+              }`}
+              title={`Custom avatar ${index + 1}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={dataUrl} alt={`Custom avatar ${index + 1}`} className="w-full h-full object-cover" />
+            </button>
+          ))}
           {/* Upload button */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-8 h-8 rounded-full flex-shrink-0 border border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
+            className="w-8 h-8 rounded-full flex-shrink-0 border border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors cursor-pointer"
             title="Upload custom avatar"
           >
             <svg className="w-4 h-4 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,6 +237,59 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
         <p className="mt-1 text-xs text-zinc-500">Email cannot be changed</p>
       </div>
 
+      {/* Delete Account */}
+      <div>
+        {deleteState === 'idle' && (
+          <button
+            onClick={handleStartDelete}
+            className="text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors cursor-pointer"
+          >
+            Delete account
+          </button>
+        )}
+
+        {deleteState === 'confirming' && (
+          <div className="space-y-3">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              This will permanently delete{' '}
+              {deletionCounts
+                ? `${deletionCounts.trades} trade${deletionCounts.trades !== 1 ? 's' : ''}, ${deletionCounts.executions} execution${deletionCounts.executions !== 1 ? 's' : ''}, ${deletionCounts.accounts} account${deletionCounts.accounts !== 1 ? 's' : ''}, and all associated data`
+                : 'all your data'}
+              . This cannot be undone.
+            </p>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Type DELETE to confirm"
+              autoFocus
+              className="w-full px-3 py-2 text-sm border border-red-300 dark:border-red-800 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400 dark:focus:ring-red-600"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setDeleteState('idle'); setConfirmText(''); }}
+                className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={confirmText !== 'DELETE'}
+                className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-full hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                Delete my account
+              </button>
+            </div>
+          </div>
+        )}
+
+        {deleteState === 'deleting' && (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 animate-pulse">
+            Deleting account...
+          </p>
+        )}
+      </div>
+
       {/* IBKR Integration Section */}
       <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
         <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">IBKR Integration</h4>
@@ -232,7 +331,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors btn-press"
+          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors btn-press cursor-pointer"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
