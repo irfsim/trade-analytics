@@ -353,3 +353,61 @@ export const CHECKLIST_LIBRARY: { category: string; items: ChecklistItemDefiniti
     ],
   },
 ];
+
+// ============================================
+// BROKER CONNECTIONS
+// ============================================
+
+export type BrokerType = 'ibkr_flex' | 'schwab' | 'tda';
+export type ConnectionStatus = 'pending' | 'active' | 'error' | 'disabled';
+export type SyncStatus = 'running' | 'success' | 'partial' | 'error';
+export type SyncTriggerType = 'manual' | 'cron' | 'onboarding';
+
+export interface BrokerConnection {
+  id: number;
+  broker_type: BrokerType;
+  label: string;
+  flex_token: string | null;
+  flex_query_id: string | null;
+  status: ConnectionStatus;
+  last_error: string | null;
+  auto_sync_enabled: boolean;
+  sync_interval_hours: number;
+  last_sync_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BrokerAccountLink {
+  id: number;
+  broker_connection_id: number;
+  external_account_id: string;
+  internal_account_id: string;
+  account_name: string | null;
+  account_type_from_broker: string | null;
+  base_currency: string;
+  created_at: string;
+}
+
+export interface SyncHistory {
+  id: number;
+  broker_connection_id: number;
+  started_at: string;
+  completed_at: string | null;
+  status: SyncStatus;
+  executions_fetched: number;
+  executions_inserted: number;
+  executions_skipped: number;
+  trades_matched: number;
+  error_message: string | null;
+  error_details: Record<string, unknown> | null;
+  date_range_from: string | null;
+  date_range_to: string | null;
+  trigger_type: SyncTriggerType;
+}
+
+// Connection with linked accounts for display
+export interface BrokerConnectionWithAccounts extends BrokerConnection {
+  account_links: BrokerAccountLink[];
+  last_sync?: SyncHistory | null;
+}

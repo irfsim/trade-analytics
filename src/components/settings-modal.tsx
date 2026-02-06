@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { ProfileSection } from './settings/profile-section';
 import { AccountsSection } from './settings/accounts-section';
+import { ConnectionsSection } from './settings/connections-section';
 import { SetupsSection } from './settings/setups-section';
 
-type SettingsSection = 'profile' | 'accounts' | 'setups';
+type SettingsSection = 'profile' | 'accounts' | 'connections' | 'setups';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -32,6 +33,15 @@ const SECTIONS: { id: SettingsSection; label: string; icon: React.ReactNode }[] 
     icon: (
       <svg className="w-4 h-4 text-zinc-900 dark:text-zinc-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'connections',
+    label: 'Connections',
+    icon: (
+      <svg className="w-4 h-4 text-zinc-900 dark:text-zinc-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
       </svg>
     ),
   },
@@ -98,6 +108,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
           <div className="flex-1 overflow-y-auto px-6 pb-6 pt-10">
             {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}
             {activeSection === 'accounts' && <AccountsSection />}
+            {activeSection === 'connections' && <ConnectionsSection />}
             {activeSection === 'setups' && <SetupsSection />}
           </div>
         </div>
