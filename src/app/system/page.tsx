@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 // Components
 import { PlanFilterToggle } from '@/components/plan-filter-toggle';
-import { PeriodPills, PeriodDropdown } from '@/components/period-dropdown';
+import { PeriodPills, PeriodDropdown, type Period } from '@/components/period-dropdown';
 import { PeriodStats } from '@/components/period-stats';
 import { TradeTable } from '@/components/trade-table';
 import { SlidePanel } from '@/components/slide-panel';
@@ -13,7 +13,7 @@ import { UserMenu } from '@/components/user-menu';
 import { TradeDetail } from '@/components/trade-detail';
 import { useTheme } from '@/components/theme-provider';
 
-import type { TradeWithRating, TradeWithDetails, TradeLeg, Period } from '@/types/database';
+import type { TradeWithRating, TradeWithDetails, TradeLeg } from '@/types/database';
 
 // Mock data for components
 const mockTradesWithRating: TradeWithRating[] = [
@@ -39,6 +39,7 @@ const mockTradesWithRating: TradeWithRating[] = [
     setup_type_color: '#22c55e',
     account_pct: 2.67,
     position_size_pct: 15.2,
+    market_condition: null,
   },
   {
     id: 2,
@@ -62,6 +63,7 @@ const mockTradesWithRating: TradeWithRating[] = [
     setup_type_color: '#f97316',
     account_pct: -0.32,
     position_size_pct: 12.1,
+    market_condition: null,
   },
   {
     id: 3,
@@ -85,6 +87,7 @@ const mockTradesWithRating: TradeWithRating[] = [
     setup_type_color: '#6366f1',
     account_pct: null,
     position_size_pct: 9.8,
+    market_condition: null,
   },
 ];
 
