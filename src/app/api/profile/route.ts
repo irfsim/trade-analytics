@@ -52,22 +52,21 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { display_name, avatar_url, flex_query_token, flex_query_id } = body;
+
+    // Only update fields explicitly sent in the request body
+    const updates: Record<string, unknown> = {
+      id: user.id,
+      updated_at: new Date().toISOString(),
+    };
+    if ('display_name' in body) updates.display_name = body.display_name ?? null;
+    if ('avatar_url' in body) updates.avatar_url = body.avatar_url ?? null;
+    if ('flex_query_token' in body) updates.flex_query_token = body.flex_query_token ?? null;
+    if ('flex_query_id' in body) updates.flex_query_id = body.flex_query_id ?? null;
 
     // Upsert profile
     const { data: profile, error } = await supabase
       .from('user_profiles')
-      .upsert(
-        {
-          id: user.id,
-          display_name: display_name ?? null,
-          avatar_url: avatar_url ?? null,
-          flex_query_token: flex_query_token ?? null,
-          flex_query_id: flex_query_id ?? null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'id' }
-      )
+      .upsert(updates, { onConflict: 'id' })
       .select()
       .single();
 
