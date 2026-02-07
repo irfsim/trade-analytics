@@ -362,7 +362,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
               </p>
             </div>
             <div className="text-right flex items-center gap-3">
-              <p className={`text-5xl font-bold font-mono ${getRatingColor(ratingData.percentage)}`}>
+              <p className={`text-5xl font-bold font-mono tabular-nums ${getRatingColor(ratingData.percentage)}`}>
                 {ratingData.percentage}<span className="text-2xl text-zinc-400">%</span>
               </p>
               <p className={`text-3xl font-bold ${getRatingColor(ratingData.percentage)}`}>
@@ -426,7 +426,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       {setupTypeId && hasChecklistItems && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 text-balance">
               A+ Checklist for {selectedSetup?.name}
             </h3>
             <span className={`text-sm font-medium ${getRatingColor(ratingData.percentage)}`}>
@@ -479,7 +479,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
           Did you follow your plan?
         </label>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">Entry, sizing, stop, exit executed correctly?</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3 text-pretty">Entry, sizing, stop, exit executed correctly?</p>
         <div className="flex gap-3">
           <button
             onClick={() => setFollowedPlan(true)}

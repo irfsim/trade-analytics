@@ -20,6 +20,7 @@ interface SettingsModalProps {
 const SECTION_META: Record<SettingsSection, { title: string; description: string }> = {
   profile: { title: 'Profile', description: 'Manage your account details' },
   accounts: { title: 'Trading Accounts', description: 'Manage your linked IBKR accounts' },
+  connections: { title: 'Connections', description: 'Manage your data connections and integrations' },
   setups: { title: 'Setup Types', description: 'Define your trading setups to categorise trades when reviewing them' },
 };
 
@@ -117,6 +118,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
               <button
                 onClick={onClose}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                aria-label="Close settings"
               >
                 <svg className="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -127,7 +129,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 text-pretty">
               {SECTION_META[activeSection].description}
             </p>
             {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}

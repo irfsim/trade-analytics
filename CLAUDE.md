@@ -111,6 +111,15 @@ SUPABASE_SERVICE_ROLE_KEY=<service_role_key>
 5. **Document Results**: Add review to 'tasks/todo.md'
 6. **Capture Lessons**: Update 'tasks/lessons.md' after corrections
 
+## UI & Typography Standards
+- Use `tabular-nums` (via Tailwind `tabular-nums` class) on all numeric data: prices, P&L, percentages, stats, table columns
+- Use `text-balance` on headings, `text-pretty` on body/paragraph text
+- Use `truncate` or `line-clamp-*` for dense UI instead of manual JS string slicing
+- Add `aria-label` to all icon-only buttons (don't rely on `title` alone)
+- Never animate layout properties (width, height, margin) — use `transform` and `opacity` only
+- Use `ease-out` on entrance transitions
+- Never modify `letter-spacing` / `tracking-*` unless absolutely necessary
+
 ## Core Principles
 - **Simplicity First**: Make every change as simple as possible. Impact minimal code.
 - **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.

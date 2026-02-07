@@ -217,12 +217,12 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
                             </span>
                           </td>
                           <td className="px-4 py-2 text-right">
-                            <span className="font-mono text-sm font-medium text-zinc-900">
+                            <span className="font-mono tabular-nums text-sm font-medium text-zinc-900">
                               {monthlyReturn >= 0 ? '+' : ''}{monthlyReturn.toFixed(2)}%
                             </span>
                           </td>
                           <td className="px-4 py-2 text-right">
-                            <span className="font-mono text-sm font-semibold text-zinc-900">
+                            <span className="font-mono tabular-nums text-sm font-semibold text-zinc-900">
                               {cumulativeReturn >= 0 ? '+' : ''}{cumulativeReturn.toFixed(2)}%
                             </span>
                           </td>
@@ -302,14 +302,14 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
                   <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${MONTH_COLORS[m.month - 1]}`}>
                     {MONTH_NAMES[m.month - 1]}
                   </span>
-                  <span className={`font-mono text-lg font-bold ${m.totalPnl >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  <span className={`font-mono tabular-nums text-lg font-bold ${m.totalPnl >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                     {formatPnl(m.totalPnl)}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
                     <span className="text-zinc-500">Win %</span>
-                    <p className={`font-mono font-medium ${m.winRate >= 50 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    <p className={`font-mono tabular-nums font-medium ${m.winRate >= 50 ? 'text-emerald-600' : 'text-red-600'}`}>
                       {m.winRate}%
                     </p>
                   </div>
@@ -374,21 +374,21 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
 
                       {/* Avg Gain % */}
                       <td className="px-3 py-2 text-right">
-                        <span className="font-mono text-sm text-zinc-900">
+                        <span className="font-mono tabular-nums text-sm text-zinc-900">
                           {m.avgWinPct.toFixed(2)}%
                         </span>
                       </td>
 
                       {/* Avg Loss % */}
                       <td className="px-3 py-2 text-right">
-                        <span className="font-mono text-sm text-zinc-900">
+                        <span className="font-mono tabular-nums text-sm text-zinc-900">
                           {m.avgLossPct.toFixed(2)}%
                         </span>
                       </td>
 
                       {/* Win Rate */}
                       <td className="px-3 py-2 text-center">
-                        <span className="font-mono text-sm font-medium text-zinc-900">
+                        <span className="font-mono tabular-nums text-sm font-medium text-zinc-900">
                           {m.winRate}%
                         </span>
                       </td>
@@ -410,21 +410,21 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
 
                       {/* Best Trade % */}
                       <td className="px-3 py-2 text-right">
-                        <span className="font-mono text-sm text-zinc-900">
+                        <span className="font-mono tabular-nums text-sm text-zinc-900">
                           {m.bestTradePct.toFixed(2)}%
                         </span>
                       </td>
 
                       {/* Worst Trade % */}
                       <td className="px-3 py-2 text-right">
-                        <span className="font-mono text-sm text-zinc-900">
+                        <span className="font-mono tabular-nums text-sm text-zinc-900">
                           {m.worstTradePct.toFixed(2)}%
                         </span>
                       </td>
 
                       {/* Total P&L */}
                       <td className="px-3 py-2 text-right">
-                        <span className="font-mono text-sm font-semibold text-zinc-900">
+                        <span className="font-mono tabular-nums text-sm font-semibold text-zinc-900">
                           {formatPnl(m.totalPnl)}
                         </span>
                       </td>
