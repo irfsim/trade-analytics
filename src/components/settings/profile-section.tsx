@@ -25,8 +25,6 @@ interface ProfileSectionProps {
 export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayNameChange }: ProfileSectionProps) {
   const { user, profile, refreshProfile, signOut } = useAuth();
   const [localDisplayName, setLocalDisplayName] = useState(displayName);
-  const [flexQueryToken, setFlexQueryToken] = useState('');
-  const [flexQueryId, setFlexQueryId] = useState('');
   const [saving, setSaving] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(avatar);
   const [customAvatars, setCustomAvatars] = useState<string[]>([]);
@@ -40,8 +38,6 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
     if (profile) {
       setLocalDisplayName(profile.display_name || '');
       setSelectedAvatar(profile.avatar_url);
-      setFlexQueryToken(profile.flex_query_token || '');
-      setFlexQueryId(profile.flex_query_id || '');
     }
   }, [profile]);
 
@@ -81,8 +77,6 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
         body: JSON.stringify({
           display_name: localDisplayName || null,
           avatar_url: selectedAvatar,
-          flex_query_token: flexQueryToken || null,
-          flex_query_id: flexQueryId || null,
         }),
       });
 
@@ -288,42 +282,6 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
             Deleting account...
           </p>
         )}
-      </div>
-
-      {/* IBKR Integration Section */}
-      <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
-        <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">IBKR Integration</h4>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Connect your Interactive Brokers account for auto-sync</p>
-
-        <div className="space-y-4">
-          {/* Flex Query Token */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-              Flex Query Token
-            </label>
-            <input
-              type="password"
-              value={flexQueryToken}
-              onChange={(e) => setFlexQueryToken(e.target.value)}
-              placeholder="Enter your Flex Query token"
-              className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-            />
-          </div>
-
-          {/* Flex Query ID */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-              Flex Query ID
-            </label>
-            <input
-              type="text"
-              value={flexQueryId}
-              onChange={(e) => setFlexQueryId(e.target.value)}
-              placeholder="Enter your Flex Query ID"
-              className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Save Button */}
