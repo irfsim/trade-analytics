@@ -119,7 +119,7 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
           {/* Annotation Form */}
           {trade.status === 'CLOSED' && (
             <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Trade Review</h3>
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4 text-balance">Trade Review</h3>
               <AnnotationForm
                 tradeId={trade.id}
                 existingAnnotation={trade.annotation}
@@ -155,7 +155,7 @@ function TradeHeader({ trade }: { trade: TradeWithDetails }) {
     <div className="flex items-start justify-between">
       <div>
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{trade.ticker}</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 text-balance">{trade.ticker}</h2>
           <span className={`
             inline-flex px-2.5 py-1 text-xs font-bold rounded-md uppercase
             ${trade.direction === 'LONG'
@@ -170,11 +170,11 @@ function TradeHeader({ trade }: { trade: TradeWithDetails }) {
       </div>
 
       <div className="text-right">
-        <p className={`text-2xl font-bold font-mono ${pnlColor}`}>
+        <p className={`text-2xl font-bold font-mono tabular-nums ${pnlColor}`}>
           {formatPnl(pnl)}
         </p>
         {pctChange !== null && (
-          <p className={`text-sm font-mono ${pctChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+          <p className={`text-sm font-mono tabular-nums ${pctChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
             {pctChange >= 0 ? '+' : ''}{pctChange.toFixed(2)}%
           </p>
         )}

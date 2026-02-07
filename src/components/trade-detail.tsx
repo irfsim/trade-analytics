@@ -162,10 +162,10 @@ function LegRow({ leg }: { leg: TradeLeg }) {
       <td className="px-4 py-3 text-zinc-300">
         {leg.shares.toLocaleString()}
       </td>
-      <td className="px-4 py-3 font-mono text-zinc-300">
+      <td className="px-4 py-3 font-mono tabular-nums text-zinc-300">
         ${leg.price.toFixed(2)}
       </td>
-      <td className="px-4 py-3 font-mono text-zinc-300">
+      <td className="px-4 py-3 font-mono tabular-nums text-zinc-300">
         ${value.toFixed(2)}
       </td>
     </tr>

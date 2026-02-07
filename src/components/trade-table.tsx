@@ -103,7 +103,7 @@ export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId 
             </svg>
           </div>
           <p className="text-zinc-900 dark:text-zinc-100 font-medium mb-1">No trades found</p>
-          <p className="text-zinc-500 text-sm">
+          <p className="text-zinc-500 text-sm text-pretty">
             Import your IBKR Flex report to get started
           </p>
         </div>
@@ -297,13 +297,13 @@ function MobileTradeCard({ trade, onSelect, isHighlighted }: { trade: TradeWithR
           <RatingBars rating={trade.setup_rating} />
         </div>
         <div className="text-right">
-          <p className={`text-lg font-bold font-mono ${
+          <p className={`text-lg font-bold font-mono tabular-nums ${
             pnl === null ? 'text-zinc-400' : isWinner ? 'text-emerald-600' : isLoser ? 'text-red-600' : 'text-zinc-600'
           }`}>
             {formatPnl(pnl)}
           </p>
           {pctChange !== null && (
-            <p className={`text-xs font-mono ${pctChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+            <p className={`text-xs font-mono tabular-nums ${pctChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
               {pctChange >= 0 ? '+' : ''}{pctChange.toFixed(2)}%
             </p>
           )}
@@ -554,31 +554,31 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* Value */}
-      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+      <td className="px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
         {trade.entry_price !== null
           ? `$${(trade.total_shares * trade.entry_price).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
           : '—'}
       </td>
 
       {/* Size % */}
-      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+      <td className="px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
         {trade.position_size_pct !== null
           ? `${trade.position_size_pct.toFixed(1)}%`
           : '—'}
       </td>
 
       {/* % Change */}
-      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+      <td className="px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
         {formatPct(pctChange)}
       </td>
 
       {/* P&L */}
-      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+      <td className="px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
         {formatPnl(pnl)}
       </td>
 
       {/* Impact */}
-      <td className="px-4 py-2 text-sm font-mono whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+      <td className="px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
         {trade.account_pct !== null
           ? `${trade.account_pct >= 0 ? '+' : ''}${trade.account_pct.toFixed(1)}%`
           : '—'}
