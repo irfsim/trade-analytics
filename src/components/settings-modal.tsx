@@ -17,7 +17,7 @@ interface SettingsModalProps {
 }
 
 const SECTION_META: Record<SettingsSection, { title: string; description: string }> = {
-  profile: { title: 'Profile', description: 'Manage your account details' },
+  profile: { title: 'Profile', description: '' },
   accounts: { title: 'Accounts', description: 'Manage your broker connections and trading accounts' },
   setups: { title: 'Setup Types', description: 'Define your trading setups to categorise trades when reviewing them' },
 };
@@ -118,9 +118,11 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 text-pretty">
-              {SECTION_META[activeSection].description}
-            </p>
+            {SECTION_META[activeSection].description && (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 text-pretty">
+                {SECTION_META[activeSection].description}
+              </p>
+            )}
             {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}
             {activeSection === 'accounts' && <AccountsSection />}
             {activeSection === 'setups' && <SetupsSection />}
