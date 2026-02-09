@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from '@/lib/auth/context';
 import { toast } from 'sonner';
 
@@ -8,8 +8,6 @@ const PRESET_AVATARS = [
   'https://avatars.outpace.systems/avatars/previews/avatar-5.webp',
   'https://avatars.outpace.systems/avatars/previews/avatar-6.webp',
   'https://avatars.outpace.systems/avatars/previews/avatar-8.webp',
-  'https://avatars.outpace.systems/avatars/previews/avatar-36.webp',
-  'https://avatars.outpace.systems/avatars/previews/avatar-45.webp',
   'https://avatars.outpace.systems/avatars/previews/avatar-47.webp',
 ];
 
@@ -25,8 +23,6 @@ interface ProfileSectionProps {
 export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayNameChange }: ProfileSectionProps) {
   const { user, profile, refreshProfile, signOut } = useAuth();
   const [localDisplayName, setLocalDisplayName] = useState(displayName);
-  const [flexQueryToken, setFlexQueryToken] = useState('');
-  const [flexQueryId, setFlexQueryId] = useState('');
   const [saving, setSaving] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(avatar);
   const [customAvatars, setCustomAvatars] = useState<string[]>([]);
@@ -40,8 +36,6 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
     if (profile) {
       setLocalDisplayName(profile.display_name || '');
       setSelectedAvatar(profile.avatar_url);
-      setFlexQueryToken(profile.flex_query_token || '');
-      setFlexQueryId(profile.flex_query_id || '');
     }
   }, [profile]);
 
@@ -54,6 +48,10 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
   useEffect(() => {
     setLocalDisplayName(displayName);
   }, [displayName]);
+
+  const hasChanges = useMemo(() => {
+    return selectedAvatar !== avatar || localDisplayName !== displayName;
+  }, [selectedAvatar, avatar, localDisplayName, displayName]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,6 +68,11 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
     e.target.value = '';
   };
 
+  const handleCancel = () => {
+    setSelectedAvatar(avatar);
+    setLocalDisplayName(displayName);
+  };
+
   const handleSave = async () => {
     setSaving(true);
 
@@ -81,8 +84,6 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
         body: JSON.stringify({
           display_name: localDisplayName || null,
           avatar_url: selectedAvatar,
-          flex_query_token: flexQueryToken || null,
-          flex_query_id: flexQueryId || null,
         }),
       });
 
@@ -139,201 +140,186 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
   };
 
   return (
-    <div className="space-y-6">
-      {/* Avatar */}
-      <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-3">
-          Avatar
-        </label>
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Default gradient */}
-          <button
-            onClick={() => setSelectedAvatar(null)}
-            className={`w-8 h-8 rounded-full flex-shrink-0 transition-all cursor-pointer ${
-              selectedAvatar === null
-                ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
-                : 'hover:scale-105'
-            }`}
-            style={{ background: DEFAULT_GRADIENT }}
-            title="Default"
-          />
-          {/* Preset avatars */}
-          {PRESET_AVATARS.map((url, index) => (
+    <div className="flex flex-col h-full">
+      {/* Form rows */}
+      <div className="flex-1 space-y-0 divide-y divide-zinc-100 dark:divide-zinc-800">
+        {/* Avatar row */}
+        <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5 first:pt-0">
+          <div>
+            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Avatar</label>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Choose your profile picture</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Default gradient */}
             <button
-              key={url}
-              onClick={() => setSelectedAvatar(url)}
-              className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
-                selectedAvatar === url
+              onClick={() => setSelectedAvatar(null)}
+              className={`w-8 h-8 rounded-full flex-shrink-0 transition-all cursor-pointer ${
+                selectedAvatar === null
                   ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
                   : 'hover:scale-105'
               }`}
-              title={`Avatar ${index + 1}`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover" />
-            </button>
-          ))}
-          {/* Custom uploaded avatars */}
-          {customAvatars.map((dataUrl, index) => (
+              style={{ background: DEFAULT_GRADIENT }}
+              title="Default"
+            />
+            {/* Preset avatars */}
+            {PRESET_AVATARS.map((url, index) => (
+              <button
+                key={url}
+                onClick={() => setSelectedAvatar(url)}
+                className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
+                  selectedAvatar === url
+                    ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
+                    : 'hover:scale-105'
+                }`}
+                title={`Avatar ${index + 1}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Avatar ${index + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+            {/* Custom uploaded avatars */}
+            {customAvatars.map((dataUrl, index) => (
+              <button
+                key={`custom-${index}`}
+                onClick={() => setSelectedAvatar(dataUrl)}
+                className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
+                  selectedAvatar === dataUrl
+                    ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
+                    : 'hover:scale-105'
+                }`}
+                title={`Custom avatar ${index + 1}`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={dataUrl} alt={`Custom avatar ${index + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+            {/* Upload button */}
             <button
-              key={`custom-${index}`}
-              onClick={() => setSelectedAvatar(dataUrl)}
-              className={`w-8 h-8 rounded-full flex-shrink-0 overflow-hidden transition-all cursor-pointer ${
-                selectedAvatar === dataUrl
-                  ? 'ring-2 ring-offset-2 ring-zinc-900 dark:ring-zinc-100 dark:ring-offset-zinc-900'
-                  : 'hover:scale-105'
-              }`}
-              title={`Custom avatar ${index + 1}`}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-8 h-8 rounded-full flex-shrink-0 border border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors cursor-pointer"
+              title="Upload custom avatar"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={dataUrl} alt={`Custom avatar ${index + 1}`} className="w-full h-full object-cover" />
+              <svg className="w-4 h-4 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+              </svg>
             </button>
-          ))}
-          {/* Upload button */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-8 h-8 rounded-full flex-shrink-0 border border-dashed border-zinc-300 dark:border-zinc-600 flex items-center justify-center hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors cursor-pointer"
-            title="Upload custom avatar"
-          >
-            <svg className="w-4 h-4 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        {/* Display Name row */}
+        <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5">
+          <div>
+            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Display Name</label>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Shown throughout the dashboard</p>
+          </div>
           <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="hidden"
+            type="text"
+            value={localDisplayName}
+            onChange={(e) => setLocalDisplayName(e.target.value)}
+            placeholder="Your name"
+            className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
           />
         </div>
-      </div>
 
-      {/* Display Name */}
-      <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-          Display Name
-        </label>
-        <input
-          type="text"
-          value={localDisplayName}
-          onChange={(e) => setLocalDisplayName(e.target.value)}
-          placeholder="Your name"
-          className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-        />
-      </div>
-
-      {/* Email (read-only from auth) */}
-      <div>
-        <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-          Email
-        </label>
-        <input
-          type="email"
-          value={user?.email || ''}
-          disabled
-          className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400"
-        />
-        <p className="mt-1 text-xs text-zinc-500">Email cannot be changed</p>
-      </div>
-
-      {/* Delete Account */}
-      <div>
-        {deleteState === 'idle' && (
-          <button
-            onClick={handleStartDelete}
-            className="text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors cursor-pointer"
-          >
-            Delete account
-          </button>
-        )}
-
-        {deleteState === 'confirming' && (
-          <div className="space-y-3">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              This will permanently delete{' '}
-              {deletionCounts
-                ? `${deletionCounts.trades} trade${deletionCounts.trades !== 1 ? 's' : ''}, ${deletionCounts.executions} execution${deletionCounts.executions !== 1 ? 's' : ''}, ${deletionCounts.accounts} account${deletionCounts.accounts !== 1 ? 's' : ''}, and all associated data`
-                : 'all your data'}
-              . This cannot be undone.
-            </p>
-            <input
-              type="text"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Type DELETE to confirm"
-              autoFocus
-              className="w-full px-3 py-2 text-sm border border-red-300 dark:border-red-800 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400 dark:focus:ring-red-600"
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => { setDeleteState('idle'); setConfirmText(''); }}
-                className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                disabled={confirmText !== 'DELETE'}
-                className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-full hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              >
-                Delete my account
-              </button>
-            </div>
-          </div>
-        )}
-
-        {deleteState === 'deleting' && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 animate-pulse">
-            Deleting account...
-          </p>
-        )}
-      </div>
-
-      {/* IBKR Integration Section */}
-      <div className="pt-4 border-t border-zinc-200 dark:border-zinc-700">
-        <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">IBKR Integration</h4>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Connect your Interactive Brokers account for auto-sync</p>
-
-        <div className="space-y-4">
-          {/* Flex Query Token */}
+        {/* Email row */}
+        <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5">
           <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-              Flex Query Token
-            </label>
-            <input
-              type="password"
-              value={flexQueryToken}
-              onChange={(e) => setFlexQueryToken(e.target.value)}
-              placeholder="Enter your Flex Query token"
-              className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-            />
+            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Email</label>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Email cannot be changed</p>
           </div>
+          <input
+            type="email"
+            value={user?.email || ''}
+            disabled
+            className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400"
+          />
+        </div>
 
-          {/* Flex Query ID */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-              Flex Query ID
-            </label>
-            <input
-              type="text"
-              value={flexQueryId}
-              onChange={(e) => setFlexQueryId(e.target.value)}
-              placeholder="Enter your Flex Query ID"
-              className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-            />
+        {/* Delete account row */}
+        <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5">
+          <div />
+          <div className="flex justify-end">
+            {deleteState === 'idle' && (
+              <button
+                onClick={handleStartDelete}
+                className="text-sm text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300 transition-colors cursor-pointer"
+              >
+                Delete account
+              </button>
+            )}
+
+            {deleteState === 'confirming' && (
+              <div className="w-full space-y-3">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  This will permanently delete{' '}
+                  {deletionCounts
+                    ? `${deletionCounts.trades} trade${deletionCounts.trades !== 1 ? 's' : ''}, ${deletionCounts.executions} execution${deletionCounts.executions !== 1 ? 's' : ''}, ${deletionCounts.accounts} account${deletionCounts.accounts !== 1 ? 's' : ''}, and all associated data`
+                    : 'all your data'}
+                  . This cannot be undone.
+                </p>
+                <input
+                  type="text"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder="Type DELETE to confirm"
+                  autoFocus
+                  className="w-full px-3 py-2 text-sm border border-red-300 dark:border-red-800 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400 dark:focus:ring-red-600"
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => { setDeleteState('idle'); setConfirmText(''); }}
+                    className="px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={confirmText !== 'DELETE'}
+                    className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    Delete my account
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {deleteState === 'deleting' && (
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 animate-pulse">
+                Deleting account...
+              </p>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="pt-2">
+      {/* Save / Cancel bar */}
+      <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+        <div
+          className={`grid transition-[grid-template-columns,opacity] duration-200 ease-out ${
+            hasChanges ? 'grid-cols-[1fr] opacity-100' : 'grid-cols-[0fr] opacity-0'
+          }`}
+        >
+          <button
+            onClick={handleCancel}
+            tabIndex={hasChanges ? 0 : -1}
+            className="overflow-hidden whitespace-nowrap px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
         <button
           onClick={handleSave}
-          disabled={saving}
-          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors btn-press cursor-pointer"
+          disabled={saving || !hasChanges}
+          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors btn-press cursor-pointer"
         >
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? 'Saving...' : 'Save'}
         </button>
       </div>
     </div>
