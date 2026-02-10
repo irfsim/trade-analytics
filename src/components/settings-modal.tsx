@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileSection } from './settings/profile-section';
 import { AccountsSection } from './settings/accounts-section';
+import { ConnectionsSection } from './settings/connections-section';
 import { SetupsSection } from './settings/setups-section';
+import { IbkrOnboardingWizard } from './onboarding';
 
-type SettingsSection = 'profile' | 'accounts' | 'setups';
+type SettingsSection = 'profile' | 'accounts' | 'connections' | 'setups';
+type ModalMode = 'settings' | 'wizard';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -19,6 +23,7 @@ interface SettingsModalProps {
 const SECTION_META: Record<SettingsSection, { title: string; description: string }> = {
   profile: { title: 'Profile', description: '' },
   accounts: { title: 'Accounts', description: 'Manage your broker connections and trading accounts' },
+  connections: { title: 'Connections', description: 'Manage your data connections and integrations' },
   setups: { title: 'Setup Types', description: 'Define your trading setups to categorise trades when reviewing them' },
 };
 
@@ -42,6 +47,15 @@ const SECTIONS: { id: SettingsSection; label: string; icon: React.ReactNode }[] 
     ),
   },
   {
+    id: 'connections',
+    label: 'Connections',
+    icon: (
+      <svg className="w-4 h-4 text-zinc-900 dark:text-zinc-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+      </svg>
+    ),
+  },
+  {
     id: 'setups',
     label: 'Setups',
     icon: (
@@ -52,8 +66,24 @@ const SECTIONS: { id: SettingsSection; label: string; icon: React.ReactNode }[] 
   },
 ];
 
+const contentVariants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? 24 : -24,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction > 0 ? -24 : 24,
+  }),
+};
+
 export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, displayName, onDisplayNameChange }: SettingsModalProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
+  const [mode, setMode] = useState<ModalMode>('settings');
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -63,72 +93,134 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
     }
   }, [isOpen]);
 
+  // Reset mode when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setMode('settings');
+    }
+  }, [isOpen]);
+
+  function handleStartWizard() {
+    setMode('wizard');
+  }
+
+  function handleWizardComplete() {
+    setMode('settings');
+    setActiveSection('connections');
+  }
+
+  function handleWizardCancel() {
+    setMode('settings');
+  }
+
   if (!isOpen) return null;
+
+  // Direction: 1 = forward (settings→wizard), -1 = backward (wizard→settings)
+  const direction = mode === 'wizard' ? 1 : -1;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+      {/* Backdrop — persistent across transitions */}
       <div
         className="absolute inset-0 bg-black/40 dark:bg-black/60 animate-fade-in"
-        onClick={onClose}
+        onClick={mode === 'settings' ? onClose : undefined}
       />
 
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-3xl mx-4 max-h-[85vh] overflow-hidden flex animate-modal-in">
-        {/* Sidebar */}
-        <div className="w-44 flex-shrink-0 border-r border-zinc-100 dark:border-zinc-800 px-2 pt-2">
-          <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Settings</div>
-          <nav>
-            {SECTIONS.map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={`w-full h-8 px-3 text-sm flex items-center justify-between rounded-lg transition-colors focus:outline-none cursor-pointer ${
-                  activeSection === section.id
-                    ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                }`}
-              >
-                {section.label}
-                {section.icon}
-              </button>
-            ))}
-          </nav>
-        </div>
+      {/* Animated modal container — morphs width between settings and wizard */}
+      <motion.div
+        layout
+        transition={{ layout: { type: 'spring', bounce: 0.12, duration: 0.55 } }}
+        style={{ borderRadius: 12 }}
+        className={`relative bg-white dark:bg-zinc-900 shadow-xl w-full mx-4 max-h-[85vh] overflow-hidden ${
+          mode === 'settings' ? 'max-w-3xl' : 'max-w-2xl'
+        }`}
+      >
+        <AnimatePresence mode="wait" custom={direction} initial={false}>
+          {mode === 'settings' ? (
+            <motion.div
+              key="settings"
+              custom={direction}
+              variants={contentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+              className="flex"
+            >
+              {/* Sidebar */}
+              <div className="w-44 flex-shrink-0 border-r border-zinc-100 dark:border-zinc-800 px-2 pt-2">
+                <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Settings</div>
+                <nav>
+                  {SECTIONS.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={`w-full h-8 px-3 text-sm flex items-center justify-between rounded-lg transition-colors focus:outline-none cursor-pointer ${
+                        activeSection === section.id
+                          ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      {section.label}
+                      {section.icon}
+                    </button>
+                  ))}
+                </nav>
+              </div>
 
-        {/* Main content */}
-        <div className="flex-1 flex flex-col h-[560px]">
-          {/* Fixed header */}
-          <div className="flex-shrink-0 px-6 pt-4 pb-3 border-b border-zinc-100 dark:border-zinc-800">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                {SECTION_META[activeSection].title}
-              </h3>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-                aria-label="Close settings"
-              >
-                <svg className="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
+              {/* Main content */}
+              <div className="flex-1 flex flex-col h-[560px]">
+                {/* Fixed header */}
+                <div className="flex-shrink-0 px-6 pt-4 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
+                      {SECTION_META[activeSection].title}
+                    </h3>
+                    <button
+                      onClick={onClose}
+                      className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                      aria-label="Close settings"
+                    >
+                      <svg className="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
 
-          {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
-            {SECTION_META[activeSection].description && (
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 text-pretty">
-                {SECTION_META[activeSection].description}
-              </p>
-            )}
-            {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}
-            {activeSection === 'accounts' && <AccountsSection />}
-            {activeSection === 'setups' && <SetupsSection />}
-          </div>
-        </div>
-      </div>
+                {/* Scrollable content */}
+                <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
+                  {SECTION_META[activeSection].description && (
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 text-pretty">
+                      {SECTION_META[activeSection].description}
+                    </p>
+                  )}
+                  {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}
+                  {activeSection === 'accounts' && <AccountsSection />}
+                  {activeSection === 'connections' && <ConnectionsSection onStartWizard={handleStartWizard} />}
+                  {activeSection === 'setups' && <SetupsSection />}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="wizard"
+              custom={direction}
+              variants={contentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            >
+              <IbkrOnboardingWizard
+                inline
+                onComplete={handleWizardComplete}
+                onCancel={handleWizardCancel}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { DiscoveredAccount } from '@/lib/brokers/types';
+import { BROKER_INFO } from '@/lib/brokers/types';
 
-type WizardStep = 'welcome' | 'create-query' | 'credentials' | 'test-connection' | 'initial-sync';
+type WizardStep = 'select-broker' | 'welcome' | 'create-query' | 'credentials' | 'test-connection' | 'initial-sync';
 
 interface AccountSetup {
   externalId: string;
@@ -14,18 +16,23 @@ interface AccountSetup {
 interface IbkrOnboardingWizardProps {
   onComplete: () => void;
   onCancel: () => void;
+  inline?: boolean;
 }
 
-const STEPS: { id: WizardStep; title: string }[] = [
-  { id: 'welcome', title: 'Welcome' },
-  { id: 'create-query', title: 'Create Flex Query' },
-  { id: 'credentials', title: 'Enter Credentials' },
-  { id: 'test-connection', title: 'Connect Accounts' },
-  { id: 'initial-sync', title: 'Sync Trades' },
+const STEPS: { id: WizardStep; title: string; label?: string; hideStepper?: boolean }[] = [
+  { id: 'select-broker', title: 'Select Broker', hideStepper: true },
+  { id: 'welcome', title: 'Welcome', label: 'Welcome' },
+  { id: 'create-query', title: 'Create Flex Query', label: 'Query' },
+  { id: 'credentials', title: 'Enter Credentials', label: 'Credentials' },
+  { id: 'test-connection', title: 'Connect Accounts', label: 'Accounts' },
+  { id: 'initial-sync', title: 'Sync Trades', label: 'Sync' },
 ];
 
-export function IbkrOnboardingWizard({ onComplete, onCancel }: IbkrOnboardingWizardProps) {
-  const [step, setStep] = useState<WizardStep>('welcome');
+// Steps shown in the stepper UI (excludes broker selection)
+const STEPPER_STEPS = STEPS.filter(s => !s.hideStepper);
+
+export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboardingWizardProps) {
+  const [step, setStep] = useState<WizardStep>('select-broker');
   const [connectionId, setConnectionId] = useState<number | null>(null);
   const [flexToken, setFlexToken] = useState('');
   const [flexQueryId, setFlexQueryId] = useState('');
@@ -230,22 +237,21 @@ export function IbkrOnboardingWizard({ onComplete, onCancel }: IbkrOnboardingWiz
     );
   }, []);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 dark:bg-black/60" onClick={onCancel} />
+  const stepperIndex = STEPPER_STEPS.findIndex(s => s.id === step);
+  const trackInset = `${100 / (2 * STEPPER_STEPS.length)}%`;
 
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
-        {/* Header with stepper */}
+  const wizardContent = (
+    <>
+      {/* Header with stepper */}
         <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
+          <div className={`flex items-center justify-between ${step !== 'select-broker' ? 'mb-4' : ''}`}>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Connect Interactive Brokers
+              {step === 'select-broker' ? 'Connect a Broker' : 'Connect Interactive Brokers'}
             </h2>
             <button
               onClick={onCancel}
               className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              aria-label="Close wizard"
             >
               <svg className="w-5 h-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -253,37 +259,135 @@ export function IbkrOnboardingWizard({ onComplete, onCancel }: IbkrOnboardingWiz
             </button>
           </div>
 
-          {/* Stepper */}
-          <div className="flex items-center gap-2">
-            {STEPS.map((s, i) => (
-              <div key={s.id} className="flex items-center">
-                <div
-                  className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${
-                    i < currentStepIndex
-                      ? 'bg-emerald-500 text-white'
-                      : i === currentStepIndex
-                      ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-                      : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400'
-                  }`}
-                >
-                  {i < currentStepIndex ? (
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    i + 1
-                  )}
-                </div>
-                {i < STEPS.length - 1 && (
-                  <div className={`w-8 h-0.5 mx-1 ${i < currentStepIndex ? 'bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-700'}`} />
-                )}
+          {/* Stepper — hidden on broker selection step */}
+          {step !== 'select-broker' && (
+            <div>
+              {/* Step labels */}
+              <div className="flex mb-2">
+                {STEPPER_STEPS.map((s, i) => (
+                  <div key={s.id} className="flex-1 text-center">
+                    <span
+                      className={`text-[11px] font-medium transition-colors duration-300 ${
+                        i <= stepperIndex
+                          ? 'text-zinc-900 dark:text-zinc-100'
+                          : 'text-zinc-400 dark:text-zinc-500'
+                      }`}
+                    >
+                      {s.label}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+
+              {/* Continuous track + circles */}
+              <div className="relative flex items-center">
+                {/* Background track */}
+                <div
+                  className="absolute h-[2px] bg-zinc-200 dark:bg-zinc-700 rounded-full"
+                  style={{ left: trackInset, right: trackInset }}
+                />
+                {/* Animated fill */}
+                <motion.div
+                  className="absolute h-[2px] bg-emerald-500 rounded-full"
+                  style={{ left: trackInset, right: trackInset, transformOrigin: 'left' }}
+                  initial={false}
+                  animate={{ scaleX: STEPPER_STEPS.length > 1 ? stepperIndex / (STEPPER_STEPS.length - 1) : 0 }}
+                  transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                />
+
+                {/* Step circles */}
+                {STEPPER_STEPS.map((s, i) => (
+                  <div key={s.id} className="flex-1 flex justify-center">
+                    <div
+                      className={`relative z-10 flex items-center justify-center w-6 h-6 rounded-full ring-[3px] ring-white dark:ring-zinc-900 transition-colors duration-300 ${
+                        i < stepperIndex
+                          ? 'bg-emerald-500 text-white'
+                          : i === stepperIndex
+                          ? 'bg-zinc-900 dark:bg-zinc-100'
+                          : 'bg-zinc-200 dark:bg-zinc-700'
+                      }`}
+                    >
+                      <AnimatePresence mode="wait" initial={false}>
+                        {i < stepperIndex ? (
+                          <motion.div
+                            key="check"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex items-center justify-center"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24">
+                              <motion.path
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={3}
+                                d="M5 13l4 4L19 7"
+                                initial={{ pathLength: 0 }}
+                                animate={{ pathLength: 1 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
+                              />
+                            </svg>
+                          </motion.div>
+                        ) : (
+                          <motion.span
+                            key={`dot-${i}`}
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                            transition={{ duration: 0.15 }}
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              i === stepperIndex
+                                ? 'bg-white dark:bg-zinc-900'
+                                : 'bg-zinc-400 dark:bg-zinc-500'
+                            }`}
+                          />
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-6">
+          {step === 'select-broker' && (
+            <div className="space-y-3">
+              {Object.values(BROKER_INFO).map(broker => (
+                <button
+                  key={broker.type}
+                  onClick={() => broker.comingSoon ? null : handleNext()}
+                  disabled={broker.comingSoon}
+                  className={`w-full p-4 rounded-xl border text-left transition-all ${
+                    broker.comingSoon
+                      ? 'border-zinc-200 dark:border-zinc-800 opacity-50 cursor-not-allowed'
+                      : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 hover:shadow-md cursor-pointer'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{broker.name}</h3>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400">{broker.description}</p>
+                    </div>
+                    {broker.comingSoon ? (
+                      <span className="text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded">
+                        Coming Soon
+                      </span>
+                    ) : (
+                      <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
           {step === 'welcome' && (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
@@ -712,6 +816,18 @@ export function IbkrOnboardingWizard({ onComplete, onCancel }: IbkrOnboardingWiz
             )}
           </div>
         </div>
+      </>
+  );
+
+  if (inline) {
+    return <div className="flex flex-col max-h-[85vh]">{wizardContent}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 dark:bg-black/60" onClick={onCancel} />
+      <div className="relative bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col">
+        {wizardContent}
       </div>
     </div>
   );
