@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { toast } from 'sonner';
 import type { Account, BrokerConnectionWithAccounts } from '@/types/database';
 import { BROKER_INFO } from '@/lib/brokers/types';
 
-export function AccountsSection() {
-  const router = useRouter();
+interface AccountsSectionProps {
+  onStartWizard?: () => void;
+}
+
+export function AccountsSection({ onStartWizard }: AccountsSectionProps) {
   const { profile, refreshProfile } = useAuth();
 
   // Connections state
@@ -187,10 +189,10 @@ export function AccountsSection() {
             <p className="text-xs text-zinc-500 dark:text-zinc-400">Manage your connected brokerage accounts</p>
           </div>
           <button
-            onClick={() => router.push('/connect')}
+            onClick={() => onStartWizard?.()}
             className="px-3 py-1.5 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
           >
-            {connections.length > 0 ? 'Manage' : 'Connect'}
+            Connect
           </button>
         </div>
 
@@ -213,7 +215,7 @@ export function AccountsSection() {
               No broker accounts connected
             </p>
             <button
-              onClick={() => router.push('/connect')}
+              onClick={() => onStartWizard?.()}
               className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
             >
               Connect your first account →
