@@ -157,7 +157,7 @@ export default function ConnectPage() {
             </button>
             <button
               onClick={() => setShowWizard(true)}
-              className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200"
+              className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200"
             >
               Add Connection
             </button>
@@ -216,7 +216,7 @@ export default function ConnectPage() {
                   <button
                     onClick={() => handleSync(connection.id)}
                     disabled={syncingConnection === connection.id}
-                    className="px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg disabled:opacity-50"
+                    className="px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full disabled:opacity-50"
                   >
                     {syncingConnection === connection.id ? (
                       <span className="flex items-center gap-2">
@@ -232,7 +232,7 @@ export default function ConnectPage() {
                   </button>
                   <button
                     onClick={() => handleDisconnect(connection.id)}
-                    className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                    className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
                   >
                     Disconnect
                   </button>

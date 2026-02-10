@@ -46,3 +46,27 @@ export async function PUT(request: Request, { params }: RouteParams) {
     );
   }
 }
+
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  try {
+    const supabase = await createClient();
+    const { id: accountId } = await params;
+
+    const { error } = await supabase
+      .from('accounts')
+      .delete()
+      .eq('account_id', accountId);
+
+    if (error) {
+      throw new Error(`Failed to delete account: ${error.message}`);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete account', details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    );
+  }
+}
