@@ -118,6 +118,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service_role_key>
 - Add `aria-label` to all icon-only buttons (don't rely on `title` alone)
 - Never animate layout properties (width, height, margin) — use `transform` and `opacity` only
 - Use `ease-out` on entrance transitions
+- Use `rounded-full` on all standalone action buttons (CTAs, submit, save, delete). Use `rounded-lg` only for dropdown menu items, form inputs, and containers
 - Never modify `letter-spacing` / `tracking-*` unless absolutely necessary
 
 ## Core Principles

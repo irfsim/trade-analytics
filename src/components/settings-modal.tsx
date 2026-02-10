@@ -5,10 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileSection } from './settings/profile-section';
 import { AccountsSection } from './settings/accounts-section';
 import { SetupsSection } from './settings/setups-section';
+import { SetupEditor } from './settings/setup-editor';
 import { IbkrOnboardingWizard } from './onboarding';
+import type { SetupType } from '@/types/database';
 
 type SettingsSection = 'profile' | 'accounts' | 'setups';
-type ModalMode = 'settings' | 'wizard';
+type ModalMode = 'settings' | 'wizard' | 'setup-editor';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -21,7 +23,7 @@ interface SettingsModalProps {
 
 const SECTION_META: Record<SettingsSection, { title: string; description: string }> = {
   profile: { title: 'Profile', description: '' },
-  accounts: { title: 'Accounts', description: 'Manage your broker connections and trading accounts' },
+  accounts: { title: 'Accounts', description: 'Manage your trading accounts' },
   setups: { title: 'Setup Types', description: 'Define your trading setups to categorise trades when reviewing them' },
 };
 
@@ -73,6 +75,7 @@ const contentVariants = {
 export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, displayName, onDisplayNameChange }: SettingsModalProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
   const [mode, setMode] = useState<ModalMode>('settings');
+  const [editingSetup, setEditingSetup] = useState<SetupType | null>(null);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -86,6 +89,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
   useEffect(() => {
     if (!isOpen) {
       setMode('settings');
+      setEditingSetup(null);
     }
   }, [isOpen]);
 
@@ -102,10 +106,26 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
     setMode('settings');
   }
 
+  function handleStartSetupEditor(setup: SetupType | null) {
+    setEditingSetup(setup);
+    setMode('setup-editor');
+  }
+
+  function handleSetupEditorComplete() {
+    setMode('settings');
+    setActiveSection('setups');
+    setEditingSetup(null);
+  }
+
+  function handleSetupEditorCancel() {
+    setMode('settings');
+    setEditingSetup(null);
+  }
+
   if (!isOpen) return null;
 
-  // Direction: 1 = forward (settings→wizard), -1 = backward (wizard→settings)
-  const direction = mode === 'wizard' ? 1 : -1;
+  // Direction: 1 = forward (settings→wizard/editor), -1 = backward (wizard/editor→settings)
+  const direction = mode !== 'settings' ? 1 : -1;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -180,17 +200,35 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
                 {/* Scrollable content */}
                 <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
                   {SECTION_META[activeSection].description && (
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 text-pretty">
-                      {SECTION_META[activeSection].description}
-                    </p>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 text-pretty">
+                        {SECTION_META[activeSection].description}
+                      </p>
+                      {activeSection === 'accounts' && (
+                        <button
+                          onClick={handleStartWizard}
+                          className="flex-shrink-0 px-3 py-1.5 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
+                        >
+                          Connect Account
+                        </button>
+                      )}
+                      {activeSection === 'setups' && (
+                        <button
+                          onClick={() => handleStartSetupEditor(null)}
+                          className="flex-shrink-0 px-3 py-1.5 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
+                        >
+                          Add Setup
+                        </button>
+                      )}
+                    </div>
                   )}
                   {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}
                   {activeSection === 'accounts' && <AccountsSection onStartWizard={handleStartWizard} />}
-                  {activeSection === 'setups' && <SetupsSection />}
+                  {activeSection === 'setups' && <SetupsSection onEditSetup={handleStartSetupEditor} />}
                 </div>
               </div>
             </motion.div>
-          ) : (
+          ) : mode === 'wizard' ? (
             <motion.div
               key="wizard"
               custom={direction}
@@ -204,6 +242,22 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
                 inline
                 onComplete={handleWizardComplete}
                 onCancel={handleWizardCancel}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="setup-editor"
+              custom={direction}
+              variants={contentVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            >
+              <SetupEditor
+                setup={editingSetup}
+                onComplete={handleSetupEditorComplete}
+                onCancel={handleSetupEditorCancel}
               />
             </motion.div>
           )}

@@ -94,7 +94,7 @@ export default function ResetPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 rounded-lg font-medium text-sm transition-all disabled:opacity-50 btn-press"
+            className="w-full py-2.5 rounded-full font-medium text-sm transition-all disabled:opacity-50 btn-press"
             style={{
               background: 'var(--foreground)',
               color: 'var(--background)',

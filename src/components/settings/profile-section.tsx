@@ -282,7 +282,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
                   <button
                     onClick={handleDeleteAccount}
                     disabled={confirmText !== 'DELETE'}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-full hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   >
                     Delete my account
                   </button>
@@ -317,7 +317,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
         <button
           onClick={handleSave}
           disabled={saving || !hasChanges}
-          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors btn-press cursor-pointer"
+          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors btn-press cursor-pointer"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
