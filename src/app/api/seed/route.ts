@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 // Seeded PRNG for deterministic data generation (Mulberry32)
 function createSeededRandom(seed: number) {
@@ -23,18 +23,19 @@ const TICKERS = [
 const SETUP_TYPES = ['EP', 'FLAG', 'BASE_BREAKOUT'] as const;
 const MARKET_CONDITIONS = ['STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS', 'DOWNTREND', 'CORRECTION'] as const;
 
-// Deterministic trade generation with user requirements:
+// Deterministic trade generation matching real 2025 stats:
 // - Date range: Jan 1, 2025 to Feb 4, 2026
-// - 500 trades distributed throughout
-// - 25% win rate
-// - Avg loss ~3%, avg win ~9% with outliers
+// - ~940 trades (209 wins / 731 losses)
+// - 22.23% win rate
+// - Avg win: +14.12%, Avg loss: -2.08%
+// - Winner holding period: ~3.79 days, Loser: ~1.31 days
 // - Avg position size ~$9k
 function generateDeterministicTrades() {
   const SEED = 42;
   const random = createSeededRandom(SEED);
 
   const trades = [];
-  const count = 500;
+  const count = 940;
   const startDate = new Date('2025-01-01T00:00:00Z');
   const endDate = new Date('2026-02-04T23:59:59Z');
   const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -63,39 +64,49 @@ function generateDeterministicTrades() {
     if (dayOfWeek === 0) entryDate.setDate(entryDate.getDate() + 1);
     if (dayOfWeek === 6) entryDate.setDate(entryDate.getDate() + 2);
 
-    // Holding period: 0-5 days
-    const holdingDays = Math.floor(random() * 6);
+    // Price between $30 and $400 (realistic for these stocks)
+    const entryPrice = seededBetween(30, 400);
+
+    // 22.23% win rate
+    const isWinner = random() < 0.2223;
+
+    // Holding period based on win/loss
+    // Winners: avg ~3.79 days, Losers: avg ~1.31 days
+    let holdingDays: number;
+    if (isWinner) {
+      // Exponential-ish distribution centered around 3.79 days
+      holdingDays = Math.max(1, Math.round(3.79 + gaussianRandom() * 1.5));
+      holdingDays = Math.min(holdingDays, 12);
+    } else {
+      // Losers cut fast: avg 1.31 days
+      holdingDays = Math.max(0, Math.round(1.31 + gaussianRandom() * 0.8));
+      holdingDays = Math.min(holdingDays, 5);
+    }
     const exitDate = new Date(entryDate);
     exitDate.setDate(exitDate.getDate() + holdingDays);
     exitDate.setUTCHours(entryDate.getUTCHours() + Math.floor(random() * 4));
 
-    // Price between $30 and $400 (realistic for these stocks)
-    const entryPrice = seededBetween(30, 400);
-
-    // 25% win rate
-    const isWinner = random() < 0.25;
-
     let movePercent: number;
     if (isWinner) {
-      // Winners: avg 9% with outliers (some 15-25% runners)
-      const base = 0.09;
-      const variation = gaussianRandom() * 0.04; // std dev 4%
+      // Winners: avg +14.12% with outliers
+      const base = 0.1412;
+      const variation = gaussianRandom() * 0.06; // std dev 6%
       movePercent = base + variation;
-      // 10% chance of outlier winner (15-30%)
+      // 10% chance of outlier winner (25-50%)
       if (random() < 0.10) {
-        movePercent = seededBetween(0.15, 0.30);
+        movePercent = seededBetween(0.25, 0.50);
       }
       movePercent = Math.max(0.02, movePercent); // min 2% win
     } else {
-      // Losers: avg 3% loss with some outliers
-      const base = -0.03;
-      const variation = gaussianRandom() * 0.015; // std dev 1.5%
+      // Losers: avg -2.08% loss with some outliers
+      const base = -0.0208;
+      const variation = gaussianRandom() * 0.01; // std dev 1%
       movePercent = base + variation;
       // 5% chance of outlier loss (8-15%)
       if (random() < 0.05) {
         movePercent = seededBetween(-0.15, -0.08);
       }
-      movePercent = Math.min(-0.005, movePercent); // min 0.5% loss
+      movePercent = Math.min(-0.003, movePercent); // min 0.3% loss
       movePercent = Math.max(-0.20, movePercent); // max 20% loss
     }
 
@@ -182,7 +193,7 @@ function generateChecklist(isGoodSetup: boolean, random: () => number) {
 
 export async function POST() {
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     // Clear existing data first (use gte to match all records)
     await supabase.from('trade_annotations').delete().gte('trade_id', 0);
     await supabase.from('trade_legs').delete().gte('id', 0);
@@ -460,14 +471,16 @@ export async function POST() {
 // Also support GET for easy browser testing
 export async function GET() {
   return NextResponse.json({
-    message: 'POST to this endpoint to seed 500 deterministic demo trades',
+    message: 'POST to this endpoint to seed 940 deterministic demo trades',
     usage: 'curl -X POST http://localhost:3000/api/seed',
     details: {
-      trades: 500,
+      trades: 940,
       dateRange: 'Jan 1, 2025 - Feb 4, 2026',
-      winRate: '25%',
-      avgWin: '9%',
-      avgLoss: '3%',
+      winRate: '22.23%',
+      avgWin: '14.12%',
+      avgLoss: '2.08%',
+      avgWinnerHold: '3.79 days',
+      avgLoserHold: '1.31 days',
       avgPositionSize: '$9k',
     },
   });
