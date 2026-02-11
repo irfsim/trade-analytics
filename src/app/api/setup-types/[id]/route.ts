@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { isSupabaseConfigured } from '@/lib/dummy-data';
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
 export async function PUT(request: Request, { params }: RouteParams) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ setupType: { id: 1, name: 'Demo' } });
+  }
+
   try {
     const supabase = await createClient();
     const { id } = await params;
@@ -106,6 +111,10 @@ export async function PUT(request: Request, { params }: RouteParams) {
 }
 
 export async function DELETE(request: Request, { params }: RouteParams) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ success: true });
+  }
+
   try {
     const supabase = await createClient();
     const { id } = await params;

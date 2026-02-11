@@ -8,6 +8,7 @@ import {
   getCashFlowsForBalance,
   calculateTradePercentages,
 } from '@/lib/db/trades';
+import { isSupabaseConfigured, getDummyTrades } from '@/lib/dummy-data';
 
 // Calculate stats from trades array
 function calculateInlineStats(trades: TradeWithRating[]) {
@@ -102,6 +103,15 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined;
     const needsAnnotation = searchParams.get('needsAnnotation') === 'true';
     const includeStats = searchParams.get('includeStats') === 'true';
+
+    if (!isSupabaseConfigured()) {
+      const trades = getDummyTrades({ accountId, from, to, limit, offset });
+      if (includeStats) {
+        const stats = calculateInlineStats(trades);
+        return NextResponse.json({ trades, stats });
+      }
+      return NextResponse.json({ trades });
+    }
 
     if (needsAnnotation) {
       const trades = await getTradesNeedingAnnotation(accountId, limit);

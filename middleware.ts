@@ -5,6 +5,11 @@ import { updateSession } from '@/lib/supabase/middleware';
 const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback'];
 
 export async function middleware(request: NextRequest) {
+  // Skip all auth logic if Supabase isn't configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next();
+  }
+
   const { pathname } = request.nextUrl;
 
   // Skip auth check for public routes

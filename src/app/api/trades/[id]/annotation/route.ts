@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnnotation, upsertAnnotation, calculateChecklistScore, suggestGrade } from '@/lib/db/annotations';
 import type { APlusChecklist, TradeGrade, MarketRegime } from '@/types/database';
+import { isSupabaseConfigured, getDummyAnnotation } from '@/lib/dummy-data';
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +15,9 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid trade ID' }, { status: 400 });
     }
 
-    const annotation = await getAnnotation(tradeId);
+    const annotation = !isSupabaseConfigured()
+      ? getDummyAnnotation(tradeId)
+      : await getAnnotation(tradeId);
 
     if (!annotation) {
       return NextResponse.json({ annotation: null });
@@ -48,6 +51,16 @@ export async function PUT(
 
     if (isNaN(tradeId)) {
       return NextResponse.json({ error: 'Invalid trade ID' }, { status: 400 });
+    }
+
+    if (!isSupabaseConfigured()) {
+      const body = await request.json();
+      return NextResponse.json({
+        success: true,
+        annotation: { trade_id: tradeId, ...body },
+        score: null,
+        suggestedGrade: null,
+      });
     }
 
     const body = await request.json();

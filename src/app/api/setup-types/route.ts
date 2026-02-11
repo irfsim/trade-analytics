@@ -1,7 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { isSupabaseConfigured } from '@/lib/dummy-data';
 
 export async function GET(request: Request) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({
+      setupTypes: [
+        { id: 1, name: 'EP', description: 'Episodic Pivot', color: '#3b82f6', archived: false, checklist_items: null, trade_count: 0 },
+        { id: 2, name: 'FLAG', description: 'Flag / Pennant', color: '#10b981', archived: false, checklist_items: null, trade_count: 0 },
+        { id: 3, name: 'BASE_BREAKOUT', description: 'Base Breakout', color: '#f59e0b', archived: false, checklist_items: null, trade_count: 0 },
+      ],
+    });
+  }
+
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
@@ -39,6 +50,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ setupType: { id: 99, name: 'Demo' } }, { status: 201 });
+  }
+
   try {
     const supabase = await createClient();
     const body = await request.json();
