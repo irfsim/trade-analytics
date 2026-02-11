@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Workspace Setup
+
+When starting a new workspace, run these steps before anything else:
+
+```bash
+cp .context/.env.local .env.local   # Pull in Supabase keys
+npm install                          # Install dependencies
+npm run dev                          # Start dev server — dashboard auto-seeds dummy data on first load
+```
+
 ## Commands
 
 ```bash

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import {
   isSupabaseConfigured,
   createSeededRandom,
@@ -21,7 +21,7 @@ export async function POST() {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     // Clear existing data first (use gte to match all records)
     await supabase.from('trade_annotations').delete().gte('trade_id', 0);
     await supabase.from('trade_legs').delete().gte('id', 0);
@@ -299,14 +299,16 @@ export async function POST() {
 // Also support GET for easy browser testing
 export async function GET() {
   return NextResponse.json({
-    message: 'POST to this endpoint to seed 500 deterministic demo trades',
+    message: 'POST to this endpoint to seed 940 deterministic demo trades',
     usage: 'curl -X POST http://localhost:3000/api/seed',
     details: {
-      trades: 500,
+      trades: 940,
       dateRange: 'Jan 1, 2025 - Feb 4, 2026',
-      winRate: '25%',
-      avgWin: '9%',
-      avgLoss: '3%',
+      winRate: '22.23%',
+      avgWin: '14.12%',
+      avgLoss: '2.08%',
+      avgWinnerHold: '3.79 days',
+      avgLoserHold: '1.31 days',
       avgPositionSize: '$9k',
     },
   });
