@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { isSupabaseConfigured, getDummyAccounts } from '@/lib/dummy-data';
 
 export async function GET() {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ accounts: getDummyAccounts() });
+  }
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase

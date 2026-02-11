@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTradeWithDetails, deleteTrade } from '@/lib/db/trades';
+import { isSupabaseConfigured, getDummyTradeDetail } from '@/lib/dummy-data';
 
 export async function GET(
   request: NextRequest,
@@ -13,7 +14,9 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid trade ID' }, { status: 400 });
     }
 
-    const trade = await getTradeWithDetails(tradeId);
+    const trade = !isSupabaseConfigured()
+      ? getDummyTradeDetail(tradeId)
+      : await getTradeWithDetails(tradeId);
 
     if (!trade) {
       return NextResponse.json({ error: 'Trade not found' }, { status: 404 });
@@ -39,6 +42,10 @@ export async function DELETE(
 
     if (isNaN(tradeId)) {
       return NextResponse.json({ error: 'Invalid trade ID' }, { status: 400 });
+    }
+
+    if (!isSupabaseConfigured()) {
+      return NextResponse.json({ success: true });
     }
 
     await deleteTrade(tradeId);

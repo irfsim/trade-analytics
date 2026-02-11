@@ -1,197 +1,25 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
-
-// Seeded PRNG for deterministic data generation (Mulberry32)
-function createSeededRandom(seed: number) {
-  return function() {
-    let t = seed += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
-
-// US momentum/breakout stocks
-const TICKERS = [
-  'NVDA', 'TSLA', 'AMD', 'META', 'AAPL', 'MSFT', 'GOOGL', 'AMZN',
-  'NFLX', 'CRWD', 'SNOW', 'PLTR', 'COIN', 'SQ', 'ROKU', 'DKNG',
-  'AFRM', 'UPST', 'SOFI', 'RIVN', 'SMCI', 'ARM', 'PANW', 'ZS',
-  'NET', 'DDOG', 'MDB', 'CFLT', 'ABNB', 'UBER', 'DASH', 'RBLX',
-  'U', 'PATH', 'OKTA', 'CRSP', 'BILL', 'HUBS', 'TTD', 'ENPH',
-];
+import {
+  isSupabaseConfigured,
+  createSeededRandom,
+  generateDeterministicTrades,
+  generateChecklist,
+} from '@/lib/dummy-data';
 
 const SETUP_TYPES = ['EP', 'FLAG', 'BASE_BREAKOUT'] as const;
-const MARKET_CONDITIONS = ['STRONG_UPTREND', 'UPTREND_CHOP', 'SIDEWAYS', 'DOWNTREND', 'CORRECTION'] as const;
 
-// Deterministic trade generation matching real 2025 stats:
-// - Date range: Jan 1, 2025 to Feb 4, 2026
-// - ~940 trades (209 wins / 731 losses)
-// - 22.23% win rate
-// - Avg win: +14.12%, Avg loss: -2.08%
-// - Winner holding period: ~3.79 days, Loser: ~1.31 days
-// - Avg position size ~$9k
-function generateDeterministicTrades() {
-  const SEED = 42;
-  const random = createSeededRandom(SEED);
-
-  const trades = [];
-  const count = 940;
-  const startDate = new Date('2025-01-01T00:00:00Z');
-  const endDate = new Date('2026-02-04T23:59:59Z');
-  const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-
-  // Helper functions using seeded random
-  const seededElement = <T,>(arr: readonly T[]): T => arr[Math.floor(random() * arr.length)];
-  const seededBetween = (min: number, max: number): number => random() * (max - min) + min;
-  const gaussianRandom = (): number => {
-    // Box-Muller transform for normal distribution
-    const u1 = random();
-    const u2 = random();
-    return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-  };
-
-  for (let i = 0; i < count; i++) {
-    const ticker = seededElement(TICKERS);
-
-    // Distribute trades evenly across the date range
-    const dayOffset = Math.floor((i / count) * totalDays);
-    const entryDate = new Date(startDate.getTime() + dayOffset * 24 * 60 * 60 * 1000);
-    // Add some hour variation (market hours 9:30-16:00)
-    entryDate.setUTCHours(14 + Math.floor(random() * 5), Math.floor(random() * 60));
-
-    // Skip weekends
-    const dayOfWeek = entryDate.getUTCDay();
-    if (dayOfWeek === 0) entryDate.setDate(entryDate.getDate() + 1);
-    if (dayOfWeek === 6) entryDate.setDate(entryDate.getDate() + 2);
-
-    // Price between $30 and $400 (realistic for these stocks)
-    const entryPrice = seededBetween(30, 400);
-
-    // 22.23% win rate
-    const isWinner = random() < 0.2223;
-
-    // Holding period based on win/loss
-    // Winners: avg ~3.79 days, Losers: avg ~1.31 days
-    let holdingDays: number;
-    if (isWinner) {
-      // Exponential-ish distribution centered around 3.79 days
-      holdingDays = Math.max(1, Math.round(3.79 + gaussianRandom() * 1.5));
-      holdingDays = Math.min(holdingDays, 12);
-    } else {
-      // Losers cut fast: avg 1.31 days
-      holdingDays = Math.max(0, Math.round(1.31 + gaussianRandom() * 0.8));
-      holdingDays = Math.min(holdingDays, 5);
-    }
-    const exitDate = new Date(entryDate);
-    exitDate.setDate(exitDate.getDate() + holdingDays);
-    exitDate.setUTCHours(entryDate.getUTCHours() + Math.floor(random() * 4));
-
-    let movePercent: number;
-    if (isWinner) {
-      // Winners: avg +14.12% with outliers
-      const base = 0.1412;
-      const variation = gaussianRandom() * 0.06; // std dev 6%
-      movePercent = base + variation;
-      // 10% chance of outlier winner (25-50%)
-      if (random() < 0.10) {
-        movePercent = seededBetween(0.25, 0.50);
-      }
-      movePercent = Math.max(0.02, movePercent); // min 2% win
-    } else {
-      // Losers: avg -2.08% loss with some outliers
-      const base = -0.0208;
-      const variation = gaussianRandom() * 0.01; // std dev 1%
-      movePercent = base + variation;
-      // 5% chance of outlier loss (8-15%)
-      if (random() < 0.05) {
-        movePercent = seededBetween(-0.15, -0.08);
-      }
-      movePercent = Math.min(-0.003, movePercent); // min 0.3% loss
-      movePercent = Math.max(-0.20, movePercent); // max 20% loss
-    }
-
-    const exitPrice = entryPrice * (1 + movePercent);
-
-    // Position size: target ~$9k average
-    // Use log-normal distribution for realistic position sizing
-    const targetPosition = 9000;
-    const positionMultiplier = Math.exp(gaussianRandom() * 0.3); // log-normal with ~30% std dev
-    const positionValue = targetPosition * positionMultiplier;
-    const shares = Math.max(10, Math.round(positionValue / entryPrice / 10) * 10);
-
-    // Commission: ~$1-3
-    const commission = seededBetween(1, 3);
-
-    const realizedPnl = (exitPrice - entryPrice) * shares - commission;
-
-    // Account: 60% margin, 40% ISA
-    const accountId = random() < 0.6 ? 'MARGIN' : 'ISA';
-
-    trades.push({
-      ticker,
-      accountId,
-      entryDate,
-      exitDate,
-      entryPrice: Math.round(entryPrice * 100) / 100,
-      exitPrice: Math.round(exitPrice * 100) / 100,
-      shares,
-      commission: Math.round(commission * 100) / 100,
-      realizedPnl: Math.round(realizedPnl * 100) / 100,
-      isWinner,
+export async function POST() {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({
+      success: true,
+      message: 'Demo data already loaded (in-memory mode)',
+      trades: 940,
+      executions: 1880,
+      annotations: 658,
     });
   }
 
-  // Sort by entry date
-  trades.sort((a, b) => a.entryDate.getTime() - b.entryDate.getTime());
-
-  return trades;
-}
-
-function generateChecklist(isGoodSetup: boolean, random: () => number) {
-  const check = (prob: number) => random() < prob;
-  const goodProb = isGoodSetup ? 0.85 : 0.4;
-  const reqProb = isGoodSetup ? 0.95 : 0.3;
-
-  return {
-    marketContext: { bullishConditions: check(goodProb) },
-    stockSelection: {
-      momentumLeader: check(goodProb),
-      highRS: check(goodProb),
-      sufficientVolume: check(0.9),
-      sufficientADR: check(goodProb),
-    },
-    priorUptrend: { clearStrongUptrend: check(goodProb) },
-    consolidation: {
-      orderlyPattern: check(goodProb),
-      notChoppy: check(goodProb),
-      stillInRange: check(goodProb),
-    },
-    maSupport: {
-      nearRisingMA: check(goodProb),
-      masStacked: check(goodProb),
-    },
-    volatilityContraction: {
-      visuallyTighter: check(reqProb),
-      quantitativeCheck: check(reqProb),
-      tightnessNearPivot: check(reqProb),
-    },
-    volumePattern: {
-      volumeContracted: check(goodProb),
-      lowVolumeTightDays: check(goodProb),
-    },
-    pivotAndRisk: {
-      clearPivot: check(0.9),
-      logicalStop: check(0.85),
-      acceptableRisk: check(0.8),
-    },
-    context: {
-      leadingSector: check(0.6),
-      recentCatalyst: check(0.4),
-    },
-  };
-}
-
-export async function POST() {
   try {
     const supabase = createAdminClient();
     // Clear existing data first (use gte to match all records)
