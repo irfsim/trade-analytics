@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 import type { SetupType, ChecklistItemDefinition } from '@/types/database';
 import { CHECKLIST_LIBRARY } from '@/types/database';
@@ -37,25 +38,210 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
     setup?.checklist_items || []
   );
   const [saving, setSaving] = useState(false);
-  const [showLibraryPicker, setShowLibraryPicker] = useState(false);
-  const [customItemText, setCustomItemText] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [showPicker, setShowPicker] = useState(false);
+  const [sharedCustomItems, setSharedCustomItems] = useState<ChecklistItemDefinition[]>([]);
+  const [allSetups, setAllSetups] = useState<SetupType[]>([]);
+  const [pickerPos, setPickerPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const addItemFromLibrary = (item: ChecklistItemDefinition) => {
-    if (!checklistItems.find(i => i.id === item.id)) {
-      setChecklistItems([...checklistItems, { ...item, order: checklistItems.length }]);
+  const openPicker = () => {
+    if (searchInputRef.current) {
+      const rect = searchInputRef.current.getBoundingClientRect();
+      setPickerPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
     }
-    setShowLibraryPicker(false);
+    setShowPicker(true);
   };
 
-  const addCustomItem = () => {
-    if (customItemText.trim()) {
-      const newItem: ChecklistItemDefinition = {
-        id: generateId(),
-        label: customItemText.trim(),
-        order: checklistItems.length,
-      };
-      setChecklistItems([...checklistItems, newItem]);
-      setCustomItemText('');
+  // Close picker on outside click, escape, or scroll
+  useEffect(() => {
+    if (!showPicker) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        pickerRef.current && !pickerRef.current.contains(e.target as Node) &&
+        searchInputRef.current && !searchInputRef.current.contains(e.target as Node)
+      ) {
+        setShowPicker(false);
+      }
+    };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowPicker(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    const handleScroll = () => setShowPicker(false);
+    const scrollEl = scrollContainerRef.current;
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEscape);
+    scrollEl?.addEventListener('scroll', handleScroll);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEscape);
+      scrollEl?.removeEventListener('scroll', handleScroll);
+    };
+  }, [showPicker]);
+
+  // Fetch custom items from all other setups to show in library picker
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/setup-types');
+        if (!res.ok) return;
+        const data = await res.json();
+        const fetchedSetups: SetupType[] = data.setupTypes || [];
+        setAllSetups(fetchedSetups);
+        const seen = new Map<string, ChecklistItemDefinition>();
+        for (const s of fetchedSetups) {
+          for (const item of s.checklist_items || []) {
+            if (!item.id.startsWith('lib-') && !seen.has(item.label)) {
+              seen.set(item.label, item);
+            }
+          }
+        }
+        setSharedCustomItems(Array.from(seen.values()));
+      } catch {
+        // Non-critical — library picker still works with built-in items
+      }
+    })();
+  }, []);
+
+  const libraryCategories = useMemo(() => {
+    if (sharedCustomItems.length === 0) return CHECKLIST_LIBRARY;
+    return [
+      ...CHECKLIST_LIBRARY,
+      { category: 'Custom', items: sharedCustomItems },
+    ];
+  }, [sharedCustomItems]);
+
+  const initialName = setup?.name || '';
+  const initialColor = setup?.color || SETUP_COLORS[0].value;
+  const initialItems = setup?.checklist_items || [];
+
+  const hasChanges = useMemo(() => {
+    if (name !== initialName) return true;
+    if (color !== initialColor) return true;
+    if (checklistItems.length !== initialItems.length) return true;
+    return checklistItems.some((item, i) => item.id !== initialItems[i]?.id || item.label !== initialItems[i]?.label);
+  }, [name, color, checklistItems, initialName, initialColor, initialItems]);
+
+  // Flatten all library items for filtering
+  const allLibraryItems = useMemo(() =>
+    libraryCategories.flatMap(cat => cat.items.map(item => ({ ...item, category: cat.category }))),
+    [libraryCategories],
+  );
+
+  // Filter by search text (keep selected items visible for active indicator)
+  const filteredResults = useMemo(() => {
+    const query = searchText.toLowerCase().trim();
+    return allLibraryItems.filter(item => {
+      if (!query) return true;
+      return item.label.toLowerCase().includes(query);
+    });
+  }, [allLibraryItems, searchText]);
+
+  // Group filtered results back into categories
+  const filteredCategories = useMemo(() => {
+    const groups: { category: string; items: (ChecklistItemDefinition & { category: string })[] }[] = [];
+    for (const item of filteredResults) {
+      let group = groups.find(g => g.category === item.category);
+      if (!group) {
+        group = { category: item.category, items: [] };
+        groups.push(group);
+      }
+      group.items.push(item);
+    }
+    return groups;
+  }, [filteredResults]);
+
+  // Show "Add as custom" when search text doesn't exactly match any library item
+  const showAddCustom = useMemo(() => {
+    if (!searchText.trim()) return false;
+    const query = searchText.trim().toLowerCase();
+    return !allLibraryItems.some(item => item.label.toLowerCase() === query)
+      && !checklistItems.some(i => i.label.toLowerCase() === query);
+  }, [searchText, allLibraryItems, checklistItems]);
+
+  const addItemFromLibrary = (item: ChecklistItemDefinition) => {
+    const isCustom = !item.id.startsWith('lib-');
+    const id = isCustom ? generateId() : item.id;
+    if (!checklistItems.find(i => isCustom ? i.label === item.label : i.id === item.id)) {
+      setChecklistItems([...checklistItems, { ...item, id, order: checklistItems.length }]);
+    }
+    setSearchText('');
+  };
+
+  const addCustomFromSearch = () => {
+    if (!searchText.trim()) return;
+    const newItem: ChecklistItemDefinition = {
+      id: generateId(),
+      label: searchText.trim(),
+      order: checklistItems.length,
+    };
+    setChecklistItems([...checklistItems, newItem]);
+    setSearchText('');
+  };
+
+  const deleteCustomItemFromAll = async (label: string) => {
+    // Snapshot state for undo
+    const prevChecklistItems = [...checklistItems];
+    const prevSharedCustomItems = [...sharedCustomItems];
+    const affectedSetups = allSetups.filter(s =>
+      (s.checklist_items || []).some(i => !i.id.startsWith('lib-') && i.label === label)
+    );
+    const prevSetupItems = new Map(affectedSetups.map(s => [s.id, [...(s.checklist_items || [])]]));
+
+    // Remove locally
+    setChecklistItems(prev => prev.filter(i => i.label !== label).map((item, idx) => ({ ...item, order: idx })));
+    setSharedCustomItems(prev => prev.filter(i => i.label !== label));
+
+    // Remove from all other setups via API
+    for (const s of affectedSetups) {
+      if (s.id === setup?.id) continue;
+      const updated = (s.checklist_items || []).filter(i => i.label !== label).map((item, idx) => ({ ...item, order: idx }));
+      await fetch(`/api/setup-types/${s.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: s.name, checklist_items: updated }),
+      }).catch(() => {});
+    }
+
+    toast(`Removed "${label}" from all setups`, {
+      actionButtonStyle: { background: 'none', border: 'none', padding: 0, color: 'inherit', textDecoration: 'underline', cursor: 'pointer' },
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          // Restore local state
+          setChecklistItems(prevChecklistItems);
+          setSharedCustomItems(prevSharedCustomItems);
+          // Restore in all affected setups via API
+          for (const s of affectedSetups) {
+            if (s.id === setup?.id) continue;
+            const original = prevSetupItems.get(s.id);
+            if (original) {
+              await fetch(`/api/setup-types/${s.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: s.name, checklist_items: original }),
+              }).catch(() => {});
+            }
+          }
+          toast.success(`Restored "${label}"`);
+        },
+      },
+    });
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (showAddCustom) {
+        addCustomFromSearch();
+      } else if (filteredResults.length === 1) {
+        addItemFromLibrary(filteredResults[0]);
+      }
     }
   };
 
@@ -90,6 +276,9 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
         if (res.ok) {
           toast.success(`Setup "${name.trim()}" updated`);
           onComplete();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          toast.error(data.error || 'Failed to update setup');
         }
       } else {
         const res = await fetch('/api/setup-types', {
@@ -105,6 +294,9 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
         if (res.ok) {
           toast.success(`Setup "${name.trim()}" created`);
           onComplete();
+        } else {
+          const data = await res.json().catch(() => ({}));
+          toast.error(data.error || 'Failed to create setup');
         }
       }
     } catch (error) {
@@ -149,188 +341,250 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4 space-y-5">
-        {/* Name */}
-        {!isDefault && (
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Flag Breakout"
-              className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400"
-              autoFocus
-            />
-          </div>
-        )}
-
-        {isDefault && setup && (
-          <div>
-            <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{setup.name}</div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              This is the default setup for uncategorized trades. It has no checklist items.
-            </p>
-          </div>
-        )}
-
-        {/* Colour */}
-        {!isDefault && (
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Colour</label>
-            <div className="flex flex-wrap gap-2">
-              {SETUP_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  onClick={() => setColor(c.value)}
-                  className={`w-7 h-7 rounded-full border-2 transition-all cursor-pointer ${
-                    color === c.value
-                      ? 'border-zinc-900 dark:border-zinc-100 scale-110'
-                      : 'border-transparent hover:scale-105'
-                  }`}
-                  style={{ backgroundColor: c.value }}
-                  title={c.label}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Checklist Items - only for non-default setups */}
-        {!isDefault && (
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-              A+ Checklist Items
-              {checklistItems.length > 0 && (
-                <span className="ml-2 text-xs font-normal text-zinc-500">({checklistItems.length} items)</span>
-              )}
-            </label>
-
-            {/* Add from library button */}
-            <div className="flex gap-2 mb-3">
-              <button
-                type="button"
-                onClick={() => setShowLibraryPicker(!showLibraryPicker)}
-                className="px-3 py-1.5 text-xs font-medium rounded-full transition-colors cursor-pointer bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-600"
-              >
-                + From library
-              </button>
-            </div>
-
-            {/* Library Picker */}
-            {showLibraryPicker && (
-              <div className="mb-3 p-3 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-600 rounded-lg max-h-64 overflow-y-auto">
-                {CHECKLIST_LIBRARY.map((category) => (
-                  <div key={category.category} className="mb-3 last:mb-0">
-                    <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">{category.category}</div>
-                    <div className="space-y-1">
-                      {category.items.map((item) => {
-                        const isSelected = checklistItems.some(i => i.id === item.id);
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => !isSelected && addItemFromLibrary(item)}
-                            disabled={isSelected}
-                            className={`w-full text-left px-2 py-1 text-xs rounded transition-colors ${
-                              isSelected
-                                ? 'bg-zinc-100 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed'
-                                : 'hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 cursor-pointer'
-                            }`}
-                          >
-                            {isSelected && <span className="mr-1">✓</span>}
-                            {item.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
+        <div className="space-y-0 divide-y divide-zinc-100 dark:divide-zinc-800">
+          {/* Name row */}
+          {!isDefault && (
+            <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5 first:pt-0">
+              <div>
+                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Name</label>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Identifies this setup type</p>
               </div>
-            )}
-
-            {/* Custom item input */}
-            <div className="flex gap-2 mb-3">
               <input
                 type="text"
-                value={customItemText}
-                onChange={(e) => setCustomItemText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && addCustomItem()}
-                placeholder="Add custom item..."
-                className="flex-1 px-2 py-1.5 text-xs border border-zinc-200 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g., Flag Breakout"
+                className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+                autoFocus
               />
-              <button
-                type="button"
-                onClick={addCustomItem}
-                disabled={!customItemText.trim()}
-                className="px-3 py-1.5 text-xs font-medium rounded-full transition-colors cursor-pointer bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50"
-              >
-                Add
-              </button>
             </div>
+          )}
 
-            {/* Selected items list */}
-            {checklistItems.length > 0 && (
-              <div className="space-y-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-600 rounded-lg p-2">
-                {checklistItems.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-2 px-2 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-700/50 rounded"
-                  >
-                    <span className="flex-1 text-zinc-700 dark:text-zinc-300">{item.label}</span>
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => moveItem(index, 'up')}
-                        disabled={index === 0}
-                        className="p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                      >
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveItem(index, 'down')}
-                        disabled={index === checklistItems.length - 1}
-                        className="p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                      >
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.id)}
-                        className="p-0.5 text-zinc-400 hover:text-red-500 cursor-pointer"
-                      >
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
+          {isDefault && setup && (
+            <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5 first:pt-0">
+              <div>
+                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{setup.name}</div>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Default setup for uncategorized trades
+                </p>
               </div>
-            )}
-          </div>
-        )}
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                This setup has no checklist items.
+              </p>
+            </div>
+          )}
+
+          {/* Colour row */}
+          {!isDefault && (
+            <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5">
+              <div>
+                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Colour</label>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Used in charts and labels</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {SETUP_COLORS.map((c) => {
+                  const isActive = color?.toLowerCase() === c.value.toLowerCase();
+                  return (
+                    <button
+                      key={c.value}
+                      onClick={() => setColor(c.value)}
+                      className={`w-8 h-8 rounded-full transition-all cursor-pointer flex items-center justify-center ${
+                        isActive ? 'scale-110' : 'hover:scale-105'
+                      }`}
+                      style={{
+                        backgroundColor: c.value,
+                        boxShadow: isActive
+                          ? '0 0 0 2px var(--background), 0 0 0 4px var(--foreground)'
+                          : undefined,
+                      }}
+                      title={c.label}
+                      aria-label={`${c.label}${isActive ? ' (selected)' : ''}`}
+                    >
+                      {isActive && (
+                        <svg className="w-4 h-4 text-white drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Checklist Items row - only for non-default setups */}
+          {!isDefault && (
+            <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5">
+              <div>
+                <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  A+ Checklist
+                </label>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Pick from the library or add your own criteria to grade trades against
+                  {checklistItems.length > 0 && (
+                    <span className="block mt-0.5">{checklistItems.length} item{checklistItems.length !== 1 ? 's' : ''}</span>
+                  )}
+                </p>
+              </div>
+              <div className="space-y-3">
+                {/* Searchable combobox */}
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchText}
+                  onChange={(e) => { setSearchText(e.target.value); if (!showPicker) openPicker(); }}
+                  onFocus={openPicker}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder="Search requirements..."
+                  className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+                />
+
+                {/* Dropdown — portaled to escape overflow clipping */}
+                {showPicker && pickerPos && (filteredCategories.length > 0 || showAddCustom) && createPortal(
+                  <div
+                    ref={pickerRef}
+                    className="fixed bg-white dark:bg-zinc-900 rounded-xl max-h-64 overflow-y-auto p-1"
+                    style={{
+                      top: pickerPos.top,
+                      left: pickerPos.left,
+                      width: pickerPos.width,
+                      zIndex: 100,
+                      boxShadow: '0 0 0 1px var(--card-border), 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+                    }}
+                  >
+                    {filteredCategories.map((category, catIdx) => (
+                      <div key={category.category}>
+                        {catIdx > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
+                        <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">{category.category}</div>
+                        {category.items.map((item) => {
+                          const isCustom = !item.id.startsWith('lib-');
+                          const isActive = isCustom
+                            ? checklistItems.some(i => i.label === item.label)
+                            : checklistItems.some(i => i.id === item.id);
+                          return (
+                            <div key={item.id} className="relative group">
+                              <button
+                                type="button"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => isActive ? removeItem(checklistItems.find(i => isCustom ? i.label === item.label : i.id === item.id)!.id) : addItemFromLibrary(item)}
+                                className={`w-full px-3 py-2 text-left text-sm rounded-lg transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between ${
+                                  isCustom ? 'pr-8' : ''
+                                } ${
+                                  isActive
+                                    ? 'text-zinc-900 dark:text-zinc-100 font-medium'
+                                    : 'text-zinc-600 dark:text-zinc-400'
+                                }`}
+                              >
+                                {item.label}
+                                {isActive && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full flex-shrink-0 ml-2" />}
+                              </button>
+                              {isCustom && (
+                                <button
+                                  type="button"
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={(e) => { e.stopPropagation(); deleteCustomItemFromAll(item.label); }}
+                                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition-all cursor-pointer"
+                                  aria-label={`Remove "${item.label}" from all setups`}
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                    {showAddCustom && (
+                      <>
+                        {filteredCategories.length > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={addCustomFromSearch}
+                          className="w-full px-3 py-2 text-left text-sm rounded-lg transition-colors text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                        >
+                          + Add &ldquo;{searchText.trim()}&rdquo; as custom
+                        </button>
+                      </>
+                    )}
+                  </div>,
+                  document.body,
+                )}
+
+                {/* Selected items list */}
+                {checklistItems.length > 0 && (
+                  <div className="space-y-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-2">
+                    {checklistItems.map((item, index) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-2 px-2 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-700/50 rounded"
+                      >
+                        <span className="flex-1 text-zinc-700 dark:text-zinc-300">{item.label}</span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => moveItem(index, 'up')}
+                            disabled={index === 0}
+                            className="p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveItem(index, 'down')}
+                            disabled={index === checklistItems.length - 1}
+                            className="p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(item.id)}
+                            className="p-0.5 text-zinc-400 hover:text-red-500 cursor-pointer"
+                          >
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="flex-shrink-0 px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center gap-3">
+      <div className="flex-shrink-0 px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-end gap-2">
+        <div
+          className={`grid transition-[grid-template-columns,opacity] duration-200 ease-out ${
+            hasChanges ? 'grid-cols-[1fr] opacity-100' : 'grid-cols-[0fr] opacity-0'
+          }`}
+        >
+          <button
+            onClick={onCancel}
+            tabIndex={hasChanges ? 0 : -1}
+            className="overflow-hidden whitespace-nowrap px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
         <button
           onClick={handleSave}
-          disabled={saving || (!isDefault && !name.trim())}
-          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors cursor-pointer"
+          disabled={saving || !hasChanges || (!isDefault && !name.trim())}
+          className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors btn-press cursor-pointer"
         >
           {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Setup'}
-        </button>
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-        >
-          Cancel
         </button>
       </div>
     </div>

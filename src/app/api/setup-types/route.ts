@@ -9,7 +9,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from('setup_types')
-      .select('*')
+      .select('*, trade_annotations(count)')
       .order('name', { ascending: true });
 
     if (!includeArchived) {
@@ -22,7 +22,13 @@ export async function GET(request: Request) {
       throw new Error(`Failed to fetch setup types: ${error.message}`);
     }
 
-    return NextResponse.json({ setupTypes: data || [] });
+    const setupTypes = (data || []).map((s) => ({
+      ...s,
+      trade_count: s.trade_annotations?.[0]?.count ?? 0,
+      trade_annotations: undefined,
+    }));
+
+    return NextResponse.json({ setupTypes });
   } catch (error) {
     console.error('Error fetching setup types:', error);
     return NextResponse.json(

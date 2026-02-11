@@ -90,6 +90,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
     if (!isOpen) {
       setMode('settings');
       setEditingSetup(null);
+      setActiveSection('profile');
     }
   }, [isOpen]);
 
