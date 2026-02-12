@@ -436,7 +436,7 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
                   onChange={(e) => { setSearchText(e.target.value); if (!showPicker) openPicker(); }}
                   onFocus={openPicker}
                   onKeyDown={handleSearchKeyDown}
-                  placeholder="Search requirements..."
+                  placeholder="Search or add custom requirement..."
                   className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
                 />
 
@@ -504,9 +504,9 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
                           type="button"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={addCustomFromSearch}
-                          className="w-full px-3 py-2 text-left text-sm rounded-lg transition-colors text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                          className="w-full px-3 py-2 text-left text-sm rounded-lg transition-colors text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
                         >
-                          + Add &ldquo;{searchText.trim()}&rdquo; as custom
+                          + Add &ldquo;<span className="font-medium">{searchText.trim()}</span>&rdquo; as custom
                         </button>
                       </>
                     )}

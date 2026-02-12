@@ -76,6 +76,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
   const [mode, setMode] = useState<ModalMode>('settings');
   const [editingSetup, setEditingSetup] = useState<SetupType | null>(null);
+  const [setupsRefreshKey, setSetupsRefreshKey] = useState(0);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -116,6 +117,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
     setMode('settings');
     setActiveSection('setups');
     setEditingSetup(null);
+    setSetupsRefreshKey(k => k + 1);
   }
 
   function handleSetupEditorCancel() {
@@ -225,7 +227,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
                   )}
                   {activeSection === 'profile' && <ProfileSection avatar={avatar} onAvatarChange={onAvatarChange} displayName={displayName} onDisplayNameChange={onDisplayNameChange} />}
                   {activeSection === 'accounts' && <AccountsSection onStartWizard={handleStartWizard} />}
-                  {activeSection === 'setups' && <SetupsSection onEditSetup={handleStartSetupEditor} />}
+                  {activeSection === 'setups' && <SetupsSection onEditSetup={handleStartSetupEditor} refreshKey={setupsRefreshKey} />}
                 </div>
               </div>
             </motion.div>

@@ -11,9 +11,10 @@ interface SetupWithCount extends SetupType {
 
 interface SetupsSectionProps {
   onEditSetup: (setup: SetupType | null) => void;
+  refreshKey?: number;
 }
 
-export function SetupsSection({ onEditSetup }: SetupsSectionProps) {
+export function SetupsSection({ onEditSetup, refreshKey }: SetupsSectionProps) {
   const [setupTypes, setSetupTypes] = useState<SetupWithCount[]>([]);
   const [archivedSetups, setArchivedSetups] = useState<SetupWithCount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +25,7 @@ export function SetupsSection({ onEditSetup }: SetupsSectionProps) {
 
   useEffect(() => {
     loadSetupTypes();
-  }, []);
+  }, [refreshKey]);
 
   useEffect(() => {
     if (!menuOpenId) return;
