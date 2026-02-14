@@ -6,9 +6,30 @@ export async function GET(request: Request) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({
       setupTypes: [
-        { id: 1, name: 'EP', description: 'Episodic Pivot', color: '#3b82f6', archived: false, checklist_items: null, trade_count: 0 },
-        { id: 2, name: 'FLAG', description: 'Flag / Pennant', color: '#10b981', archived: false, checklist_items: null, trade_count: 0 },
-        { id: 3, name: 'BASE_BREAKOUT', description: 'Base Breakout', color: '#f59e0b', archived: false, checklist_items: null, trade_count: 0 },
+        {
+          id: 1, name: 'Episodic pivot', description: 'Episodic Pivot', color: '#3b82f6', archived: false, trade_count: 0,
+          checklist_items: [
+            { id: 'ep-1', label: 'Earnings/news catalyst within last 5 days', order: 0 },
+            { id: 'ep-2', label: 'Gap up on above-average volume', order: 1 },
+            { id: 'ep-3', label: 'First pullback to rising 10/20 EMA', order: 2 },
+          ],
+        },
+        {
+          id: 2, name: 'Flag', description: 'Flag / Pennant', color: '#10b981', archived: false, trade_count: 0,
+          checklist_items: [
+            { id: 'flag-1', label: 'Strong prior uptrend (pole) of 20%+', order: 0 },
+            { id: 'flag-2', label: 'Tight consolidation with declining volume', order: 1 },
+            { id: 'flag-3', label: 'Breakout above flag resistance on volume', order: 2 },
+          ],
+        },
+        {
+          id: 3, name: 'Base breakout', description: 'Base Breakout', color: '#f59e0b', archived: false, trade_count: 0,
+          checklist_items: [
+            { id: 'base-1', label: 'Flat base of 3+ weeks with <15% depth', order: 0 },
+            { id: 'base-2', label: 'Volume contraction during base formation', order: 1 },
+            { id: 'base-3', label: 'Price holding above 50-day moving average', order: 2 },
+          ],
+        },
       ],
     });
   }

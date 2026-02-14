@@ -20,11 +20,11 @@ const TICKERS = [
   'U', 'PATH', 'OKTA', 'CRSP', 'BILL', 'HUBS', 'TTD', 'ENPH',
 ];
 
-const SETUP_TYPES = ['EP', 'FLAG', 'BASE_BREAKOUT'] as const;
+const SETUP_TYPES = ['Episodic pivot', 'Flag', 'Base breakout'] as const;
 const SETUP_TYPE_COLORS: Record<string, string> = {
-  EP: '#3b82f6',
-  FLAG: '#10b981',
-  BASE_BREAKOUT: '#f59e0b',
+  'Episodic pivot': '#3b82f6',
+  'Flag': '#10b981',
+  'Base breakout': '#f59e0b',
 };
 
 // Real 2025 stats:

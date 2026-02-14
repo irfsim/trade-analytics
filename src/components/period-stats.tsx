@@ -115,7 +115,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Winners</p>
           <p className="text-sm text-zinc-900 dark:text-zinc-100">
             <span className="font-medium">{stats.winners}</span>
-            <span className="font-normal"> {stats.totalTrades > 0 ? Math.round((stats.winners / stats.totalTrades) * 100) : 0}%</span>
+            <span className="font-normal"> ({stats.totalTrades > 0 ? Math.round((stats.winners / stats.totalTrades) * 100) : 0}%)</span>
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Losers</p>
           <p className="text-sm text-zinc-900 dark:text-zinc-100">
             <span className="font-medium">{stats.losers}</span>
-            <span className="font-normal"> {stats.totalTrades > 0 ? Math.round((stats.losers / stats.totalTrades) * 100) : 0}%</span>
+            <span className="font-normal"> ({stats.totalTrades > 0 ? Math.round((stats.losers / stats.totalTrades) * 100) : 0}%)</span>
           </p>
         </div>
 
@@ -143,7 +143,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
             {stats.avgWin !== null ? (
               <>
                 <span className="font-medium">+${stats.avgWin.toLocaleString('en-US')}</span>
-                <span className="font-normal"> {stats.avgWinPct !== null ? `+${stats.avgWinPct}%` : '—'}</span>
+                <span className="font-normal"> {stats.avgWinPct !== null ? `(+${stats.avgWinPct}%)` : '—'}</span>
               </>
             ) : (
               <span className="font-medium">—</span>
@@ -158,7 +158,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
             {stats.avgLoss !== null ? (
               <>
                 <span className="font-medium">-${Math.abs(stats.avgLoss).toLocaleString('en-US')}</span>
-                <span className="font-normal"> {stats.avgLossPct !== null ? `${stats.avgLossPct}%` : '—'}</span>
+                <span className="font-normal"> {stats.avgLossPct !== null ? `(${stats.avgLossPct}%)` : '—'}</span>
               </>
             ) : (
               <span className="font-medium">—</span>
