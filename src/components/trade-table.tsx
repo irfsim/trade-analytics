@@ -441,53 +441,35 @@ function MarketConditionDot({ condition }: { condition: MarketRegime | null }) {
 }
 
 function SetupTypePill({ name, color }: { name: string; color: string | null }) {
-  // Default color if none specified
-  const baseColor = color || '#6366f1';
-
-  // Convert hex to RGB for creating a light background
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : { r: 99, g: 102, b: 241 };
-  };
+  const dotColor = color || '#6366f1';
 
   // Smart abbreviation: multi-word → initials, single word → truncate
   const getDisplayName = (fullName: string): string => {
-    // Special case for default setup
     if (fullName === 'No setup / Other') {
       return 'None';
     }
     const words = fullName.trim().split(/\s+/);
     if (words.length > 1) {
-      // Multi-word: use initials (e.g., "Base Breakout" → "BB")
       return words.map(w => w[0].toUpperCase()).join('');
     }
-    // Single word: truncate if > 6 chars
     if (fullName.length > 6) {
       return fullName.slice(0, 5) + '…';
     }
     return fullName;
   };
 
-  const rgb = hexToRgb(baseColor);
-  const bgColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12)`;
-  // Darken the text color for better readability
-  const textColor = `rgb(${Math.round(rgb.r * 0.65)}, ${Math.round(rgb.g * 0.65)}, ${Math.round(rgb.b * 0.65)})`;
   const displayName = getDisplayName(name);
   const needsTooltip = displayName !== name;
 
   return (
     <span
-      className="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full whitespace-nowrap cursor-default"
-      style={{
-        backgroundColor: bgColor,
-        color: textColor,
-      }}
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap cursor-default border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
       title={needsTooltip ? name : undefined}
     >
+      <span
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+        style={{ backgroundColor: dotColor }}
+      />
       {displayName}
     </span>
   );

@@ -11,6 +11,7 @@ interface SlidePanelProps {
   hasNext?: boolean;
   children: React.ReactNode;
   title?: string;
+  positionLabel?: string;
 }
 
 export function SlidePanel({
@@ -21,7 +22,8 @@ export function SlidePanel({
   hasPrev,
   hasNext,
   children,
-  title
+  title,
+  positionLabel
 }: SlidePanelProps) {
   // Close on escape key, navigate with arrow keys
   useEffect(() => {
@@ -57,18 +59,19 @@ export function SlidePanel({
       {/* Panel */}
       <div
         className={`
-          fixed top-0 right-0 h-full w-full max-w-2xl bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-700 z-50
-          transform transition-transform duration-300 ease-out
-          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+          fixed top-4 right-4 bottom-4 w-full max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 z-50
+          transform transition-transform duration-300 ease-out rounded-2xl overflow-hidden shadow-xl
+          ${isOpen ? 'translate-x-0' : 'translate-x-[calc(100%+16px)]'}
           flex flex-col
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between h-14 px-5 border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-t-2xl">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{title || 'Details'}</h2>
+          <div className="flex items-center gap-1">
             {/* Prev/Next Navigation */}
             {(onPrev || onNext) && (
-              <div className="flex items-center gap-1 mr-2">
+              <>
                 <button
                   onClick={onPrev}
                   disabled={!hasPrev}
@@ -80,6 +83,9 @@ export function SlidePanel({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
+                {positionLabel && (
+                  <span className="text-xs text-zinc-400 tabular-nums px-1">{positionLabel}</span>
+                )}
                 <button
                   onClick={onNext}
                   disabled={!hasNext}
@@ -91,19 +97,18 @@ export function SlidePanel({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-              </div>
+              </>
             )}
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{title || 'Details'}</h2>
+            <button
+              onClick={onClose}
+              className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-colors ml-1"
+              aria-label="Close panel"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-full transition-colors"
-            aria-label="Close panel"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
 
         {/* Content */}

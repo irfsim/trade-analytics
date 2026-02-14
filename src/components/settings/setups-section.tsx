@@ -144,12 +144,11 @@ export function SetupsSection({ onEditSetup, refreshKey }: SetupsSectionProps) {
                 key={setup.id}
                 className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg"
               >
-                <div className="flex items-center justify-between p-3">
-                  <button
-                    type="button"
-                    onClick={() => hasItems ? setExpandedId(isExpanded ? null : setup.id) : undefined}
-                    className={`flex items-center gap-3 flex-1 min-w-0 text-left ${hasItems ? 'cursor-pointer' : 'cursor-default'}`}
-                  >
+                <div
+                  className={`flex items-center justify-between p-3 ${hasItems ? 'cursor-pointer' : ''}`}
+                  onClick={() => hasItems ? setExpandedId(isExpanded ? null : setup.id) : undefined}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
                     {/* Plus/minus icon — only for setups with checklist items */}
                     {hasItems && (
                       <div className="relative w-3.5 h-3.5 flex-shrink-0">
@@ -172,13 +171,13 @@ export function SetupsSection({ onEditSetup, refreshKey }: SetupsSectionProps) {
                     <div className="flex items-baseline gap-2 min-w-0">
                       <span className="font-medium text-zinc-900 dark:text-zinc-100 truncate">{setup.name}</span>
                       <span className="text-sm text-zinc-500 dark:text-zinc-400 flex-shrink-0 tabular-nums">
-                        {hasItems && <>{setup.checklist_items.length} item{setup.checklist_items.length !== 1 ? 's' : ''}</>}
+                        {hasItems && <>{setup.checklist_items.length} requirement{setup.checklist_items.length !== 1 ? 's' : ''}</>}
                         {hasItems && <span className="mx-1">·</span>}
                         {tradeCount} trade{tradeCount !== 1 ? 's' : ''}
                       </span>
                     </div>
-                  </button>
-                  <div className="relative flex-shrink-0" ref={menuOpenId === setup.id ? menuRef : undefined}>
+                  </div>
+                  <div className="relative flex-shrink-0" onClick={(e) => e.stopPropagation()} ref={menuOpenId === setup.id ? menuRef : undefined}>
                     <button
                       onClick={() => setMenuOpenId(menuOpenId === setup.id ? null : setup.id)}
                       className="p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors cursor-pointer"

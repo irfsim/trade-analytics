@@ -6,6 +6,8 @@ import { AnnotationForm } from './annotation-form';
 import { TradeChart } from './trade-chart';
 import type { TradeWithDetails, TradeLeg } from '@/types/database';
 
+type PanelTab = 'review' | 'details';
+
 interface TradePanelProps {
   tradeId: number | null;
   tradeIds?: number[];
@@ -18,6 +20,7 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
   const [trade, setTrade] = useState<TradeWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<PanelTab>('review');
 
   const currentIndex = tradeId ? tradeIds.indexOf(tradeId) : -1;
   const hasPrev = currentIndex > 0;
@@ -70,14 +73,18 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
       onNext={handleNext}
       hasPrev={hasPrev}
       hasNext={hasNext}
-      title={trade ? `${trade.ticker} Trade${positionLabel ? ` · ${positionLabel}` : ''}` : 'Trade Details'}
+      title={trade ? trade.ticker : 'Trade Details'}
+      positionLabel={positionLabel}
     >
       {loading && (
         <div className="p-6 space-y-4 animate-pulse">
           <div className="h-8 w-32 bg-zinc-100 dark:bg-zinc-800 rounded" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-16 bg-zinc-100 dark:bg-zinc-800 rounded-lg" />
+              <div key={i} className="flex justify-between">
+                <div className="h-4 w-16 bg-zinc-100 dark:bg-zinc-800 rounded" />
+                <div className="h-4 w-24 bg-zinc-100 dark:bg-zinc-800 rounded" />
+              </div>
             ))}
           </div>
         </div>
@@ -90,43 +97,71 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
       )}
 
       {trade && !loading && (
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5">
           {/* Trade Header */}
           <TradeHeader trade={trade} />
 
-          {/* Price Chart */}
-          <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
-            <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
-              Price Chart
-            </h3>
-            <TradeChart
-              ticker={trade.ticker}
-              entryDatetime={trade.entry_datetime}
-              exitDatetime={trade.exit_datetime}
-              entryPrice={trade.entry_price}
-              exitPrice={trade.exit_price}
-              legs={trade.legs}
-              direction={trade.direction}
-            />
+          {/* Tabs */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('review')}
+              className={`px-3 h-8 text-sm font-medium rounded-full transition-colors cursor-pointer ${
+                activeTab === 'review'
+                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                  : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+              }`}
+            >
+              Review
+            </button>
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`px-3 h-8 text-sm font-medium rounded-full transition-colors cursor-pointer ${
+                activeTab === 'details'
+                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                  : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+              }`}
+            >
+              Execution Details
+            </button>
           </div>
 
-          {/* Stats Grid */}
-          <TradeStats trade={trade} />
+          {/* Review Tab */}
+          {activeTab === 'review' && (
+            <>
+              {/* Price Chart */}
+              <div>
+                <TradeChart
+                  ticker={trade.ticker}
+                  entryDatetime={trade.entry_datetime}
+                  exitDatetime={trade.exit_datetime}
+                  entryPrice={trade.entry_price}
+                  exitPrice={trade.exit_price}
+                  legs={trade.legs}
+                  direction={trade.direction}
+                />
+              </div>
 
-          {/* Trade Legs */}
-          <TradeLegsList legs={trade.legs} />
+              {/* Annotation Form */}
+              {trade.status === 'CLOSED' && (
+                <div className="border-t border-zinc-200 dark:border-zinc-700 pt-5">
+                  <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4 text-balance">Trade Review</h3>
+                  <AnnotationForm
+                    tradeId={trade.id}
+                    existingAnnotation={trade.annotation}
+                    entryPrice={trade.entry_price}
+                    onSave={onAnnotationSave}
+                  />
+                </div>
+              )}
+            </>
+          )}
 
-          {/* Annotation Form */}
-          {trade.status === 'CLOSED' && (
-            <div className="border-t border-zinc-200 dark:border-zinc-700 pt-6">
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4 text-balance">Trade Review</h3>
-              <AnnotationForm
-                tradeId={trade.id}
-                existingAnnotation={trade.annotation}
-                entryPrice={trade.entry_price}
-                onSave={onAnnotationSave}
-              />
-            </div>
+          {/* Details Tab */}
+          {activeTab === 'details' && (
+            <>
+              <TradeStats trade={trade} />
+              <TradeLegsList legs={trade.legs} />
+            </>
           )}
         </div>
       )}
@@ -216,30 +251,35 @@ function TradeStats({ trade }: { trade: TradeWithDetails }) {
     return `${minutes}m`;
   };
 
+  const pctMove = trade.exit_price && trade.entry_price
+    ? `${(((trade.exit_price - trade.entry_price) / trade.entry_price) * 100).toFixed(2)}%`
+    : '—';
+
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <StatCard label="Entry" value={formatPrice(trade.entry_price)} sublabel={formatDateTime(trade.entry_datetime)} />
-      <StatCard label="Exit" value={formatPrice(trade.exit_price)} sublabel={trade.exit_datetime ? formatDateTime(trade.exit_datetime) : '—'} />
-      <StatCard label="Shares" value={trade.total_shares.toLocaleString()} />
-      <StatCard label="Holding" value={holdingPeriod()} />
-      <StatCard label="Commission" value={`$${trade.total_commission.toFixed(2)}`} />
-      <StatCard
-        label="% Move"
-        value={trade.exit_price && trade.entry_price
-          ? `${(((trade.exit_price - trade.entry_price) / trade.entry_price) * 100).toFixed(2)}%`
-          : '—'
-        }
-      />
+    <div>
+      <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+        Execution Details
+      </h3>
+      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <PropertyRow label="Entry" value={formatPrice(trade.entry_price)} sublabel={formatDateTime(trade.entry_datetime)} />
+        <PropertyRow label="Exit" value={formatPrice(trade.exit_price)} sublabel={trade.exit_datetime ? formatDateTime(trade.exit_datetime) : '—'} />
+        <PropertyRow label="Shares" value={trade.total_shares.toLocaleString()} />
+        <PropertyRow label="Holding" value={holdingPeriod()} />
+        <PropertyRow label="Commission" value={`$${trade.total_commission.toFixed(2)}`} />
+        <PropertyRow label="% Move" value={pctMove} />
+      </div>
     </div>
   );
 }
 
-function StatCard({ label, value, sublabel }: { label: string; value: string; sublabel?: string }) {
+function PropertyRow({ label, value, sublabel }: { label: string; value: string; sublabel?: string }) {
   return (
-    <div className="p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg">
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{label}</p>
-      <p className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mt-0.5">{value}</p>
-      {sublabel && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{sublabel}</p>}
+    <div className="grid grid-cols-[120px_1fr] items-center py-2">
+      <span className="text-sm text-zinc-500 dark:text-zinc-400">{label}</span>
+      <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 font-mono tabular-nums">
+        {value}
+        {sublabel && <span className="ml-2 font-normal text-zinc-400 dark:text-zinc-500 font-sans">{sublabel}</span>}
+      </span>
     </div>
   );
 }
@@ -265,21 +305,21 @@ function TradeLegsList({ legs }: { legs: TradeLeg[] }) {
   };
 
   return (
-    <div>
-      <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">
+    <div className="border-t border-zinc-200 dark:border-zinc-700 pt-5">
+      <h3 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
         Executions
       </h3>
-      <div className="space-y-2">
+      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {legs.map((leg) => (
           <div
             key={leg.id}
-            className="flex items-center justify-between p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+            className="flex items-center justify-between py-2"
           >
             <div className="flex items-center gap-3">
               <span className={`px-2 py-0.5 text-xs font-bold rounded ${legTypeColors[leg.leg_type]}`}>
                 {leg.leg_type}
               </span>
-              <span className="text-sm text-zinc-700 dark:text-zinc-300">
+              <span className="text-sm text-zinc-700 dark:text-zinc-300 font-mono tabular-nums">
                 {leg.shares.toLocaleString()} @ ${leg.price.toFixed(2)}
               </span>
             </div>

@@ -7,7 +7,7 @@
   --background: #fafafa;
   --foreground: #18181b;
   --card-bg: #ffffff;
-  --card-border: rgba(0, 0, 0, 0.06);
+  --card-border: #e4e4e7;
   --muted: #71717a;
   --muted-bg: #f4f4f5;
   --accent: #3b82f6;
@@ -21,7 +21,7 @@
   --background: #0D0D0C;
   --foreground: #E1E4E8;
   --card-bg: #161616;
-  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border: #3f3f46;
   --muted: #8b949e;
   --muted-bg: #1c1c1c;
   --accent: #79B8FF;

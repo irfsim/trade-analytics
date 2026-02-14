@@ -351,8 +351,50 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
   return (
     <div className="space-y-8">
-      {/* Setup Rating - Prominent Display */}
-      {ratingData.total > 0 ? (
+      {/* Setup Type - First so user selects before seeing checklist */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Setup Type</label>
+          <SetupTypeSelect
+            value={setupTypeId}
+            onChange={setSetupTypeId}
+            setupTypes={setupTypes}
+          />
+        </div>
+      </div>
+
+      {/* Plan Compliance */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">
+          Did you follow your plan?
+        </label>
+        <p className="text-xs text-zinc-900 dark:text-zinc-100 mb-3 text-pretty">Entry, sizing, stop, exit executed correctly?</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setFollowedPlan(true)}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
+              followedPlan === true
+                ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+            }`}
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setFollowedPlan(false)}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
+              followedPlan === false
+                ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+            }`}
+          >
+            No
+          </button>
+        </div>
+      </div>
+
+      {/* Setup Rating - only after setup selected */}
+      {setupTypeId && (ratingData.total > 0 ? (
         <div className={`p-6 rounded-xl border ${getRatingBg(ratingData.percentage)}`}>
           <div className="flex items-center justify-between">
             <div>
@@ -374,53 +416,11 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       ) : (
         <div className="p-6 rounded-xl border bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {!setupTypeId ? 'Select a setup type to see its quality checklist' :
-             isDefaultSetup ? 'This setup has no checklist items' :
+            {isDefaultSetup ? 'This setup has no checklist items' :
              'This setup has no checklist items configured. Add them in Settings.'}
           </p>
         </div>
-      )}
-
-      {/* Quick Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Setup Type */}
-        <div>
-          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Setup Type</label>
-          <SetupTypeSelect
-            value={setupTypeId}
-            onChange={setSetupTypeId}
-            setupTypes={setupTypes}
-          />
-        </div>
-      </div>
-
-      {/* Risk Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Initial Risk ($)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={initialRisk}
-            onChange={(e) => setInitialRisk(e.target.value)}
-            placeholder="500.00"
-            className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-          />
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">$ amount you risked on this trade</p>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Stop Price ($)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={stopPrice}
-            onChange={(e) => setStopPrice(e.target.value)}
-            placeholder={`${(entryPrice * 0.95).toFixed(2)}`}
-            className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
-          />
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Where was your stop?</p>
-        </div>
-      </div>
+      ))}
 
       {/* A+ Checklist - Dynamic based on setup */}
       {setupTypeId && hasChecklistItems && (
@@ -465,44 +465,35 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         </div>
       )}
 
-      {/* Message when no setup selected */}
-      {!setupTypeId && (
-        <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Select a setup type above to see its A+ checklist items.
-          </p>
+      {/* Risk Info - only after setup selected */}
+      {setupTypeId && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Initial Risk ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={initialRisk}
+              onChange={(e) => setInitialRisk(e.target.value)}
+              placeholder="500.00"
+              className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+            />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">$ amount you risked on this trade</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Stop Price ($)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={stopPrice}
+              onChange={(e) => setStopPrice(e.target.value)}
+              placeholder={`${(entryPrice * 0.95).toFixed(2)}`}
+              className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+            />
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Where was your stop?</p>
+          </div>
         </div>
       )}
-
-      {/* Plan Compliance */}
-      <div>
-        <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">
-          Did you follow your plan?
-        </label>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3 text-pretty">Entry, sizing, stop, exit executed correctly?</p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setFollowedPlan(true)}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-              followedPlan === true
-                ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
-          >
-            Yes
-          </button>
-          <button
-            onClick={() => setFollowedPlan(false)}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-              followedPlan === false
-                ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
-          >
-            No
-          </button>
-        </div>
-      </div>
 
       {/* Notes */}
       <div>
