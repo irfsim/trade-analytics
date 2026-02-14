@@ -31,9 +31,9 @@ function SetupTypeSelect({
         buttonSize={{ width: 200, height: 40 }}
         menuWidth={200}
         menuRadius={8}
-        buttonRadius={8}
+        buttonRadius={9999}
       >
-        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer">
           <span className={selectedType ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
             {selectedType?.name || 'Select...'}
           </span>
@@ -363,65 +363,6 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         </div>
       </div>
 
-      {/* Plan Compliance */}
-      <div>
-        <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">
-          Did you follow your plan?
-        </label>
-        <p className="text-xs text-zinc-900 dark:text-zinc-100 mb-3 text-pretty">Entry, sizing, stop, exit executed correctly?</p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setFollowedPlan(true)}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-              followedPlan === true
-                ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
-          >
-            Yes
-          </button>
-          <button
-            onClick={() => setFollowedPlan(false)}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
-              followedPlan === false
-                ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-            }`}
-          >
-            No
-          </button>
-        </div>
-      </div>
-
-      {/* Setup Rating - only after setup selected */}
-      {setupTypeId && (ratingData.total > 0 ? (
-        <div className={`p-6 rounded-xl border ${getRatingBg(ratingData.percentage)}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Setup Quality</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                {hasChecklistItems ? `${ratingData.checked}/${ratingData.total} checklist items` : 'Based on checklist sections'}
-              </p>
-            </div>
-            <div className="text-right flex items-center gap-3">
-              <p className={`text-5xl font-bold font-mono tabular-nums ${getRatingColor(ratingData.percentage)}`}>
-                {ratingData.percentage}<span className="text-2xl text-zinc-400">%</span>
-              </p>
-              <p className={`text-3xl font-bold ${getRatingColor(ratingData.percentage)}`}>
-                {getLetterGrade(ratingData.percentage)}
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="p-6 rounded-xl border bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {isDefaultSetup ? 'This setup has no checklist items' :
-             'This setup has no checklist items configured. Add them in Settings.'}
-          </p>
-        </div>
-      ))}
-
       {/* A+ Checklist - Dynamic based on setup */}
       {setupTypeId && hasChecklistItems && (
         <div>
@@ -454,6 +395,65 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
           </div>
         </div>
       )}
+
+      {/* Setup Rating - only after setup selected */}
+      {setupTypeId && (ratingData.total > 0 ? (
+        <div className={`p-6 rounded-xl border ${getRatingBg(ratingData.percentage)}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Setup Quality</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                {hasChecklistItems ? `${ratingData.checked}/${ratingData.total} checklist items` : 'Based on checklist sections'}
+              </p>
+            </div>
+            <div className="text-right flex items-center gap-3">
+              <p className={`text-5xl font-bold font-mono tabular-nums ${getRatingColor(ratingData.percentage)}`}>
+                {ratingData.percentage}<span className="text-2xl text-zinc-400">%</span>
+              </p>
+              <p className={`text-3xl font-bold ${getRatingColor(ratingData.percentage)}`}>
+                {getLetterGrade(ratingData.percentage)}
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="p-6 rounded-xl border bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            {isDefaultSetup ? 'This setup has no checklist items' :
+             'This setup has no checklist items configured. Add them in Settings.'}
+          </p>
+        </div>
+      ))}
+
+      {/* Plan Compliance */}
+      <div>
+        <label className="block text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-2">
+          Did you follow your plan?
+        </label>
+        <p className="text-xs text-zinc-900 dark:text-zinc-100 mb-3 text-pretty">Entry, sizing, stop, exit executed correctly?</p>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setFollowedPlan(true)}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors cursor-pointer ${
+              followedPlan === true
+                ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+            }`}
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setFollowedPlan(false)}
+            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors cursor-pointer ${
+              followedPlan === false
+                ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+            }`}
+          >
+            No
+          </button>
+        </div>
+      </div>
 
       {/* Legacy Checklist - shown when setup has no items but not default */}
       {setupTypeId && !hasChecklistItems && !isDefaultSetup && (
@@ -512,7 +512,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         <button
           onClick={handleSave}
           disabled={saving}
-          className="px-6 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors btn-press"
+          className="px-6 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-medium rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors cursor-pointer btn-press"
         >
           {saving ? 'Saving...' : 'Save Annotation'}
         </button>
