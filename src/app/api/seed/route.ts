@@ -172,7 +172,7 @@ export async function POST() {
         console.error('Trade batch error:', error);
         throw new Error(`Failed to insert trades: ${error.message}`);
       }
-      insertedTradeIds.push(...(data?.map(t => t.id) || []));
+      insertedTradeIds.push(...(data?.map((t: { id: number }) => t.id) || []));
     }
 
     // Build legs array using trade IDs
