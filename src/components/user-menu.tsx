@@ -103,7 +103,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
             </Item>
           ))}
 
-          <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 mx-1" />
+          <div className="-mx-1 border-t border-zinc-100 dark:border-zinc-800 my-2" />
 
           {/* Theme selector - single row with icon buttons */}
           <div className="px-3 h-8 flex items-center justify-between">

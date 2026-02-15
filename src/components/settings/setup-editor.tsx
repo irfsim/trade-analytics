@@ -634,7 +634,7 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
                     {checklistItems.map((item, index) => (
                       <div
                         key={item.id}
-                        className="flex items-center gap-2 px-2 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-700/50 rounded"
+                        className="flex items-center gap-2 px-3 py-2.5 text-sm bg-zinc-50 dark:bg-zinc-700/50 rounded"
                       >
                         <span className="flex-1 text-zinc-700 dark:text-zinc-300">{item.label}</span>
                         <div className="flex items-center gap-1">
