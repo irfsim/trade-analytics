@@ -66,7 +66,7 @@ export function AccountDropdown({ value, onChange }: AccountDropdownProps) {
         <Content className="p-1">
           <Item
             onSelect={() => onChange(null)}
-            className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-zinc-100 rounded-lg cursor-pointer ${
+            className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2 rounded-lg cursor-pointer ${
               value === null ? 'text-zinc-900 font-medium' : 'text-zinc-600'
             }`}
           >
@@ -82,7 +82,7 @@ export function AccountDropdown({ value, onChange }: AccountDropdownProps) {
             <Item
               key={account.account_id}
               onSelect={() => onChange(account.account_id)}
-              className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2 hover:bg-zinc-100 rounded-lg cursor-pointer ${
+              className={`w-full px-3 py-2.5 text-left text-sm flex items-center gap-2 rounded-lg cursor-pointer ${
                 value === account.account_id ? 'text-zinc-900 font-medium' : 'text-zinc-600'
               }`}
             >

@@ -535,6 +535,15 @@ export function Content({ children, className = '', style, onAnimationComplete }
   const { open, contentRef, animationConfig, isOpenAnimationCompleteRef, direction, visualDuration, bounce } =
     useBloomContext();
   const prefersReducedMotion = useReducedMotion();
+  const localRef = useRef<HTMLDivElement>(null);
+  const [highlight, setHighlight] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const hasHighlighted = useRef(false);
+  const lastMousePos = useRef<{ x: number; y: number } | null>(null);
 
   const transition = prefersReducedMotion
     ? { type: 'spring' as const, ...reducedMotionSpring }
@@ -586,6 +595,7 @@ export function Content({ children, className = '', style, onAnimationComplete }
   const setRef = useCallback(
     (node: HTMLDivElement | null) => {
       (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      localRef.current = node;
     },
     [contentRef]
   );
@@ -599,6 +609,64 @@ export function Content({ children, className = '', style, onAnimationComplete }
     },
     [isOpenAnimationCompleteRef, onAnimationComplete]
   );
+
+  const updateHighlightFromElement = useCallback((item: Element) => {
+    if (!localRef.current) return;
+    const containerRect = localRef.current.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    setHighlight({
+      top: itemRect.top - containerRect.top + localRef.current.scrollTop,
+      left: itemRect.left - containerRect.left + localRef.current.scrollLeft,
+      width: itemRect.width,
+      height: itemRect.height,
+    });
+  }, []);
+
+  const handleMouseOver = useCallback((e: React.MouseEvent) => {
+    if (!isOpenAnimationCompleteRef.current) return;
+    lastMousePos.current = { x: e.clientX, y: e.clientY };
+    const item = (e.target as HTMLElement).closest('[role="menuitem"]');
+    if (item) updateHighlightFromElement(item);
+  }, [isOpenAnimationCompleteRef, updateHighlightFromElement]);
+
+  const handleMouseLeave = useCallback(() => {
+    setHighlight(null);
+    hasHighlighted.current = false;
+    lastMousePos.current = null;
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (!lastMousePos.current || !isOpenAnimationCompleteRef.current) return;
+    const el = document.elementFromPoint(lastMousePos.current.x, lastMousePos.current.y);
+    if (!el) return;
+    const item = el.closest('[role="menuitem"]');
+    if (item && localRef.current?.contains(item)) {
+      updateHighlightFromElement(item);
+    } else {
+      setHighlight(null);
+      hasHighlighted.current = false;
+    }
+  }, [isOpenAnimationCompleteRef, updateHighlightFromElement]);
+
+  // Reset when menu closes
+  useEffect(() => {
+    if (!open) {
+      setHighlight(null);
+      hasHighlighted.current = false;
+    }
+  }, [open]);
+
+  // Track whether we've already highlighted (for enter vs move transitions)
+  useEffect(() => {
+    if (highlight) {
+      // After first highlight renders, mark as having highlighted
+      // so subsequent moves get the sliding transition
+      const id = requestAnimationFrame(() => {
+        hasHighlighted.current = true;
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [highlight]);
 
   return (
     <AnimatePresence>
@@ -615,10 +683,35 @@ export function Content({ children, className = '', style, onAnimationComplete }
             delay: prefersReducedMotion ? 0 : animationConfig.contentDelay,
           }}
           onAnimationComplete={handleAnimationComplete}
+          onMouseOver={handleMouseOver}
+          onMouseMove={(e) => { lastMousePos.current = { x: e.clientX, y: e.clientY }; }}
+          onMouseLeave={handleMouseLeave}
+          onScroll={handleScroll}
           className={className}
           style={{ position: 'relative', ...style }}
         >
-          {children}
+          {/* Sliding highlight */}
+          <div
+            className="bg-zinc-100 dark:bg-zinc-800 rounded-lg"
+            style={{
+              position: 'absolute',
+              top: highlight?.top ?? 0,
+              left: highlight?.left ?? 0,
+              width: highlight?.width ?? 0,
+              height: highlight?.height ?? 0,
+              opacity: highlight ? 1 : 0,
+              pointerEvents: 'none',
+              transition: prefersReducedMotion
+                ? 'none'
+                : hasHighlighted.current
+                  ? 'top 100ms linear, left 100ms linear, width 100ms linear, height 100ms linear, opacity 80ms linear'
+                  : 'opacity 80ms linear',
+            }}
+          />
+          {/* Items render above the highlight */}
+          <div style={{ position: 'relative' }}>
+            {children}
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -642,15 +735,10 @@ export function Item({
   className = '',
   style,
 }: ItemProps) {
-  const { setOpen, isOpenAnimationCompleteRef, activeSubmenu, visualDuration, bounce } = useBloomContext();
+  const { setOpen, isOpenAnimationCompleteRef, activeSubmenu } = useBloomContext();
   const [isHighlighted, setIsHighlighted] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
 
   const isInActiveSubmenu = activeSubmenu !== null;
-
-  const transition = prefersReducedMotion
-    ? { type: 'spring' as const, ...reducedMotionSpring }
-    : { type: 'spring' as const, visualDuration, bounce };
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
@@ -675,7 +763,7 @@ export function Item({
   }, []);
 
   return (
-    <motion.div
+    <div
       role="menuitem"
       aria-disabled={disabled}
       data-disabled={disabled || undefined}
@@ -684,17 +772,15 @@ export function Item({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={className}
-      animate={{ opacity: isInActiveSubmenu ? 0.5 : 1 }}
-      transition={transition}
       style={{
         cursor: disabled ? 'not-allowed' : 'pointer',
-        transformOrigin: 'center center',
         userSelect: 'none',
+        opacity: isInActiveSubmenu ? 0.5 : 1,
         ...style,
       }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

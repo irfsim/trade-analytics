@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { ContextMenuDropdown } from '@/components/context-menu-dropdown';
 import type { Account } from '@/types/database';
 
 interface AccountsSectionProps {
@@ -209,20 +210,20 @@ export function AccountsSection({ onStartWizard }: AccountsSectionProps) {
                   </svg>
                 </button>
                 {menuOpenId === account.account_id && (
-                  <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg z-10 p-1">
+                  <ContextMenuDropdown>
                     <button
                       onClick={() => startEditing(account)}
-                      className="w-full px-3 h-8 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
+                      className="w-full px-3 h-8 text-left text-sm text-zinc-700 dark:text-zinc-300 rounded-lg cursor-pointer"
                     >
                       Edit name
                     </button>
                     <button
                       onClick={() => promptDelete(account)}
-                      className="w-full px-3 h-8 text-left text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
+                      className="w-full px-3 h-8 text-left text-sm text-red-600 dark:text-red-400 rounded-lg cursor-pointer"
                     >
                       Delete account
                     </button>
-                  </div>
+                  </ContextMenuDropdown>
                 )}
               </div>
             )}
