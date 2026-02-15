@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from 'sonner';
 import type { SetupType, ChecklistItemDefinition } from '@/types/database';
@@ -27,6 +27,177 @@ interface SetupEditorProps {
   setup: SetupType | null;
   onComplete: () => void;
   onCancel: () => void;
+}
+
+function ChecklistPicker({
+  pickerRef,
+  pickerPos,
+  filteredCategories,
+  checklistItems,
+  showAddCustom,
+  searchText,
+  addItemFromLibrary,
+  removeItem,
+  addCustomFromSearch,
+  deleteCustomItemFromAll,
+}: {
+  pickerRef: React.RefObject<HTMLDivElement | null>;
+  pickerPos: { top: number; left: number; width: number };
+  filteredCategories: { category: string; items: ChecklistItemDefinition[] }[];
+  checklistItems: ChecklistItemDefinition[];
+  showAddCustom: boolean;
+  searchText: string;
+  addItemFromLibrary: (item: ChecklistItemDefinition) => void;
+  removeItem: (id: string) => void;
+  addCustomFromSearch: () => void;
+  deleteCustomItemFromAll: (label: string) => void;
+}) {
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [highlight, setHighlight] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const hasHighlighted = useRef(false);
+  const lastMousePos = useRef<{ x: number; y: number } | null>(null);
+
+  const updateHighlightFromElement = useCallback((btn: Element) => {
+    if (!innerRef.current) return;
+    const rect = innerRef.current.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    setHighlight({
+      top: btnRect.top - rect.top + innerRef.current.scrollTop,
+      left: btnRect.left - rect.left + innerRef.current.scrollLeft,
+      width: btnRect.width,
+      height: btnRect.height,
+    });
+  }, []);
+
+  const handleMouseOver = useCallback((e: React.MouseEvent) => {
+    lastMousePos.current = { x: e.clientX, y: e.clientY };
+    const btn = (e.target as HTMLElement).closest('button');
+    if (btn) updateHighlightFromElement(btn);
+  }, [updateHighlightFromElement]);
+
+  const handleMouseLeave = useCallback(() => {
+    setHighlight(null);
+    hasHighlighted.current = false;
+    lastMousePos.current = null;
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (!lastMousePos.current) return;
+    const el = document.elementFromPoint(lastMousePos.current.x, lastMousePos.current.y);
+    if (!el) return;
+    const btn = el.closest('button');
+    if (btn && innerRef.current?.contains(btn)) {
+      updateHighlightFromElement(btn);
+    } else {
+      setHighlight(null);
+      hasHighlighted.current = false;
+    }
+  }, [updateHighlightFromElement]);
+
+  useEffect(() => {
+    if (highlight) {
+      const id = requestAnimationFrame(() => { hasHighlighted.current = true; });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [highlight]);
+
+  return (
+    <div
+      ref={(node) => {
+        innerRef.current = node;
+        if (pickerRef && 'current' in pickerRef) (pickerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }}
+      className="fixed bg-white dark:bg-zinc-900 rounded-xl max-h-64 overflow-y-auto p-1"
+      style={{
+        top: pickerPos.top,
+        left: pickerPos.left,
+        width: pickerPos.width,
+        zIndex: 100,
+        boxShadow: '0 0 0 1px var(--card-border), 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
+        position: 'fixed',
+      }}
+      onMouseOver={handleMouseOver}
+      onMouseMove={(e) => { lastMousePos.current = { x: e.clientX, y: e.clientY }; }}
+      onMouseLeave={handleMouseLeave}
+      onScroll={handleScroll}
+    >
+      {/* Sliding highlight */}
+      <div
+        className="bg-zinc-100 dark:bg-zinc-800 rounded-lg"
+        style={{
+          position: 'absolute',
+          top: highlight?.top ?? 0,
+          left: highlight?.left ?? 0,
+          width: highlight?.width ?? 0,
+          height: highlight?.height ?? 0,
+          opacity: highlight ? 1 : 0,
+          pointerEvents: 'none',
+          transition: hasHighlighted.current
+            ? 'top 100ms linear, height 100ms linear, opacity 80ms linear'
+            : 'opacity 80ms linear',
+        }}
+      />
+      <div style={{ position: 'relative' }}>
+        {filteredCategories.map((category, catIdx) => (
+          <div key={category.category}>
+            {catIdx > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
+            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">{category.category}</div>
+            {category.items.map((item) => {
+              const isCustom = !item.id.startsWith('lib-');
+              const isActive = isCustom
+                ? checklistItems.some(i => i.label === item.label)
+                : checklistItems.some(i => i.id === item.id);
+              return (
+                <div key={item.id} className="relative group">
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => isActive ? removeItem(checklistItems.find(i => isCustom ? i.label === item.label : i.id === item.id)!.id) : addItemFromLibrary(item)}
+                    className={`w-full px-3 py-2 text-left text-sm rounded-lg cursor-pointer flex items-center justify-between ${
+                      isCustom ? 'pr-8' : ''
+                    } ${
+                      isActive
+                        ? 'text-zinc-900 dark:text-zinc-100 font-medium'
+                        : 'text-zinc-600 dark:text-zinc-400'
+                    }`}
+                  >
+                    {item.label}
+                    {isActive && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full flex-shrink-0 ml-2" />}
+                  </button>
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={(e) => { e.stopPropagation(); deleteCustomItemFromAll(item.label); }}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition-all cursor-pointer"
+                      aria-label={`Remove "${item.label}" from all setups`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        {showAddCustom && (
+          <>
+            {filteredCategories.length > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={addCustomFromSearch}
+              className="w-full px-3 py-2 text-left text-sm rounded-lg text-zinc-900 dark:text-zinc-100 cursor-pointer"
+            >
+              + Add &ldquo;<span className="font-medium">{searchText.trim()}</span>&rdquo; as custom
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
@@ -442,75 +613,18 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
 
                 {/* Dropdown — portaled to escape overflow clipping */}
                 {showPicker && pickerPos && (filteredCategories.length > 0 || showAddCustom) && createPortal(
-                  <div
-                    ref={pickerRef}
-                    className="fixed bg-white dark:bg-zinc-900 rounded-xl max-h-64 overflow-y-auto p-1"
-                    style={{
-                      top: pickerPos.top,
-                      left: pickerPos.left,
-                      width: pickerPos.width,
-                      zIndex: 100,
-                      boxShadow: '0 0 0 1px var(--card-border), 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-                    }}
-                  >
-                    {filteredCategories.map((category, catIdx) => (
-                      <div key={category.category}>
-                        {catIdx > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
-                        <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">{category.category}</div>
-                        {category.items.map((item) => {
-                          const isCustom = !item.id.startsWith('lib-');
-                          const isActive = isCustom
-                            ? checklistItems.some(i => i.label === item.label)
-                            : checklistItems.some(i => i.id === item.id);
-                          return (
-                            <div key={item.id} className="relative group">
-                              <button
-                                type="button"
-                                onMouseDown={(e) => e.preventDefault()}
-                                onClick={() => isActive ? removeItem(checklistItems.find(i => isCustom ? i.label === item.label : i.id === item.id)!.id) : addItemFromLibrary(item)}
-                                className={`w-full px-3 py-2 text-left text-sm rounded-lg transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer flex items-center justify-between ${
-                                  isCustom ? 'pr-8' : ''
-                                } ${
-                                  isActive
-                                    ? 'text-zinc-900 dark:text-zinc-100 font-medium'
-                                    : 'text-zinc-600 dark:text-zinc-400'
-                                }`}
-                              >
-                                {item.label}
-                                {isActive && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full flex-shrink-0 ml-2" />}
-                              </button>
-                              {isCustom && (
-                                <button
-                                  type="button"
-                                  onMouseDown={(e) => e.preventDefault()}
-                                  onClick={(e) => { e.stopPropagation(); deleteCustomItemFromAll(item.label); }}
-                                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 transition-all cursor-pointer"
-                                  aria-label={`Remove "${item.label}" from all setups`}
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
-                    {showAddCustom && (
-                      <>
-                        {filteredCategories.length > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
-                        <button
-                          type="button"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={addCustomFromSearch}
-                          className="w-full px-3 py-2 text-left text-sm rounded-lg transition-colors text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
-                        >
-                          + Add &ldquo;<span className="font-medium">{searchText.trim()}</span>&rdquo; as custom
-                        </button>
-                      </>
-                    )}
-                  </div>,
+                  <ChecklistPicker
+                    pickerRef={pickerRef}
+                    pickerPos={pickerPos}
+                    filteredCategories={filteredCategories}
+                    checklistItems={checklistItems}
+                    showAddCustom={showAddCustom}
+                    searchText={searchText}
+                    addItemFromLibrary={addItemFromLibrary}
+                    removeItem={removeItem}
+                    addCustomFromSearch={addCustomFromSearch}
+                    deleteCustomItemFromAll={deleteCustomItemFromAll}
+                  />,
                   document.body,
                 )}
 

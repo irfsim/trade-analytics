@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { ContextMenuDropdown } from '@/components/context-menu-dropdown';
 import type { SetupType } from '@/types/database';
 
 interface SetupWithCount extends SetupType {
@@ -190,22 +191,22 @@ export function SetupsSection({ onEditSetup, refreshKey }: SetupsSectionProps) {
                       </svg>
                     </button>
                     {menuOpenId === setup.id && (
-                      <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg z-10 p-1">
+                      <ContextMenuDropdown>
                         <button
                           onClick={() => { setMenuOpenId(null); onEditSetup(setup); }}
-                          className="w-full px-3 h-8 text-left text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
+                          className="w-full px-3 h-8 text-left text-sm text-zinc-700 dark:text-zinc-300 rounded-lg cursor-pointer"
                         >
                           Edit
                         </button>
                         {!setup.is_default && (
                           <button
                             onClick={() => { setMenuOpenId(null); archiveSetupType(setup.id); }}
-                            className="w-full px-3 h-8 text-left text-sm text-red-600 dark:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
+                            className="w-full px-3 h-8 text-left text-sm text-red-600 dark:text-red-400 rounded-lg cursor-pointer"
                           >
                             Archive
                           </button>
                         )}
-                      </div>
+                      </ContextMenuDropdown>
                     )}
                   </div>
                 </div>

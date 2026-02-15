@@ -109,7 +109,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
                 <Item
                   key={period}
                   onSelect={() => onChange(period)}
-                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ${
+                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
                     value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
                   }`}
                 >
@@ -134,7 +134,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
                 <Item
                   key={period}
                   onSelect={() => onChange(period)}
-                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ${
+                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
                     value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
                   }`}
                 >
@@ -185,7 +185,7 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
             <Item
               key={option.value}
               onSelect={() => onChange(option.value)}
-              className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between hover:bg-zinc-100 rounded-lg cursor-pointer ${
+              className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
                 value === option.value ? 'text-zinc-900 font-medium' : 'text-zinc-600'
               }`}
             >
@@ -202,7 +202,7 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
             <Item
               key={option.value}
               onSelect={() => onChange(option.value)}
-              className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between hover:bg-zinc-100 rounded-lg cursor-pointer ${
+              className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
                 value === option.value ? 'text-zinc-900 font-medium' : 'text-zinc-600'
               }`}
             >

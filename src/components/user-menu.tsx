@@ -75,7 +75,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
           <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Account</div>
           <Item
             onSelect={() => onAccountChange(null)}
-            className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ${
+            className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
               accountId === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
             }`}
           >
@@ -90,7 +90,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
             <Item
               key={account.account_id}
               onSelect={() => onAccountChange(account.account_id)}
-              className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer ${
+              className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
                 accountId === account.account_id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
               }`}
             >

@@ -23,22 +23,26 @@ function SetupTypeSelect({
   setupTypes: SetupTypeInterface[];
 }) {
   const selectedType = setupTypes.find(t => t.id === value);
+  const label = selectedType?.name || 'Select...';
+  const buttonWidth = Math.max(80, label.length * 7 + 45);
 
   return (
     <Root direction="bottom" anchor="start">
       <Container
-        className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-lg"
-        buttonSize={{ width: 200, height: 40 }}
+        className="bloom-no-shadow bg-white dark:bg-zinc-900"
+        buttonSize={{ width: buttonWidth, height: 32 }}
         menuWidth={200}
-        menuRadius={8}
-        buttonRadius={9999}
+        menuRadius={12}
+        buttonRadius={16}
       >
-        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors cursor-pointer">
-          <span className={selectedType ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
-            {selectedType?.name || 'Select...'}
-          </span>
+        <Trigger className={`inline-flex items-center gap-1.5 px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer ${
+          selectedType
+            ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+            : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+        }`}>
+          {label}
           <svg
-            className="w-4 h-4 text-zinc-400"
+            className={`w-4 h-4 ${selectedType ? 'text-white dark:text-zinc-900' : 'text-zinc-400'}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -50,7 +54,7 @@ function SetupTypeSelect({
         <Content className="p-1 max-h-60 overflow-y-auto">
           <Item
             onSelect={() => onChange(null)}
-            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+            className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
               value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
@@ -60,7 +64,7 @@ function SetupTypeSelect({
             <Item
               key={type.id}
               onSelect={() => onChange(type.id)}
-              className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+              className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
                 value === type.id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
               }`}
             >
@@ -79,11 +83,11 @@ function BloomSelect<T extends string>({ value, onChange, options, placeholder =
   return (
     <Root direction="bottom" anchor="start">
       <Container
-        className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-lg"
+        className="bloom-no-shadow bg-white dark:bg-zinc-900"
         buttonSize={{ width: 200, height: 40 }}
         menuWidth={200}
-        menuRadius={8}
-        buttonRadius={8}
+        menuRadius={12}
+        buttonRadius={9999}
       >
         <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
           <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
@@ -102,7 +106,7 @@ function BloomSelect<T extends string>({ value, onChange, options, placeholder =
         <Content className="p-1 max-h-60 overflow-y-auto">
           <Item
             onSelect={() => onChange(null)}
-            className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+            className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
               value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
             }`}
           >
@@ -112,7 +116,7 @@ function BloomSelect<T extends string>({ value, onChange, options, placeholder =
             <Item
               key={option.value}
               onSelect={() => onChange(option.value)}
-              className={`w-full px-3 py-2.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg cursor-pointer ${
+              className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
                 value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
               }`}
             >

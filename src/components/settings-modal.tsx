@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileSection } from './settings/profile-section';
 import { AccountsSection } from './settings/accounts-section';
@@ -71,6 +71,76 @@ const contentVariants = {
     x: direction > 0 ? -24 : 24,
   }),
 };
+
+function SettingsSidebar({ activeSection, onSectionChange }: { activeSection: SettingsSection; onSectionChange: (s: SettingsSection) => void }) {
+  const navRef = useRef<HTMLElement>(null);
+  const [hover, setHover] = useState<{ top: number; height: number } | null>(null);
+  const hasHovered = useRef(false);
+
+  const handleMouseOver = useCallback((e: React.MouseEvent) => {
+    const btn = (e.target as HTMLElement).closest('button');
+    if (btn && navRef.current) {
+      const navRect = navRef.current.getBoundingClientRect();
+      const btnRect = btn.getBoundingClientRect();
+      setHover({ top: btnRect.top - navRect.top, height: btnRect.height });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setHover(null);
+    hasHovered.current = false;
+  }, []);
+
+  useEffect(() => {
+    if (hover) {
+      const id = requestAnimationFrame(() => { hasHovered.current = true; });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [hover]);
+
+  return (
+    <div className="w-44 flex-shrink-0 border-r border-zinc-100 dark:border-zinc-800 px-2 pt-2">
+      <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Settings</div>
+      <nav
+        ref={navRef}
+        onMouseOver={handleMouseOver}
+        onMouseLeave={handleMouseLeave}
+        style={{ position: 'relative' }}
+      >
+        {/* Hover highlight */}
+        <div
+          className="bg-zinc-100 dark:bg-zinc-800 rounded-lg"
+          style={{
+            position: 'absolute',
+            top: hover?.top ?? 0,
+            left: 0,
+            width: '100%',
+            height: hover?.height ?? 0,
+            opacity: hover ? 1 : 0,
+            pointerEvents: 'none',
+            transition: hasHovered.current
+              ? 'top 100ms linear, height 100ms linear, opacity 80ms linear'
+              : 'opacity 80ms linear',
+          }}
+        />
+        {SECTIONS.map((section) => (
+          <button
+            key={section.id}
+            onClick={() => onSectionChange(section.id)}
+            className={`relative w-full h-8 px-3 text-sm flex items-center justify-between rounded-lg focus:outline-none cursor-pointer ${
+              activeSection === section.id
+                ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium'
+                : 'text-zinc-600 dark:text-zinc-400'
+            }`}
+          >
+            {section.label}
+            {section.icon}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
 
 export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, displayName, onDisplayNameChange }: SettingsModalProps) {
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile');
@@ -160,25 +230,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
               className="flex"
             >
               {/* Sidebar */}
-              <div className="w-44 flex-shrink-0 border-r border-zinc-100 dark:border-zinc-800 px-2 pt-2">
-                <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Settings</div>
-                <nav>
-                  {SECTIONS.map((section) => (
-                    <button
-                      key={section.id}
-                      onClick={() => setActiveSection(section.id)}
-                      className={`w-full h-8 px-3 text-sm flex items-center justify-between rounded-lg transition-colors focus:outline-none cursor-pointer ${
-                        activeSection === section.id
-                          ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium'
-                          : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                      }`}
-                    >
-                      {section.label}
-                      {section.icon}
-                    </button>
-                  ))}
-                </nav>
-              </div>
+              <SettingsSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
               {/* Main content */}
               <div className="flex-1 flex flex-col h-[560px]">
