@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       setupTypes: [
         {
-          id: 1, name: 'Episodic pivot', description: 'Episodic Pivot', color: '#3b82f6', archived: false, trade_count: 0,
+          id: 1, name: 'Episodic pivot', description: 'Episodic Pivot', color: '#0ea5e9', archived: false, trade_count: 0,
           checklist_items: [
             { id: 'ep-1', label: 'Earnings/news catalyst within last 5 days', order: 0 },
             { id: 'ep-2', label: 'Gap up on above-average volume', order: 1 },
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
           ],
         },
         {
-          id: 2, name: 'Flag', description: 'Flag / Pennant', color: '#10b981', archived: false, trade_count: 0,
+          id: 2, name: 'Flag', description: 'Flag / Pennant', color: '#22c55e', archived: false, trade_count: 0,
           checklist_items: [
             { id: 'flag-1', label: 'Strong prior uptrend (pole) of 20%+', order: 0 },
             { id: 'flag-2', label: 'Tight consolidation with declining volume', order: 1 },
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
           ],
         },
         {
-          id: 3, name: 'Base breakout', description: 'Base Breakout', color: '#f59e0b', archived: false, trade_count: 0,
+          id: 3, name: 'Base breakout', description: 'Base Breakout', color: '#eab308', archived: false, trade_count: 0,
           checklist_items: [
             { id: 'base-1', label: 'Flat base of 3+ weeks with <15% depth', order: 0 },
             { id: 'base-2', label: 'Volume contraction during base formation', order: 1 },

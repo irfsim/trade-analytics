@@ -22,9 +22,9 @@ const TICKERS = [
 
 const SETUP_TYPES = ['Episodic pivot', 'Flag', 'Base breakout'] as const;
 const SETUP_TYPE_COLORS: Record<string, string> = {
-  'Episodic pivot': '#3b82f6',
-  'Flag': '#10b981',
-  'Base breakout': '#f59e0b',
+  'Episodic pivot': '#0ea5e9',
+  'Flag': '#22c55e',
+  'Base breakout': '#eab308',
 };
 
 // Real 2025 stats:

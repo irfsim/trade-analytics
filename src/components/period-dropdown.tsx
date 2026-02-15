@@ -122,7 +122,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
             })}
 
             {/* Divider */}
-            <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 mx-1" />
+            <div className="-mx-1 border-t border-zinc-100 dark:border-zinc-800 my-2" />
 
             {/* Trade samples section */}
             <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Trade samples</div>
@@ -196,7 +196,7 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
             </Item>
           ))}
 
-          <div className="border-t border-zinc-100 my-2 mx-1" />
+          <div className="-mx-1 border-t border-zinc-100 my-2" />
 
           {otherOptions.map(option => (
             <Item

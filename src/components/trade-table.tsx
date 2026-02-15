@@ -338,22 +338,21 @@ function SortableHeader({
       onClick={() => onSort(field)}
     >
       <div className={`flex items-center gap-1 ${className.includes('text-right') ? 'justify-end' : className.includes('text-center') ? 'justify-center' : ''}`}>
-        <svg
-          className={`w-3 h-3 flex-shrink-0 transition-opacity ${
-            isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-          }`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          {isActive && sortDir === 'asc' ? (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          )}
-        </svg>
         {label}
+        {isActive ? (
+          <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            {sortDir === 'asc' ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            )}
+          </svg>
+        ) : (
+          <svg className="w-3 h-3 flex-shrink-0 text-zinc-400 dark:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 11l5-5 5 5" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 13l5 5 5-5" />
+          </svg>
+        )}
       </div>
     </th>
   );
