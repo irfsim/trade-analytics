@@ -461,7 +461,7 @@ function SetupTypePill({ name, color }: { name: string; color: string | null }) 
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap cursor-default border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
+      className="inline-flex items-center align-middle gap-1.5 px-2 py-0.5 text-xs leading-none font-medium rounded-full whitespace-nowrap cursor-default border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
       title={needsTooltip ? name : undefined}
     >
       <span
@@ -575,7 +575,7 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* Setup Type */}
-      <td className="px-3 py-2">
+      <td className="px-3 py-1.5 align-middle">
         {trade.setup_type_name ? (
           <SetupTypePill name={trade.setup_type_name} color={trade.setup_type_color} />
         ) : (
@@ -584,12 +584,12 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* Quality */}
-      <td className="pl-3 pr-1 py-2 align-middle">
+      <td className="pl-3 pr-1 py-1.5 align-middle">
         <RatingBars rating={trade.setup_rating} />
       </td>
 
       {/* Plan */}
-      <td className="pl-3 pr-5 py-2 text-center">
+      <td className="pl-3 pr-5 py-1.5 text-center">
         <PlanIndicator followedPlan={trade.followed_plan} />
       </td>
     </tr>
