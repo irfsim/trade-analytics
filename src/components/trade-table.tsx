@@ -461,7 +461,7 @@ function SetupTypePill({ name, color }: { name: string; color: string | null }) 
 
   return (
     <span
-      className="inline-flex items-center align-middle gap-1.5 px-2 py-0.5 text-xs leading-none font-medium rounded-full whitespace-nowrap cursor-default border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
+      className="flex w-fit items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap cursor-default border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300"
       title={needsTooltip ? name : undefined}
     >
       <span
