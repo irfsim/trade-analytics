@@ -548,12 +548,12 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
       </td>
 
       {/* % Change */}
-      <td className="px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+      <td className={`px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-right ${pctChange !== null && pctChange !== 0 ? (pctChange > 0 ? 'text-emerald-600' : 'text-red-600') : 'text-zinc-900 dark:text-zinc-100'}`}>
         {formatPct(pctChange)}
       </td>
 
       {/* P&L */}
-      <td className="px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-right">
+      <td className={`px-4 py-2 text-sm font-mono tabular-nums whitespace-nowrap text-right ${isWinner ? 'text-emerald-600' : isLoser ? 'text-red-600' : 'text-zinc-900 dark:text-zinc-100'}`}>
         {formatPnl(pnl)}
       </td>
 

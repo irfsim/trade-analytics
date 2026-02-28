@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
+import { motion, AnimatePresence } from 'framer-motion';
+import { HoverList } from './hover-list';
 import type { TradeAnnotation, APlusChecklist, TradeGrade, SetupType as SetupTypeInterface, SetupSpecificChecklist, ChecklistItemDefinition } from '@/types/database';
 import { emptyChecklist, isSetupSpecificChecklist } from '@/types/database';
 
@@ -22,110 +23,145 @@ function SetupTypeSelect({
   onChange: (value: number | null) => void;
   setupTypes: SetupTypeInterface[];
 }) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const selectedType = setupTypes.find(t => t.id === value);
   const label = selectedType?.name || 'Select...';
-  const buttonWidth = Math.max(80, label.length * 7 + 45);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
   return (
-    <Root direction="bottom" anchor="start">
-      <Container
-        className="bloom-no-shadow bg-white dark:bg-zinc-900"
-        buttonSize={{ width: buttonWidth, height: 32 }}
-        menuWidth={200}
-        menuRadius={12}
-        buttonRadius={16}
-      >
-        <Trigger className={`inline-flex items-center gap-1.5 px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer ${
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        className={`inline-flex items-center gap-1.5 px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer border-0 appearance-none ${
           selectedType
             ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-            : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
-        }`}>
-          {label}
-          <svg
-            className={`w-4 h-4 ${selectedType ? 'text-white dark:text-zinc-900' : 'text-zinc-400'}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </Trigger>
+            : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700'
+        }`}
+      >
+        {label}
+        <svg
+          className={`w-4 h-4 ${selectedType ? 'text-white dark:text-zinc-900' : 'text-zinc-400'}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-        <Content className="p-1 max-h-60 overflow-y-auto">
-          <Item
-            onSelect={() => onChange(null)}
-            className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
-              value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
-            }`}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute left-0 top-full mt-2 w-52 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50 max-h-60 overflow-y-auto"
           >
-            Select...
-          </Item>
-          {setupTypes.map(type => (
-            <Item
-              key={type.id}
-              onSelect={() => onChange(type.id)}
-              className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
-                value === type.id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
-              }`}
-            >
-              {type.name}
-            </Item>
-          ))}
-        </Content>
-      </Container>
-    </Root>
+            <HoverList>
+              <button
+                onClick={() => { onChange(null); setOpen(false); }}
+                className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
+                }`}
+              >
+                Select...
+              </button>
+              {setupTypes.map(type => (
+                <button
+                  key={type.id}
+                  onClick={() => { onChange(type.id); setOpen(false); }}
+                  className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                    value === type.id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
+                  }`}
+                >
+                  {type.name}
+                </button>
+              ))}
+            </HoverList>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
-function BloomSelect<T extends string>({ value, onChange, options, placeholder = 'Select...' }: BloomSelectProps<T>) {
+function PlainSelect<T extends string>({ value, onChange, options, placeholder = 'Select...' }: BloomSelectProps<T>) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const selectedOption = options.find(o => o.value === value);
 
-  return (
-    <Root direction="bottom" anchor="start">
-      <Container
-        className="bloom-no-shadow bg-white dark:bg-zinc-900"
-        buttonSize={{ width: 200, height: 40 }}
-        menuWidth={200}
-        menuRadius={12}
-        buttonRadius={9999}
-      >
-        <Trigger className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-          <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
-            {selectedOption?.label || placeholder}
-          </span>
-          <svg
-            className="w-4 h-4 text-zinc-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </Trigger>
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
 
-        <Content className="p-1 max-h-60 overflow-y-auto">
-          <Item
-            onSelect={() => onChange(null)}
-            className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
-              value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
-            }`}
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 cursor-pointer appearance-none"
+      >
+        <span className={selectedOption ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-400'}>
+          {selectedOption?.label || placeholder}
+        </span>
+        <svg
+          className="w-4 h-4 text-zinc-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute left-0 top-full mt-2 w-full bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50 max-h-60 overflow-y-auto"
           >
-            {placeholder}
-          </Item>
-          {options.map(option => (
-            <Item
-              key={option.value}
-              onSelect={() => onChange(option.value)}
-              className={`w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer ${
-                value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
-              }`}
-            >
-              {option.label}
-            </Item>
-          ))}
-        </Content>
-      </Container>
-    </Root>
+            <HoverList>
+              <button
+                onClick={() => { onChange(null); setOpen(false); }}
+                className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
+                }`}
+              >
+                {placeholder}
+              </button>
+              {options.map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => { onChange(option.value); setOpen(false); }}
+                  className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </HoverList>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

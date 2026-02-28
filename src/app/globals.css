@@ -44,36 +44,6 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Layered shadow for bloom-menu (overrides framer-motion inline styles) */
-.bloom-no-shadow {
-  box-shadow:
-    0px 0px 0px 1px var(--card-border),
-    0px 1px 2px -1px rgba(0, 0, 0, 0.06),
-    0px 2px 4px 0px rgba(0, 0, 0, 0.04) !important;
-  transition: box-shadow 0.15s ease;
-}
-
-.bloom-no-shadow:hover {
-  box-shadow:
-    0px 0px 0px 1px var(--card-border),
-    0px 1px 2px -1px rgba(0, 0, 0, 0.08),
-    0px 2px 4px 0px rgba(0, 0, 0, 0.06) !important;
-}
-
-.dark .bloom-no-shadow {
-  box-shadow:
-    0px 0px 0px 1px var(--card-border),
-    0px 1px 2px -1px rgba(0, 0, 0, 0.3),
-    0px 2px 4px 0px rgba(0, 0, 0, 0.2) !important;
-}
-
-.dark .bloom-no-shadow:hover {
-  box-shadow:
-    0px 0px 0px 1px rgba(255, 255, 255, 0.12),
-    0px 1px 2px -1px rgba(0, 0, 0, 0.4),
-    0px 2px 4px 0px rgba(0, 0, 0, 0.3) !important;
-}
-
 /* Layered shadow for cards and tables */
 .shadow-card {
   box-shadow:

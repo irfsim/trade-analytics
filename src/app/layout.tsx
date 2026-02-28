@@ -15,7 +15,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Trade Analytics",
+  title: "OpenTrade",
   description: "Trade journal and analytics for discretionary breakout trading",
 };
 

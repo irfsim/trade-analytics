@@ -1,6 +1,8 @@
 'use client';
 
-import { Root, Container, Trigger, Content, Item } from '@/lib/bloom-menu';
+import { useRef, useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { HoverList } from './hover-list';
 
 export type Period = 'today' | 'yesterday' | 'week' | 'lastweek' | 'month' | 'lastmonth' | 'year' | 'lastyear' | 'all' | 'last10' | 'last20' | 'last50';
 
@@ -43,16 +45,25 @@ const MORE_COUNT_PERIODS: Period[] = ['last10', 'last20', 'last50'];
 const MORE_PERIODS: Period[] = [...MORE_TIME_PERIODS, ...MORE_COUNT_PERIODS];
 
 export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
   const isMoreSelected = MORE_PERIODS.includes(value);
   const selectedMoreOption = PERIOD_OPTIONS.find(o => o.value === value && MORE_PERIODS.includes(o.value));
 
-  // Calculate button width based on selected label
-  const moreButtonWidth = isMoreSelected
-    ? Math.max(80, (selectedMoreOption?.label.length || 4) * 7 + 45)
-    : 80;
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    }
+    if (moreOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [moreOpen]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center rounded-full bg-[#FAFAFA] dark:bg-zinc-800 p-1">
       {PRIMARY_PERIODS.map(period => {
         const option = PERIOD_OPTIONS.find(o => o.value === period);
         if (!option) return null;
@@ -62,159 +73,201 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
           <button
             key={period}
             onClick={() => onChange(period)}
-            className={`px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer ${
-              isSelected
-                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-                : 'bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
-            }`}
+            className="relative px-3 h-7 text-sm font-medium rounded-full whitespace-nowrap cursor-pointer border-0 bg-transparent appearance-none"
           >
-            {option.label}
+            {isSelected && (
+              <motion.div
+                layoutId="period-pill-highlight"
+                className="absolute inset-0 bg-zinc-900 dark:bg-zinc-100"
+                style={{ borderRadius: 9999 }}
+                transition={{ type: 'spring', bounce: 0.1, duration: 0.35 }}
+              />
+            )}
+            <span className={`relative z-10 transition-colors duration-100 ${
+              isSelected
+                ? 'text-white dark:text-zinc-900'
+                : 'text-zinc-500 dark:text-zinc-400'
+            }`}>
+              {option.label}
+            </span>
           </button>
         );
       })}
 
-      {/* More dropdown for additional periods */}
-      <Root direction="bottom" anchor="end">
-        <Container
-          className="bloom-no-shadow bg-white dark:bg-zinc-900"
-          buttonSize={{ width: moreButtonWidth, height: 32 }}
-          menuWidth={160}
-          menuRadius={12}
-          buttonRadius={16}
+      {/* More dropdown */}
+      <div className="relative" ref={moreRef}>
+        <button
+          onClick={() => setMoreOpen(prev => !prev)}
+          className="relative inline-flex items-center gap-1 px-3 h-7 text-sm font-medium rounded-full whitespace-nowrap cursor-pointer border-0 bg-transparent appearance-none"
         >
-          <Trigger className={`inline-flex items-center gap-1.5 px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer ${
+          {isMoreSelected && (
+            <motion.div
+              layoutId="period-pill-highlight"
+              className="absolute inset-0 bg-zinc-900 dark:bg-zinc-100"
+              style={{ borderRadius: 9999 }}
+              transition={{ type: 'spring', bounce: 0.1, duration: 0.35 }}
+            />
+          )}
+          <span className={`relative z-10 transition-colors duration-100 ${
             isMoreSelected
-              ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-              : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700'
+              ? 'text-white dark:text-zinc-900'
+              : 'text-zinc-500 dark:text-zinc-400'
           }`}>
             {isMoreSelected ? selectedMoreOption?.label : 'More'}
-            <svg
-              className={`w-4 h-4 ${isMoreSelected ? 'text-white dark:text-zinc-900' : 'text-zinc-400'}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </Trigger>
-
-          <Content className="p-1">
-            {/* Time range section */}
-            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Time range</div>
-            {MORE_TIME_PERIODS.map(period => {
-              const option = PERIOD_OPTIONS.find(o => o.value === period);
-              if (!option) return null;
-
-              return (
-                <Item
-                  key={period}
-                  onSelect={() => onChange(period)}
-                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
-                    value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
-                  }`}
-                >
-                  {option.label}
-                  {value === period && (
-                    <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
-                  )}
-                </Item>
-              );
-            })}
-
-            {/* Divider */}
-            <div className="-mx-1 border-t border-zinc-100 dark:border-zinc-800 my-2" />
-
-            {/* Trade samples section */}
-            <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Trade samples</div>
-            {MORE_COUNT_PERIODS.map(period => {
-              const option = PERIOD_OPTIONS.find(o => o.value === period);
-              if (!option) return null;
-
-              return (
-                <Item
-                  key={period}
-                  onSelect={() => onChange(period)}
-                  className={`w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
-                    value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
-                  }`}
-                >
-                  {option.label}
-                  {value === period && (
-                    <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
-                  )}
-                </Item>
-              );
-            })}
-          </Content>
-        </Container>
-      </Root>
-    </div>
-  );
-}
-
-export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
-  const selectedOption = PERIOD_OPTIONS.find(o => o.value === value);
-  const calendarOptions = PERIOD_OPTIONS.filter(o => o.group === 'calendar');
-  const otherOptions = PERIOD_OPTIONS.filter(o => !o.group);
-
-  return (
-    <Root direction="bottom" anchor="start">
-      <Container
-        className="bloom-no-shadow bg-white"
-        buttonSize={{ width: 120, height: 36 }}
-        menuWidth={176}
-        menuRadius={12}
-        buttonRadius={18}
-      >
-        <Trigger className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-900 hover:bg-zinc-50 transition-colors">
-          {selectedOption?.label}
+          </span>
           <svg
-            className="w-4 h-4 text-zinc-400"
+            className={`relative z-10 w-3.5 h-3.5 transition-colors duration-100 ${
+              isMoreSelected ? 'text-white dark:text-zinc-900' : 'text-zinc-400'
+            }`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-        </Trigger>
+        </button>
 
-        <Content className="p-1">
-          <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Period</div>
-
-          {calendarOptions.map(option => (
-            <Item
-              key={option.value}
-              onSelect={() => onChange(option.value)}
-              className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
-                value === option.value ? 'text-zinc-900 font-medium' : 'text-zinc-600'
-              }`}
+        <AnimatePresence>
+          {moreOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -4 }}
+              transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute left-0 top-full mt-2 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50"
             >
-              {option.label}
-              {value === option.value && (
-                <span className="w-2 h-2 bg-zinc-900 rounded-full" />
-              )}
-            </Item>
-          ))}
+              <HoverList>
+                <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Time range</div>
+                {MORE_TIME_PERIODS.map(period => {
+                  const option = PERIOD_OPTIONS.find(o => o.value === period);
+                  if (!option) return null;
+                  return (
+                    <button
+                      key={period}
+                      onClick={() => { onChange(period); setMoreOpen(false); }}
+                      className={`relative w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                        value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                      }`}
+                    >
+                      {option.label}
+                      {value === period && (
+                        <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
 
-          <div className="-mx-1 border-t border-zinc-100 my-2" />
+                <div className="border-t border-zinc-100 dark:border-zinc-800 my-1" />
 
-          {otherOptions.map(option => (
-            <Item
-              key={option.value}
-              onSelect={() => onChange(option.value)}
-              className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer ${
-                value === option.value ? 'text-zinc-900 font-medium' : 'text-zinc-600'
-              }`}
-            >
-              {option.label}
-              {value === option.value && (
-                <span className="w-2 h-2 bg-zinc-900 rounded-full" />
-              )}
-            </Item>
-          ))}
-        </Content>
-      </Container>
-    </Root>
+                <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Trade samples</div>
+                {MORE_COUNT_PERIODS.map(period => {
+                  const option = PERIOD_OPTIONS.find(o => o.value === period);
+                  if (!option) return null;
+                  return (
+                    <button
+                      key={period}
+                      onClick={() => { onChange(period); setMoreOpen(false); }}
+                      className={`relative w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                        value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                      }`}
+                    >
+                      {option.label}
+                      {value === period && (
+                        <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </HoverList>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const selectedOption = PERIOD_OPTIONS.find(o => o.value === value);
+  const calendarOptions = PERIOD_OPTIONS.filter(o => o.group === 'calendar');
+  const otherOptions = PERIOD_OPTIONS.filter(o => !o.group);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 cursor-pointer appearance-none border-0"
+      >
+        {selectedOption?.label}
+        <svg
+          className="w-4 h-4 text-zinc-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            className="absolute left-0 top-full mt-2 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50"
+          >
+            <HoverList>
+              <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Period</div>
+
+              {calendarOptions.map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => { onChange(option.value); setOpen(false); }}
+                  className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  {option.label}
+                  {value === option.value && (
+                    <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
+                  )}
+                </button>
+              ))}
+
+              <div className="border-t border-zinc-100 dark:border-zinc-800 my-2" />
+
+              {otherOptions.map(option => (
+                <button
+                  key={option.value}
+                  onClick={() => { onChange(option.value); setOpen(false); }}
+                  className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                  }`}
+                >
+                  {option.label}
+                  {value === option.value && (
+                    <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />
+                  )}
+                </button>
+              ))}
+            </HoverList>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
