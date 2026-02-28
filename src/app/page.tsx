@@ -186,8 +186,8 @@ export default function Dashboard() {
   return (
     <div className="pt-6 pb-24 max-w-[816px] mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <PeriodPills value={period} onChange={handlePeriodChange} />
+      <div className="flex items-center justify-between gap-4 mb-4">
+        <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap select-none">OpenTrade</span>
         <UserMenu
           initial="I"
           avatar={avatar}
@@ -196,9 +196,12 @@ export default function Dashboard() {
           onAccountChange={setAccountId}
         />
       </div>
+      <div className="w-fit">
+        <PeriodPills value={period} onChange={handlePeriodChange} />
+      </div>
 
       {/* Stats - Above trades */}
-      <div className="mt-12 mb-12">
+      <div className="mt-6 mb-12">
         <div className="bg-[#FAFAFA] dark:bg-zinc-800 rounded-2xl p-4">
           <PeriodStats stats={stats} loading={loading} />
         </div>
