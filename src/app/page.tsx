@@ -7,6 +7,7 @@ import { PeriodPills, getDateRange, getTradeLimit, type Period } from '@/compone
 import { PeriodStats } from '@/components/period-stats';
 import { UserMenu } from '@/components/user-menu';
 import { SettingsModal } from '@/components/settings-modal';
+import { FeedbackModal } from '@/components/feedback-modal';
 import type { TradeWithRating } from '@/types/database';
 
 const STORAGE_KEY = 'trade-analytics-period';
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedTradeId, setSelectedTradeId] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState('');
   const [hasCheckedSeed, setHasCheckedSeed] = useState(false);
@@ -192,6 +194,7 @@ export default function Dashboard() {
           initial="I"
           avatar={avatar}
           onOpenSettings={() => setShowSettings(true)}
+          onOpenFeedback={() => setShowFeedback(true)}
           accountId={accountId}
           onAccountChange={setAccountId}
         />
@@ -245,6 +248,12 @@ export default function Dashboard() {
         onAvatarChange={handleAvatarChange}
         displayName={displayName}
         onDisplayNameChange={handleDisplayNameChange}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={showFeedback}
+        onClose={() => setShowFeedback(false)}
       />
     </div>
   );
