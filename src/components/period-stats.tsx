@@ -79,14 +79,14 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
         <div className="flex gap-8">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="h-4 w-16 bg-zinc-100 dark:bg-zinc-800 rounded mb-2" />
-              <div className="h-6 w-12 bg-zinc-100 dark:bg-zinc-800 rounded" />
+              <div className="h-4 w-16 bg-zinc-100 dark:bg-[#1c1c1e] rounded mb-2" />
+              <div className="h-6 w-12 bg-zinc-100 dark:bg-[#1c1c1e] rounded" />
             </div>
           ))}
         </div>
         <div className="animate-pulse flex items-center gap-3">
-          <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-full" />
-          <div className="h-4 w-24 bg-zinc-100 dark:bg-zinc-800 rounded" />
+          <div className="w-12 h-12 bg-zinc-100 dark:bg-[#1c1c1e] rounded-full" />
+          <div className="h-4 w-24 bg-zinc-100 dark:bg-[#1c1c1e] rounded" />
         </div>
       </div>
     );

@@ -374,7 +374,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                       <p className="text-sm text-zinc-500 dark:text-zinc-400">{broker.description}</p>
                     </div>
                     {broker.comingSoon ? (
-                      <span className="text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded">
+                      <span className="text-xs font-medium bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded">
                         Coming Soon
                       </span>
                     ) : (
@@ -396,7 +396,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
               <p className="text-zinc-600 dark:text-zinc-400">
                 Connect your Interactive Brokers account to automatically sync your trades. This integration uses IBKR&apos;s Flex Web Service to securely fetch your trade history.
               </p>
-              <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-4 space-y-3">
+              <div className="bg-zinc-50 dark:bg-[#1c1c1e]/50 rounded-lg p-4 space-y-3">
                 <h4 className="font-medium text-zinc-900 dark:text-zinc-100">What you&apos;ll need:</h4>
                 <ul className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
                   <li className="flex items-start gap-2">
@@ -532,7 +532,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                     value={connectionLabel}
                     onChange={e => setConnectionLabel(e.target.value)}
                     placeholder="e.g., Main IBKR Account"
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -544,7 +544,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                     value={flexQueryId}
                     onChange={e => setFlexQueryId(e.target.value)}
                     placeholder="e.g., 123456"
-                    className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -557,7 +557,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                       value={flexToken}
                       onChange={e => setFlexToken(e.target.value)}
                       placeholder="Your Flex Web Service token"
-                      className="w-full px-3 py-2 pr-10 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 pr-10 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <button
                       type="button"
@@ -596,7 +596,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
               </p>
               <div className="space-y-4">
                 {accountSetups.map(account => (
-                  <div key={account.externalId} className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-4">
+                  <div key={account.externalId} className="bg-zinc-50 dark:bg-[#1c1c1e]/50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="text-xs font-mono bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
                         {account.externalId}
@@ -612,7 +612,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                           value={account.label}
                           onChange={e => updateAccountSetup(account.externalId, 'label', e.target.value)}
                           placeholder="e.g., Personal Margin"
-                          className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                       </div>
                       <div>
@@ -622,7 +622,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                         <select
                           value={account.accountType}
                           onChange={e => updateAccountSetup(account.externalId, 'accountType', e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                          className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         >
                           <option value="margin">Margin</option>
                           <option value="isa">ISA</option>
@@ -680,7 +680,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                         type="date"
                         value={customFromDate}
                         onChange={e => setCustomFromDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     </div>
                   )}

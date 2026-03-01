@@ -122,7 +122,7 @@ export function AccountsSection({ onStartWizard }: AccountsSectionProps) {
 
   if (accounts.length === 0) {
     return (
-      <div className="text-center py-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+      <div className="text-center py-8 bg-zinc-50 dark:bg-[#1c1c1e]/50 rounded-lg">
         <svg
           className="w-12 h-12 mx-auto text-zinc-300 dark:text-zinc-600 mb-3"
           fill="none"
@@ -154,7 +154,7 @@ export function AccountsSection({ onStartWizard }: AccountsSectionProps) {
       {accounts.map((account) => (
         <div
           key={account.account_id}
-          className="p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+          className="p-4 bg-zinc-50 dark:bg-[#1c1c1e]/50 border border-zinc-200 dark:border-zinc-700 rounded-lg"
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -164,7 +164,7 @@ export function AccountsSection({ onStartWizard }: AccountsSectionProps) {
                     type="text"
                     value={editAlias}
                     onChange={(e) => setEditAlias(e.target.value)}
-                    className="max-w-[232px] px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                    className="max-w-[232px] px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-400"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') saveAlias(account.account_id);

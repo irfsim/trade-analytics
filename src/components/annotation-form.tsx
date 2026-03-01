@@ -44,7 +44,7 @@ function SetupTypeSelect({
         className={`inline-flex items-center gap-1.5 px-3 h-8 text-sm font-medium rounded-full transition-colors whitespace-nowrap cursor-pointer border-0 appearance-none ${
           selectedType
             ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-            : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700'
+            : 'bg-white dark:bg-[#1c1c1e] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700'
         }`}
       >
         {label}
@@ -64,27 +64,29 @@ function SetupTypeSelect({
             initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
-            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.1 }}
             className="absolute left-0 top-full mt-2 w-52 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50 max-h-60 overflow-y-auto"
           >
             <HoverList>
               <button
                 onClick={() => { onChange(null); setOpen(false); }}
-                className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
+                className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                 }`}
               >
                 Select...
+                {value === null && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
               </button>
               {setupTypes.map(type => (
                 <button
                   key={type.id}
                   onClick={() => { onChange(type.id); setOpen(false); }}
-                  className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                    value === type.id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
+                  className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                    value === type.id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                   }`}
                 >
                   {type.name}
+                  {value === type.id && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
                 </button>
               ))}
             </HoverList>
@@ -134,27 +136,29 @@ function PlainSelect<T extends string>({ value, onChange, options, placeholder =
             initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
-            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.1 }}
             className="absolute left-0 top-full mt-2 w-full bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50 max-h-60 overflow-y-auto"
           >
             <HoverList>
               <button
                 onClick={() => { onChange(null); setOpen(false); }}
-                className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-500 dark:text-zinc-400'
+                className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                 }`}
               >
                 {placeholder}
+                {value === null && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
               </button>
               {options.map(option => (
                 <button
                   key={option.value}
                   onClick={() => { onChange(option.value); setOpen(false); }}
-                  className={`relative w-full px-3 py-2.5 text-left text-sm rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-300'
+                  className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
+                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                   }`}
                 >
                   {option.label}
+                  {value === option.value && <span className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full" />}
                 </button>
               ))}
             </HoverList>
@@ -415,7 +419,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
             </span>
           </div>
 
-          <div className="p-4 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg space-y-3">
+          <div className="p-4 bg-zinc-50 dark:bg-[#1c1c1e] border border-zinc-200 dark:border-zinc-700 rounded-lg space-y-3">
             {setupChecklistItems.map((item) => (
               <label
                 key={item.id}
@@ -457,7 +461,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
           </div>
         </div>
       ) : (
-        <div className="p-6 rounded-xl border bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+        <div className="p-6 rounded-xl border bg-zinc-50 dark:bg-[#1c1c1e] border-zinc-200 dark:border-zinc-700">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {isDefaultSetup ? 'This setup has no checklist items' :
              'This setup has no checklist items configured. Add them in Settings.'}
@@ -477,7 +481,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
             className={`px-4 py-2 text-sm font-medium rounded-full transition-colors cursor-pointer ${
               followedPlan === true
                 ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-700'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                : 'bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
             Yes
@@ -487,7 +491,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
             className={`px-4 py-2 text-sm font-medium rounded-full transition-colors cursor-pointer ${
               followedPlan === false
                 ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                : 'bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
             }`}
           >
             No
@@ -516,7 +520,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
               value={initialRisk}
               onChange={(e) => setInitialRisk(e.target.value)}
               placeholder="500.00"
-              className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+              className="w-full bg-white dark:bg-[#1c1c1e] border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
             />
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">$ amount you risked on this trade</p>
           </div>
@@ -528,7 +532,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
               value={stopPrice}
               onChange={(e) => setStopPrice(e.target.value)}
               placeholder={`${(entryPrice * 0.95).toFixed(2)}`}
-              className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+              className="w-full bg-white dark:bg-[#1c1c1e] border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
             />
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Where was your stop?</p>
           </div>
@@ -543,7 +547,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
           placeholder="What did you learn from this trade? What would you do differently?"
-          className="w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500 resize-none"
+          className="w-full bg-white dark:bg-[#1c1c1e] border border-zinc-300 dark:border-zinc-600 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500 resize-none"
         />
       </div>
 

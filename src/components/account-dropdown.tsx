@@ -77,14 +77,14 @@ export function AccountDropdown({ value, onChange }: AccountDropdownProps) {
             initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
-            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.1 }}
             className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50"
           >
             <HoverList>
               <button
                 onClick={() => { onChange(null); setOpen(false); }}
                 className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center gap-2 rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                  value === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                 }`}
               >
                 <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
@@ -100,7 +100,7 @@ export function AccountDropdown({ value, onChange }: AccountDropdownProps) {
                   key={account.account_id}
                   onClick={() => { onChange(account.account_id); setOpen(false); }}
                   className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center gap-2 rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                    value === account.account_id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                    value === account.account_id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                   }`}
                 >
                   <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${

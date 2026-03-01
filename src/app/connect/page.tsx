@@ -74,7 +74,7 @@ export default function ConnectPage() {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-zinc-100 dark:bg-[#1c1c1e] flex items-center justify-center">
             <svg className="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
             </svg>
@@ -104,7 +104,7 @@ export default function ConnectPage() {
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">{broker.description}</p>
                   </div>
                   {broker.comingSoon ? (
-                    <span className="text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded">
+                    <span className="text-xs font-medium bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded">
                       Coming Soon
                     </span>
                   ) : (
@@ -177,7 +177,7 @@ export default function ConnectPage() {
                       ? 'bg-emerald-100 dark:bg-emerald-900/30'
                       : connection.status === 'error'
                       ? 'bg-red-100 dark:bg-red-900/30'
-                      : 'bg-zinc-100 dark:bg-zinc-800'
+                      : 'bg-zinc-100 dark:bg-[#1c1c1e]'
                   }`}>
                     {connection.status === 'active' ? (
                       <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -249,7 +249,7 @@ export default function ConnectPage() {
                     {connection.account_links.map(link => (
                       <div
                         key={link.id}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-[#1c1c1e] rounded-lg text-sm"
                       >
                         <span className="font-mono text-xs text-zinc-500">
                           {link.external_account_id}

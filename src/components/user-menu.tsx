@@ -82,7 +82,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
             initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
-            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.1 }}
             className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50"
           >
             <HoverList>
@@ -91,7 +91,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
               <button
                 onClick={() => { onAccountChange(null); setOpen(false); }}
                 className={`relative w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                  accountId === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                  accountId === null ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                 }`}
               >
                 All accounts
@@ -106,7 +106,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
                   key={account.account_id}
                   onClick={() => { onAccountChange(account.account_id); setOpen(false); }}
                   className={`relative w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                    accountId === account.account_id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                    accountId === account.account_id ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                   }`}
                 >
                   {account.alias}
@@ -118,11 +118,11 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
                 </button>
               ))}
 
-              <div className="border-t border-zinc-100 dark:border-zinc-800 my-2" />
+              <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 -mx-1" />
 
               {/* Theme selector - single row with icon buttons */}
               <div className="px-3 h-8 flex items-center justify-between">
-                <span className="text-sm text-zinc-700 dark:text-zinc-300">Theme</span>
+                <span className="text-sm text-zinc-900 dark:text-zinc-100">Theme</span>
                 <div className="flex items-center border border-zinc-300 dark:border-zinc-600 rounded-full h-6">
                   <button
                     onClick={() => setTheme('system')}
@@ -162,7 +162,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
 
               <button
                 onClick={() => { onOpenSettings?.(); setOpen(false); }}
-                className="relative w-full px-3 h-8 text-left text-sm text-zinc-700 dark:text-zinc-300 rounded-lg flex items-center justify-between cursor-pointer border-0 bg-transparent appearance-none"
+                className="relative w-full px-3 h-8 text-left text-sm text-zinc-900 dark:text-zinc-100 rounded-lg flex items-center justify-between cursor-pointer border-0 bg-transparent appearance-none"
               >
                 Settings
                 <svg className="w-4 h-4 text-zinc-900 dark:text-zinc-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -173,7 +173,7 @@ export function UserMenu({ initial = 'U', avatar, onOpenSettings, accountId, onA
 
               <button
                 onClick={handleSignOut}
-                className="relative w-full px-3 h-8 text-left text-sm text-zinc-700 dark:text-zinc-300 rounded-lg flex items-center justify-between cursor-pointer border-0 bg-transparent appearance-none"
+                className="relative w-full px-3 h-8 text-left text-sm text-zinc-900 dark:text-zinc-100 rounded-lg flex items-center justify-between cursor-pointer border-0 bg-transparent appearance-none"
               >
                 Sign out
                 <svg className="w-4 h-4 text-zinc-900 dark:text-zinc-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">

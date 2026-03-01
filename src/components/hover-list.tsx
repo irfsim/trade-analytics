@@ -42,7 +42,7 @@ export function HoverList({ children, className }: HoverListProps) {
       style={{ position: 'relative' }}
     >
       <div
-        className="bg-zinc-100 dark:bg-zinc-800 rounded-lg"
+        className="bg-zinc-100 dark:bg-[#1c1c1e] rounded-lg"
         style={{
           position: 'absolute',
           top: hover?.top ?? 0,

@@ -224,7 +224,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
             value={localDisplayName}
             onChange={(e) => setLocalDisplayName(e.target.value)}
             placeholder="Your name"
-            className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
+            className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:focus:ring-zinc-500"
           />
         </div>
 
@@ -270,7 +270,7 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="Type DELETE to confirm"
                   autoFocus
-                  className="w-full px-3 py-2 text-sm border border-red-300 dark:border-red-800 rounded-lg bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400 dark:focus:ring-red-600"
+                  className="w-full px-3 py-2 text-sm border border-red-300 dark:border-red-800 rounded-lg bg-white dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-400 dark:focus:ring-red-600"
                 />
                 <div className="flex justify-end gap-2">
                   <button
