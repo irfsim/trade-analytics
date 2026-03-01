@@ -37,7 +37,7 @@ export function ContextMenuDropdown({ children }: { children: ReactNode }) {
       onMouseLeave={handleMouseLeave}
     >
       <div
-        className="bg-zinc-100 dark:bg-[#1c1c1e] rounded-lg"
+        className="bg-zinc-100 dark:bg-zinc-700/50 rounded-lg"
         style={{
           position: 'absolute',
           top: highlight?.top ?? 0,

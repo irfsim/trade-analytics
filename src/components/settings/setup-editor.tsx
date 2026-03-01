@@ -61,10 +61,11 @@ function ChecklistPicker({
     if (!innerRef.current) return;
     const rect = innerRef.current.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
+    const inset = 4; // horizontal padding for highlight within full-width container
     setHighlight({
       top: btnRect.top - rect.top + innerRef.current.scrollTop,
-      left: btnRect.left - rect.left + innerRef.current.scrollLeft,
-      width: btnRect.width,
+      left: btnRect.left - rect.left + innerRef.current.scrollLeft + inset,
+      width: btnRect.width - inset * 2,
       height: btnRect.height,
     });
   }, []);
@@ -107,7 +108,7 @@ function ChecklistPicker({
         innerRef.current = node;
         if (pickerRef && 'current' in pickerRef) (pickerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
       }}
-      className="fixed bg-white dark:bg-zinc-900 rounded-xl max-h-64 overflow-y-auto p-1"
+      className="fixed bg-white dark:bg-zinc-900 rounded-xl max-h-64 overflow-y-auto py-1"
       style={{
         top: pickerPos.top,
         left: pickerPos.left,
@@ -123,7 +124,7 @@ function ChecklistPicker({
     >
       {/* Sliding highlight */}
       <div
-        className="bg-zinc-100 dark:bg-[#1c1c1e] rounded-lg"
+        className="bg-zinc-100 dark:bg-zinc-700/50 rounded-lg"
         style={{
           position: 'absolute',
           top: highlight?.top ?? 0,
@@ -140,7 +141,7 @@ function ChecklistPicker({
       <div style={{ position: 'relative' }}>
         {filteredCategories.map((category, catIdx) => (
           <div key={category.category}>
-            {catIdx > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
+            {catIdx > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1" />}
             <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">{category.category}</div>
             {category.items.map((item) => {
               const isCustom = !item.id.startsWith('lib-');
@@ -158,7 +159,7 @@ function ChecklistPicker({
                     } ${
                       isActive
                         ? 'text-zinc-900 dark:text-zinc-100 font-medium'
-                        : 'text-zinc-600 dark:text-zinc-400'
+                        : 'text-zinc-900 dark:text-zinc-100'
                     }`}
                   >
                     {item.label}
@@ -184,7 +185,7 @@ function ChecklistPicker({
         ))}
         {showAddCustom && (
           <>
-            {filteredCategories.length > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 mx-1" />}
+            {filteredCategories.length > 0 && <div className="border-t border-zinc-100 dark:border-zinc-800 my-1" />}
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
@@ -420,13 +421,84 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
     setChecklistItems(checklistItems.filter(i => i.id !== id).map((item, idx) => ({ ...item, order: idx })));
   };
 
-  const moveItem = (index: number, direction: 'up' | 'down') => {
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= checklistItems.length) return;
+  const moveItem = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= checklistItems.length || fromIndex === toIndex) return;
     const items = [...checklistItems];
-    [items[index], items[newIndex]] = [items[newIndex], items[index]];
+    const [moved] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, moved);
     setChecklistItems(items.map((item, idx) => ({ ...item, order: idx })));
   };
+
+  // Pointer-based drag state
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragY, setDragY] = useState(0);
+  const dragOriginY = useRef(0);
+  const dragItemRects = useRef<DOMRect[]>([]);
+  const dragIdxRef = useRef<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const checklistItemsRef = useRef(checklistItems);
+  checklistItemsRef.current = checklistItems;
+
+  const handlePointerDown = (e: React.PointerEvent, index: number) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    e.preventDefault();
+    setDragIdx(index);
+    dragIdxRef.current = index;
+    dragOriginY.current = e.clientY;
+    setDragY(0);
+    if (listRef.current) {
+      dragItemRects.current = Array.from(listRef.current.children).map(c => c.getBoundingClientRect());
+    }
+  };
+
+  useEffect(() => {
+    if (dragIdx === null) return;
+
+    const onMove = (e: PointerEvent) => {
+      const currentDragIdx = dragIdxRef.current;
+      if (currentDragIdx === null) return;
+      const dy = e.clientY - dragOriginY.current;
+      setDragY(dy);
+
+      const rects = dragItemRects.current;
+      if (!rects.length) return;
+      const draggedCenter = rects[currentDragIdx].top + rects[currentDragIdx].height / 2 + dy;
+      let target = currentDragIdx;
+      for (let i = 0; i < rects.length; i++) {
+        const mid = rects[i].top + rects[i].height / 2;
+        if (i < currentDragIdx && draggedCenter < mid) { target = i; break; }
+        if (i > currentDragIdx && draggedCenter > mid) { target = i; }
+      }
+      if (target !== currentDragIdx) {
+        // Reorder items
+        const items = [...checklistItemsRef.current];
+        const [moved] = items.splice(currentDragIdx, 1);
+        items.splice(target, 0, moved);
+        setChecklistItems(items.map((item, idx) => ({ ...item, order: idx })));
+
+        dragOriginY.current += (rects[target].top - rects[currentDragIdx].top);
+        setDragY(e.clientY - dragOriginY.current);
+        setDragIdx(target);
+        dragIdxRef.current = target;
+        if (listRef.current) {
+          dragItemRects.current = Array.from(listRef.current.children).map(c => c.getBoundingClientRect());
+        }
+      }
+    };
+
+    const onUp = () => {
+      setDragIdx(null);
+      dragIdxRef.current = null;
+      setDragY(0);
+    };
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    return () => {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+    };
+  }, [dragIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -488,7 +560,7 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
           <div className="flex items-center gap-3">
             <button
               onClick={onCancel}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
               aria-label="Back to setups"
             >
               <svg className="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -501,7 +573,7 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
           </div>
           <button
             onClick={onCancel}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
             aria-label="Close"
           >
             <svg className="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -628,46 +700,47 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
                   document.body,
                 )}
 
-                {/* Selected items list */}
+                {/* Selected items list — drag to reorder */}
                 {checklistItems.length > 0 && (
-                  <div className="space-y-1 bg-white dark:bg-[#1c1c1e] border border-zinc-200 dark:border-zinc-700 rounded-lg p-2">
+                  <div
+                    ref={listRef}
+                    className="bg-white dark:bg-[#1c1c1e] border border-zinc-200 dark:border-zinc-700 rounded-lg divide-y divide-zinc-100 dark:divide-zinc-700/50"
+                  >
                     {checklistItems.map((item, index) => (
                       <div
                         key={item.id}
-                        className="flex items-center gap-2 px-3 py-2.5 text-sm bg-zinc-50 dark:bg-zinc-700/50 rounded"
+                        onPointerDown={(e) => handlePointerDown(e, index)}
+                        className={`flex items-center gap-2 px-3 py-2.5 text-sm select-none ${
+                          dragIdx === index
+                            ? 'relative z-10 bg-white dark:bg-zinc-800 shadow-lg rounded-lg'
+                            : ''
+                        }`}
+                        style={{
+                          cursor: dragIdx === index ? 'grabbing' : 'grab',
+                          transform: dragIdx === index ? `translateY(${dragY}px)` : undefined,
+                          transition: dragIdx !== null && dragIdx !== index ? 'transform 150ms ease-out' : undefined,
+                        }}
                       >
-                        <span className="flex-1 text-zinc-700 dark:text-zinc-300">{item.label}</span>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => moveItem(index, 'up')}
-                            disabled={index === 0}
-                            className="p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => moveItem(index, 'down')}
-                            disabled={index === checklistItems.length - 1}
-                            className="p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => removeItem(item.id)}
-                            className="p-0.5 text-zinc-400 hover:text-red-500 cursor-pointer"
-                          >
-                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
+                        {/* Drag handle */}
+                        <svg className="w-4 h-4 text-zinc-300 dark:text-zinc-600 flex-shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                          <circle cx="5.5" cy="4" r="1.2" />
+                          <circle cx="10.5" cy="4" r="1.2" />
+                          <circle cx="5.5" cy="8" r="1.2" />
+                          <circle cx="10.5" cy="8" r="1.2" />
+                          <circle cx="5.5" cy="12" r="1.2" />
+                          <circle cx="10.5" cy="12" r="1.2" />
+                        </svg>
+                        <span className="flex-1 text-zinc-900 dark:text-zinc-100">{item.label}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.id)}
+                          className="p-0.5 text-zinc-400 hover:text-red-500 cursor-pointer flex-shrink-0"
+                          aria-label={`Remove "${item.label}"`}
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
                     ))}
                   </div>

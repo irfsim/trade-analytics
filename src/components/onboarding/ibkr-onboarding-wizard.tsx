@@ -250,7 +250,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
             </h2>
             <button
               onClick={onCancel}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
               aria-label="Close wizard"
             >
               <svg className="w-5 h-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -658,7 +658,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                       { value: '1y', label: 'Last year' },
                       { value: 'custom', label: 'Custom date range' },
                     ].map(option => (
-                      <label key={option.value} className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer">
+                      <label key={option.value} className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/50 cursor-pointer">
                         <input
                           type="radio"
                           name="dateRange"
