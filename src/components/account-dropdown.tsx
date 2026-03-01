@@ -58,7 +58,7 @@ export function AccountDropdown({ value, onChange }: AccountDropdownProps) {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(prev => !prev)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors whitespace-nowrap rounded-full border border-zinc-200 dark:border-zinc-700 cursor-pointer bg-white dark:bg-zinc-900 appearance-none"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap rounded-full border border-zinc-200 dark:border-zinc-700 cursor-pointer bg-white dark:bg-zinc-900 appearance-none"
       >
         {displayLabel}
         <svg

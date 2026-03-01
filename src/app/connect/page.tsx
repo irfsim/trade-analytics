@@ -216,7 +216,7 @@ export default function ConnectPage() {
                   <button
                     onClick={() => handleSync(connection.id)}
                     disabled={syncingConnection === connection.id}
-                    className="px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full disabled:opacity-50"
+                    className="px-3 py-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-full disabled:opacity-50"
                   >
                     {syncingConnection === connection.id ? (
                       <span className="flex items-center gap-2">
