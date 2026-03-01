@@ -114,7 +114,7 @@ export function SetupsSection({ onEditSetup, refreshKey }: SetupsSectionProps) {
     <div className="space-y-6">
       {/* Setup Types List */}
       {setupTypes.length === 0 ? (
-        <div className="text-center py-8 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+        <div className="text-center py-8 bg-zinc-50 dark:bg-[#1c1c1e]/50 rounded-lg">
           <svg
             className="w-12 h-12 mx-auto text-zinc-300 dark:text-zinc-600 mb-3"
             fill="none"
@@ -143,7 +143,7 @@ export function SetupsSection({ onEditSetup, refreshKey }: SetupsSectionProps) {
             return (
               <div
                 key={setup.id}
-                className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg"
+                className="bg-zinc-50 dark:bg-[#1c1c1e]/50 border border-zinc-200 dark:border-zinc-700 rounded-lg"
               >
                 <div
                   className={`flex items-center justify-between p-3 ${hasItems ? 'cursor-pointer' : ''}`}
@@ -261,7 +261,7 @@ export function SetupsSection({ onEditSetup, refreshKey }: SetupsSectionProps) {
               {archivedSetups.map((setup) => (
                 <div
                   key={setup.id}
-                  className="p-3 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg opacity-60"
+                  className="p-3 bg-zinc-50 dark:bg-[#1c1c1e]/50 border border-zinc-200 dark:border-zinc-700 rounded-lg opacity-60"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">

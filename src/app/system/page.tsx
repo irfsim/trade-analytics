@@ -132,7 +132,7 @@ function ComponentCard({
 }) {
   return (
     <div className={`border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden ${className}`}>
-      <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+      <div className="px-4 py-3 bg-zinc-50 dark:bg-[#1c1c1e] border-b border-zinc-200 dark:border-zinc-700">
         <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{title}</h3>
         <p className="text-xs text-zinc-500 dark:text-zinc-400 font-mono mt-0.5">{path}</p>
       </div>
@@ -246,7 +246,7 @@ export default function SystemPage() {
                     className={`flex-1 px-2 py-1.5 text-xs rounded-lg transition-colors ${
                       theme === t
                         ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
-                        : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700'
+                        : 'bg-zinc-200 dark:bg-[#1c1c1e] text-zinc-600 dark:text-zinc-400 hover:bg-zinc-300 dark:hover:bg-zinc-700'
                     }`}
                   >
                     {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -466,14 +466,14 @@ export default function SystemPage() {
             <div className="space-y-6">
               {/* Border Radius */}
               <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
-                <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                <div className="px-4 py-3 bg-zinc-50 dark:bg-[#1c1c1e] border-b border-zinc-200 dark:border-zinc-700">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Border Radius Variations</h3>
                 </div>
                 <div className="p-4">
                   <div className="grid gap-3">
                     {inconsistencies.borderRadius.map((item) => (
                       <div key={item.pattern} className="flex items-start gap-3">
-                        <code className="px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded font-mono min-w-[120px]">
+                        <code className="px-2 py-1 text-xs bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-700 dark:text-zinc-300 rounded font-mono min-w-[120px]">
                           {item.pattern}
                         </code>
                         <span className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -490,14 +490,14 @@ export default function SystemPage() {
 
               {/* Heights */}
               <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
-                <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                <div className="px-4 py-3 bg-zinc-50 dark:bg-[#1c1c1e] border-b border-zinc-200 dark:border-zinc-700">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Height Variations</h3>
                 </div>
                 <div className="p-4">
                   <div className="grid gap-3">
                     {inconsistencies.heights.map((item) => (
                       <div key={item.pattern} className="flex items-start gap-3">
-                        <code className="px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded font-mono min-w-[120px]">
+                        <code className="px-2 py-1 text-xs bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-700 dark:text-zinc-300 rounded font-mono min-w-[120px]">
                           {item.pattern}
                         </code>
                         <span className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -514,14 +514,14 @@ export default function SystemPage() {
 
               {/* Shadows */}
               <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
-                <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700">
+                <div className="px-4 py-3 bg-zinc-50 dark:bg-[#1c1c1e] border-b border-zinc-200 dark:border-zinc-700">
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Shadow Variations</h3>
                 </div>
                 <div className="p-4">
                   <div className="grid gap-3">
                     {inconsistencies.shadows.map((item) => (
                       <div key={item.pattern} className="flex items-start gap-3">
-                        <code className="px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded font-mono min-w-[120px]">
+                        <code className="px-2 py-1 text-xs bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-700 dark:text-zinc-300 rounded font-mono min-w-[120px]">
                           {item.pattern}
                         </code>
                         <span className="text-sm text-zinc-600 dark:text-zinc-400">

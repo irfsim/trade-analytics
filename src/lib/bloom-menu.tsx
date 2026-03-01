@@ -692,7 +692,7 @@ export function Content({ children, className = '', style, onAnimationComplete }
         >
           {/* Sliding highlight */}
           <div
-            className="bg-zinc-100 dark:bg-zinc-800 rounded-lg"
+            className="bg-zinc-100 dark:bg-[#1c1c1e] rounded-lg"
             style={{
               position: 'absolute',
               top: highlight?.top ?? 0,

@@ -72,9 +72,9 @@ export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId 
             <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Closed</span>
           </div>
         </div>
-        <div className="bg-[#FAFAFA] dark:bg-zinc-800 shadow-card rounded-2xl overflow-hidden">
+        <div className="bg-[#FAFAFA] dark:bg-[#1c1c1e] shadow-card rounded-2xl overflow-hidden">
           <div className="animate-pulse">
-            <div className="h-10 bg-[#FAFAFA] dark:bg-zinc-800" />
+            <div className="h-10 bg-[#FAFAFA] dark:bg-[#1c1c1e]" />
             <div className="bg-white dark:bg-zinc-900">
               {[...Array(5)].map((_, i) => (
                 <div key={i} className="h-10 border-t border-zinc-100 dark:border-zinc-800" />
@@ -96,7 +96,7 @@ export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId 
             <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Closed</span>
           </div>
         </div>
-        <div className="bg-[#FAFAFA] dark:bg-zinc-800 shadow-card rounded-2xl p-12 text-center">
+        <div className="bg-[#FAFAFA] dark:bg-[#1c1c1e] shadow-card rounded-2xl p-12 text-center">
           <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
             <svg className="w-6 h-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -153,7 +153,7 @@ export function TradeTable({ trades, loading, onSelectTrade, highlightedTradeId 
           </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-[#FAFAFA] dark:bg-zinc-800 rounded-2xl p-1">
+      <div className="hidden md:block bg-[#FAFAFA] dark:bg-[#1c1c1e] rounded-2xl p-1">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="trade-thead">

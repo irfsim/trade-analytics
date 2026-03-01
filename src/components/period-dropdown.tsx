@@ -63,7 +63,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
   }, [moreOpen]);
 
   return (
-    <div className="flex items-center rounded-full bg-[#FAFAFA] dark:bg-zinc-800 p-1">
+    <div className="flex items-center rounded-full bg-[#FAFAFA] dark:bg-[#1c1c1e] p-1">
       {PRIMARY_PERIODS.map(period => {
         const option = PERIOD_OPTIONS.find(o => o.value === period);
         if (!option) return null;
@@ -133,7 +133,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
               initial={{ opacity: 0, scale: 0.95, y: -4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -4 }}
-              transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ duration: 0.1 }}
               className="absolute left-0 top-full mt-2 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50"
             >
               <HoverList>
@@ -146,7 +146,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
                       key={period}
                       onClick={() => { onChange(period); setMoreOpen(false); }}
                       className={`relative w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                        value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                        value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                       }`}
                     >
                       {option.label}
@@ -157,7 +157,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
                   );
                 })}
 
-                <div className="border-t border-zinc-100 dark:border-zinc-800 my-1" />
+                <div className="border-t border-zinc-100 dark:border-zinc-800 my-1 -mx-1" />
 
                 <div className="px-2 py-1.5 text-xs font-medium text-zinc-400">Trade samples</div>
                 {MORE_COUNT_PERIODS.map(period => {
@@ -168,7 +168,7 @@ export function PeriodPills({ value, onChange }: PeriodDropdownProps) {
                       key={period}
                       onClick={() => { onChange(period); setMoreOpen(false); }}
                       className={`relative w-full px-3 h-8 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                        value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                        value === period ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                       }`}
                     >
                       {option.label}
@@ -226,7 +226,7 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
             initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
-            transition={{ duration: 0.15, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: 0.1 }}
             className="absolute left-0 top-full mt-2 w-44 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-lg p-1 z-50"
           >
             <HoverList>
@@ -237,7 +237,7 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
                   key={option.value}
                   onClick={() => { onChange(option.value); setOpen(false); }}
                   className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                   }`}
                 >
                   {option.label}
@@ -247,14 +247,14 @@ export function PeriodDropdown({ value, onChange }: PeriodDropdownProps) {
                 </button>
               ))}
 
-              <div className="border-t border-zinc-100 dark:border-zinc-800 my-2" />
+              <div className="border-t border-zinc-100 dark:border-zinc-800 my-2 -mx-1" />
 
               {otherOptions.map(option => (
                 <button
                   key={option.value}
                   onClick={() => { onChange(option.value); setOpen(false); }}
                   className={`relative w-full px-3 py-2.5 text-left text-sm flex items-center justify-between rounded-lg cursor-pointer border-0 bg-transparent appearance-none ${
-                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-600 dark:text-zinc-400'
+                    value === option.value ? 'text-zinc-900 dark:text-zinc-100 font-medium' : 'text-zinc-900 dark:text-zinc-100'
                   }`}
                 >
                   {option.label}

@@ -109,7 +109,7 @@ function SettingsSidebar({ activeSection, onSectionChange }: { activeSection: Se
       >
         {/* Hover highlight */}
         <div
-          className="bg-zinc-100 dark:bg-zinc-800 rounded-lg"
+          className="bg-zinc-100 dark:bg-[#1c1c1e] rounded-lg"
           style={{
             position: 'absolute',
             top: hover?.top ?? 0,
@@ -129,7 +129,7 @@ function SettingsSidebar({ activeSection, onSectionChange }: { activeSection: Se
             onClick={() => onSectionChange(section.id)}
             className={`relative w-full h-8 px-3 text-sm flex items-center justify-between rounded-lg focus:outline-none cursor-pointer ${
               activeSection === section.id
-                ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium'
+                ? 'bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-900 dark:text-zinc-100 font-medium'
                 : 'text-zinc-600 dark:text-zinc-400'
             }`}
           >

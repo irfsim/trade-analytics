@@ -186,7 +186,7 @@ export default function Dashboard() {
   return (
     <div className="pt-6 pb-24 max-w-[816px] mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 mb-4">
+      <div className="flex items-center justify-between gap-4 mb-10">
         <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap select-none">OpenTrade</span>
         <UserMenu
           initial="I"
@@ -202,15 +202,15 @@ export default function Dashboard() {
 
       {/* Stats - Above trades */}
       <div className="mt-6 mb-12">
-        <div className="bg-[#FAFAFA] dark:bg-zinc-800 rounded-2xl p-4">
+        <div className="bg-[#FAFAFA] dark:bg-[#1c1c1e] rounded-2xl p-4">
           <PeriodStats stats={stats} loading={loading} />
         </div>
       </div>
 
       {/* Trades */}
       {!loading && trades.length === 0 ? (
-        <div className="p-12 bg-white dark:bg-zinc-900 shadow-card rounded-xl text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+        <div className="p-12 bg-white dark:bg-zinc-900 shadow-card rounded-2xl text-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-zinc-100 dark:bg-[#1c1c1e] flex items-center justify-center">
             <svg className="w-6 h-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
