@@ -138,7 +138,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
 
         {/* Avg Win */}
         <div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Avg Win</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Avg win</p>
           <p className="text-sm tabular-nums text-zinc-900 dark:text-zinc-100">
             {stats.avgWin !== null ? (
               <>
@@ -153,7 +153,7 @@ export function PeriodStats({ stats, loading }: PeriodStatsProps) {
 
         {/* Avg Loss */}
         <div>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Avg Loss</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">Avg loss</p>
           <p className="text-sm tabular-nums text-zinc-900 dark:text-zinc-100">
             {stats.avgLoss !== null ? (
               <>

@@ -246,11 +246,11 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
         <div className="border-b border-zinc-100 dark:border-zinc-800 px-6 py-4">
           <div className={`flex items-center justify-between ${step !== 'select-broker' ? 'mb-4' : ''}`}>
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              {step === 'select-broker' ? 'Connect a Broker' : 'Connect Interactive Brokers'}
+              {step === 'select-broker' ? 'Connect a broker' : 'Connect Interactive Brokers'}
             </h2>
             <button
               onClick={onCancel}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
               aria-label="Close wizard"
             >
               <svg className="w-5 h-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -375,7 +375,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                     </div>
                     {broker.comingSoon ? (
                       <span className="text-xs font-medium bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded">
-                        Coming Soon
+                        Coming soon
                       </span>
                     ) : (
                       <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -391,13 +391,13 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
           {step === 'welcome' && (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                Welcome to IBKR Integration
+                Welcome to IBKR integration
               </h3>
               <p className="text-zinc-600 dark:text-zinc-400">
                 Connect your Interactive Brokers account to automatically sync your trades. This integration uses IBKR&apos;s Flex Web Service to securely fetch your trade history.
               </p>
               <div className="bg-zinc-50 dark:bg-[#1c1c1e]/50 rounded-lg p-4 space-y-3">
-                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">What you&apos;ll need:</h4>
+                <h4 className="font-medium text-zinc-900 dark:text-zinc-100">What you&apos;ll need</h4>
                 <ul className="space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
                   <li className="flex items-start gap-2">
                     <svg className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -471,7 +471,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                     4
                   </div>
                   <div>
-                    <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Configure the Query</h4>
+                    <h4 className="font-medium text-zinc-900 dark:text-zinc-100">Configure the query</h4>
                     <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 space-y-2">
                       <p>Set the following options on the query configuration page:</p>
                       <ul className="space-y-1.5 ml-1">
@@ -517,7 +517,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
           {step === 'credentials' && (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                Enter Your Credentials
+                Enter your credentials
               </h3>
               <p className="text-zinc-600 dark:text-zinc-400">
                 Enter the Flex Token and Query ID you obtained from IBKR.
@@ -525,7 +525,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                    Connection Label
+                    Connection label
                   </label>
                   <input
                     type="text"
@@ -589,7 +589,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
           {step === 'test-connection' && (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                Configure Your Accounts
+                Configure your accounts
               </h3>
               <p className="text-zinc-600 dark:text-zinc-400">
                 We found {discoveredAccounts.length} account(s). Set a label for each one.
@@ -617,7 +617,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                          Account Type
+                          Account type
                         </label>
                         <select
                           value={account.accountType}
@@ -644,7 +644,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
           {step === 'initial-sync' && (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-                Sync Your Trades
+                Sync your trades
               </h3>
               {!syncResult ? (
                 <>
@@ -674,7 +674,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                   {dateRange === 'custom' && (
                     <div>
                       <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                        Start Date
+                        Start date
                       </label>
                       <input
                         type="date"
@@ -702,7 +702,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                         <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className="font-medium text-emerald-800 dark:text-emerald-200">Sync Complete!</span>
+                        <span className="font-medium text-emerald-800 dark:text-emerald-200">Sync complete!</span>
                       </div>
                       <ul className="text-sm text-emerald-700 dark:text-emerald-300 space-y-1">
                         <li>{syncResult.inserted} new executions imported</li>
@@ -728,7 +728,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
         <div className="border-t border-zinc-100 dark:border-zinc-800 px-6 py-4 flex justify-between">
           <button
             onClick={currentStepIndex === 0 ? onCancel : handleBack}
-            className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
           >
             {currentStepIndex === 0 ? 'Cancel' : 'Back'}
           </button>
@@ -736,24 +736,24 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
             {step === 'welcome' && (
               <button
                 onClick={handleNext}
-                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
               >
-                Get Started
+                Get started
               </button>
             )}
             {step === 'create-query' && (
               <button
                 onClick={handleNext}
-                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
               >
-                I&apos;ve Created the Query
+                I&apos;ve created the query
               </button>
             )}
             {step === 'credentials' && (
               <button
                 onClick={handleCreateConnection}
                 disabled={!flexToken || !flexQueryId || isTesting}
-                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
               >
                 {isTesting ? (
                   <>
@@ -772,7 +772,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
               <button
                 onClick={handleLinkAccounts}
                 disabled={isTesting || accountSetups.some(a => !a.label)}
-                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
               >
                 {isTesting ? (
                   <>
@@ -791,7 +791,7 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
               <button
                 onClick={handleSync}
                 disabled={isSyncing || (dateRange === 'custom' && !customFromDate)}
-                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
               >
                 {isSyncing ? (
                   <>
@@ -802,14 +802,14 @@ export function IbkrOnboardingWizard({ onComplete, onCancel, inline }: IbkrOnboa
                     Syncing...
                   </>
                 ) : (
-                  'Start Sync'
+                  'Start sync'
                 )}
               </button>
             )}
             {step === 'initial-sync' && syncResult && (
               <button
                 onClick={onComplete}
-                className="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                className="px-4 py-2 text-sm font-medium bg-emerald-600 text-white rounded-full hover:bg-emerald-700 cursor-pointer"
               >
                 Done
               </button>

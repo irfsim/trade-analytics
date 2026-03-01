@@ -395,10 +395,10 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
 
   return (
     <div className="space-y-8">
-      {/* Setup Type - First so user selects before seeing checklist */}
+      {/* Setup type - First so user selects before seeing checklist */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Setup Type</label>
+          <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Setup type</label>
           <SetupTypeSelect
             value={setupTypeId}
             onChange={setSetupTypeId}
@@ -445,7 +445,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
         <div className={`p-6 rounded-xl border ${getRatingBg(ratingData.percentage)}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Setup Quality</p>
+              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Setup quality</p>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 {hasChecklistItems ? `${ratingData.checked}/${ratingData.total} checklist items` : 'Based on checklist sections'}
               </p>
@@ -513,7 +513,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
       {setupTypeId && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Initial Risk ($)</label>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Initial risk ($)</label>
             <input
               type="number"
               step="0.01"
@@ -525,7 +525,7 @@ export function AnnotationForm({ tradeId, existingAnnotation, entryPrice, onSave
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">$ amount you risked on this trade</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Stop Price ($)</label>
+            <label className="block text-sm font-medium text-zinc-600 dark:text-zinc-300 mb-2">Stop price ($)</label>
             <input
               type="number"
               step="0.01"
