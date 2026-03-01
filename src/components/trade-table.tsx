@@ -512,7 +512,7 @@ function TradeRow({ trade, onSelect, isHighlighted }: { trade: TradeWithRating; 
   return (
     <tr
       onClick={() => onSelect?.(trade.id)}
-      className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer h-10 ${isHighlighted ? 'animate-highlight-fade' : ''}`}
+      className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-[#1c1c1e] transition-colors cursor-pointer h-10 ${isHighlighted ? 'animate-highlight-fade' : ''}`}
     >
       {/* Symbol */}
       <td className="pl-5 pr-3 py-2">
