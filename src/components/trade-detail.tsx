@@ -94,9 +94,9 @@ export function TradeDetail({ trade }: TradeDetailProps) {
         />
       </div>
 
-      {/* Trade Legs */}
+      {/* Trade legs */}
       <div>
-        <h2 className="text-lg font-semibold text-white mb-3">Trade Legs</h2>
+        <h2 className="text-lg font-semibold text-white mb-3">Trade legs</h2>
         <div className="border border-zinc-800 rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead>

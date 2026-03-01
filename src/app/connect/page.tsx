@@ -80,7 +80,7 @@ export default function ConnectPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-            Connect Your Broker
+            Connect your broker
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400 mb-8">
             Link your brokerage account to automatically import your trades and track your performance.
@@ -105,7 +105,7 @@ export default function ConnectPage() {
                   </div>
                   {broker.comingSoon ? (
                     <span className="text-xs font-medium bg-zinc-100 dark:bg-[#1c1c1e] text-zinc-500 dark:text-zinc-400 px-2 py-1 rounded">
-                      Coming Soon
+                      Coming soon
                     </span>
                   ) : (
                     <svg className="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,7 +121,7 @@ export default function ConnectPage() {
             onClick={() => router.push('/')}
             className="mt-6 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
           >
-            Back to Dashboard
+            Back to dashboard
           </button>
         </div>
 
@@ -142,7 +142,7 @@ export default function ConnectPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              Broker Connections
+              Broker connections
             </h1>
             <p className="text-zinc-600 dark:text-zinc-400">
               Manage your connected brokerage accounts
@@ -153,13 +153,13 @@ export default function ConnectPage() {
               onClick={() => router.push('/')}
               className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
             >
-              Back to Dashboard
+              Back to dashboard
             </button>
             <button
               onClick={() => setShowWizard(true)}
               className="px-4 py-2 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200"
             >
-              Add Connection
+              Add connection
             </button>
           </div>
         </div>
@@ -227,7 +227,7 @@ export default function ConnectPage() {
                         Syncing...
                       </span>
                     ) : (
-                      'Sync Now'
+                      'Sync now'
                     )}
                   </button>
                   <button
@@ -243,7 +243,7 @@ export default function ConnectPage() {
               {connection.account_links && connection.account_links.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                   <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                    Linked Accounts
+                    Linked accounts
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {connection.account_links.map(link => (
@@ -268,7 +268,7 @@ export default function ConnectPage() {
               {connection.last_sync && (
                 <div className="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                   <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
-                    Last Sync Results
+                    Last sync results
                   </h4>
                   <div className="flex gap-6 text-sm">
                     <div>

@@ -144,7 +144,7 @@ export function TradePanel({ tradeId, tradeIds = [], onClose, onNavigate, onAnno
               {/* Annotation Form */}
               {trade.status === 'CLOSED' && (
                 <div className="border-t border-zinc-200 dark:border-zinc-700 pt-5">
-                  <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4 text-balance">Trade Review</h3>
+                  <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-4 text-balance">Trade review</h3>
                   <AnnotationForm
                     tradeId={trade.id}
                     existingAnnotation={trade.annotation}

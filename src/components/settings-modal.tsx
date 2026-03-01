@@ -24,7 +24,7 @@ interface SettingsModalProps {
 const SECTION_META: Record<SettingsSection, { title: string; description: string }> = {
   profile: { title: 'Profile', description: '' },
   accounts: { title: 'Accounts', description: 'Manage your trading accounts' },
-  setups: { title: 'Setup Types', description: 'Define your trading setups to categorise trades when reviewing them' },
+  setups: { title: 'Setup types', description: 'Define your trading setups to categorise trades when reviewing them' },
 };
 
 const SECTIONS: { id: SettingsSection; label: string; icon: React.ReactNode }[] = [
@@ -264,7 +264,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
                           onClick={handleStartWizard}
                           className="flex-shrink-0 px-3 py-1.5 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
                         >
-                          Connect Account
+                          Connect account
                         </button>
                       )}
                       {activeSection === 'setups' && (
@@ -272,7 +272,7 @@ export function SettingsModal({ isOpen, onClose, avatar, onAvatarChange, display
                           onClick={() => handleStartSetupEditor(null)}
                           className="flex-shrink-0 px-3 py-1.5 text-sm font-medium bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 cursor-pointer"
                         >
-                          Add Setup
+                          Add setup
                         </button>
                       )}
                     </div>

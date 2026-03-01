@@ -213,10 +213,10 @@ export function ProfileSection({ avatar, onAvatarChange, displayName, onDisplayN
           </div>
         </div>
 
-        {/* Display Name row */}
+        {/* Display name row */}
         <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5">
           <div>
-            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Display Name</label>
+            <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Display name</label>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Shown throughout the dashboard</p>
           </div>
           <input

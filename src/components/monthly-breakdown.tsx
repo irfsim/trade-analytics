@@ -148,7 +148,7 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
         </div>
         <div>
           <div className="flex items-center gap-1.5 mb-1">
-            <p className="text-sm text-zinc-500">Win Rate</p>
+            <p className="text-sm text-zinc-500">Win rate</p>
             <span className={`w-2 h-2 rounded-full ${(summary?.winRate ?? 0) >= 50 ? 'bg-emerald-500' : 'bg-red-500'}`} />
           </div>
           <p className="text-sm font-semibold text-zinc-900">{summary?.winRate ?? 0}%</p>
@@ -162,14 +162,14 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
         </div>
         <div>
           <div className="flex items-center gap-1.5 mb-1">
-            <p className="text-sm text-zinc-500">Best Trade</p>
+            <p className="text-sm text-zinc-500">Best trade</p>
             <span className="w-2 h-2 rounded-full bg-emerald-500" />
           </div>
           <p className="text-sm font-semibold text-zinc-900">{formatPnl(summary?.bestTrade ?? 0)}</p>
         </div>
         <div>
           <div className="flex items-center gap-1.5 mb-1">
-            <p className="text-sm text-zinc-500">Worst Trade</p>
+            <p className="text-sm text-zinc-500">Worst trade</p>
             <span className="w-2 h-2 rounded-full bg-red-500" />
           </div>
           <p className="text-sm font-semibold text-zinc-900">{formatPnl(summary?.worstTrade ?? 0)}</p>
@@ -182,7 +182,7 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
         <div>
           <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
             <div className="px-4 py-3">
-              <h3 className="text-base font-semibold text-zinc-900">Cumulative Returns</h3>
+              <h3 className="text-base font-semibold text-zinc-900">Cumulative returns</h3>
             </div>
             <table className="w-full">
               <thead>
@@ -240,7 +240,7 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
         <div>
           <div className="bg-white border border-zinc-200 rounded-xl overflow-hidden">
             <div className="px-4 py-3">
-              <h3 className="text-base font-semibold text-zinc-900">Max Consecutive</h3>
+              <h3 className="text-base font-semibold text-zinc-900">Max consecutive</h3>
             </div>
             <table className="w-full">
               <thead>
@@ -334,15 +334,15 @@ export function MonthlyBreakdown({ accountId, planOnly = false, period, onTradeC
         {/* Desktop Table View */}
         <div className="hidden md:block bg-white border border-zinc-200 rounded-xl overflow-hidden">
           <div className="px-4 py-3">
-            <h3 className="text-base font-semibold text-zinc-900">Monthly Breakdown</h3>
+            <h3 className="text-base font-semibold text-zinc-900">Monthly breakdown</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="h-9">
                   <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-left">Month</th>
-                  <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-right">Avg Gain</th>
-                  <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-right">Avg Loss</th>
+                  <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-right">Avg gain</th>
+                  <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-right">Avg loss</th>
                   <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-center">Win %</th>
                   <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-center">Wins</th>
                   <th className="px-3 py-2 text-xs font-medium text-zinc-500 text-center">Losses</th>

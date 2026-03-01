@@ -568,7 +568,7 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
               </svg>
             </button>
             <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-              {isEditing ? 'Edit Setup' : 'New Setup'}
+              {isEditing ? 'Edit setup' : 'New setup'}
             </h3>
           </div>
           <button
@@ -661,7 +661,7 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
             <div className="grid grid-cols-[1fr_1.5fr] gap-6 py-5">
               <div>
                 <label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  A+ Checklist
+                  A+ checklist
                 </label>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                   Pick from the library or add your own criteria to grade trades against
@@ -771,7 +771,7 @@ export function SetupEditor({ setup, onComplete, onCancel }: SetupEditorProps) {
           disabled={saving || !hasChanges || (!isDefault && !name.trim())}
           className="px-4 py-2 text-sm font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded-full hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors btn-press cursor-pointer"
         >
-          {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Setup'}
+          {saving ? 'Saving...' : isEditing ? 'Save changes' : 'Create setup'}
         </button>
       </div>
     </div>
